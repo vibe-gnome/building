@@ -13,20 +13,18 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
   entry, community links, and independent-project disclaimer.
 - `app/root.tsx` owns the document shell, metadata, global stylesheet, and an
   inline pre-paint preference script.
-- `app/routes/home.tsx` owns the guide page, resource data, and copyable prompt
-  window. `app/components/appearance-control.tsx` provides the shared appearance
+- `app/routes/home.tsx` owns the guide page and resource data.
+  `app/components/appearance-control.tsx` provides the shared appearance
   control used by the guide and extension pages.
 - The community directories at `/apps`, `/extensions`, and `/skills`
   share `app/routes/community-layout.tsx` for their shell and
   `app/extensions.css` for their catalog presentation.
 - `app/lib/tools.ts` owns the Skills directory's reviewed entries and GitHub
   issue submission links.
-- `app/components/blur-glow-hero.tsx` mounts the hero's WebGL renderer and owns
-  its resize, visibility, reduced-motion, and cleanup lifecycle.
-- `app/lib/blur-glow/` contains the framework-independent word-mask, palette,
-  shader, and multi-pass bloom engine.
+- `app/components/particle-typography.tsx` renders the interactive hero text and
+  owns its particle lifecycle, pointer interaction, and resize behavior.
 - `app/lib/preferences.ts` is the source of truth for supported themes, GNOME
-  accents, validation, and prompt copy.
+  accents, and validation.
 - `app/app.css` defines the theme tokens and responsive presentation.
 
 User appearance choices are stored locally. System mode listens for operating
@@ -38,22 +36,18 @@ before React loads to avoid a light/dark flash.
 The site borrows GNOME's restraint rather than reproducing desktop widgets
 literally. It uses system-first Adwaita/Cantarell typography, neutral surfaces,
 compact controls, clear focus states, and the official nine-color accent
-family. The prompt is the only elevated panel; guide sections use simple rules
+family. Guide sections use simple rules
 and grouped lists instead of decorative cards. Practical app and extension ideas
 alternate as labeled conversation bubbles inside a gravity stage. Matter.js gives
 them real gravity, collisions, and free rotation so they remain loosely piled at
-the bottom rather than snapping into a regular list. The enlarged hero statement
-sits above the prompt panel in a single centered column at every viewport width.
+the bottom rather than snapping into a regular list. The particle hero statement
+stays centered at every viewport width.
 
 The layout is responsive at tablet and phone widths and respects
 `prefers-reduced-motion`.
 
-The hero is progressively enhanced. Its semantic heading remains available to
-assistive technology and is the visible fallback when WebGL is unavailable. Its
-visual fallback stays hidden while WebGL readiness is pending, preventing a
-duplicate-text flash before the green-and-gold canvas is ready.
-The renderer caps device pixel ratio at 1.5, pauses outside the viewport, and
-renders a single still frame when reduced motion is requested.
+The particle hero includes a screen-reader label, caps device pixel ratio at 2,
+and renders a still frame when reduced motion is requested.
 
 ## Tool submissions
 

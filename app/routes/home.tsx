@@ -1,10 +1,9 @@
-import { ArrowUpRight, Check, Clipboard, MessageCircle } from "lucide-react";
+import { ArrowUpRight, MessageCircle } from "lucide-react";
 import Matter from "matter-js";
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef } from "react";
 import { AppearanceControl } from "../components/appearance-control";
-import { BlurGlowHero } from "../components/blur-glow-hero";
+import { ParticleTypography } from "../components/particle-typography";
 import { SiteFooter } from "../components/site-footer";
-import { type PromptKind, prompts } from "../lib/preferences";
 import type { Route } from "./+types/home";
 
 const { Bodies, Body, Composite, Engine, Events, Runner } = Matter;
@@ -389,56 +388,6 @@ function LogoMark() {
   );
 }
 
-function PromptPanel() {
-  const [promptKind, setPromptKind] = useState<PromptKind>("app");
-  const [copied, setCopied] = useState(false);
-
-  async function copyPrompt() {
-    await navigator.clipboard.writeText(prompts[promptKind]);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  }
-
-  return (
-    <section
-      aria-labelledby="prompt-title"
-      className="prompt-panel"
-      id="prompt"
-    >
-      <div className="prompt-panel-header">
-        <h2 id="prompt-title">Start with your favorite agent</h2>
-        <div aria-label="Prompt type" className="prompt-tabs" role="tablist">
-          <button
-            aria-selected={promptKind === "app"}
-            onClick={() => setPromptKind("app")}
-            role="tab"
-            type="button"
-          >
-            App
-          </button>
-          <button
-            aria-selected={promptKind === "extension"}
-            onClick={() => setPromptKind("extension")}
-            role="tab"
-            type="button"
-          >
-            Extension
-          </button>
-        </div>
-      </div>
-      <pre className="prompt-text">{prompts[promptKind]}</pre>
-      <button className="copy-button" onClick={copyPrompt} type="button">
-        {copied ? (
-          <Check aria-hidden="true" size={17} />
-        ) : (
-          <Clipboard aria-hidden="true" size={17} />
-        )}
-        {copied ? "Copied" : "Copy prompt"}
-      </button>
-    </section>
-  );
-}
-
 export default function Home() {
   return (
     <>
@@ -487,8 +436,7 @@ export default function Home() {
 
       <main id="main-content">
         <section className="hero page-shell" id="top">
-          <BlurGlowHero />
-          <PromptPanel />
+          <ParticleTypography text="Vibe coding for GNOME. Why not?" />
         </section>
 
         <section

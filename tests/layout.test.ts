@@ -11,12 +11,13 @@ const footer = await Bun.file(
 ).text();
 
 describe("hero layout", () => {
-  test("stacks the enlarged heading above the prompt panel", () => {
+  test("centers the particle typography hero", () => {
     expect(stylesheet).toMatch(
       /\.hero \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?justify-items: center;/,
     );
-    expect(stylesheet).toContain("font-size: clamp(4.2rem, 8.2vw, 7.25rem)");
-    expect(stylesheet).toContain("width: min(760px, 100%)");
+    expect(stylesheet).toContain(".particle-typography");
+    expect(home).toContain('text="Vibe coding for GNOME. Why not?"');
+    expect(home).toContain("ParticleTypography");
     expect(stylesheet).toMatch(
       /\.hero\.page-shell \{[\s\S]*?padding-bottom: 0;/,
     );

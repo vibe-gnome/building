@@ -53,14 +53,13 @@ bun run deploy
 ## Project map
 
 - `app/routes/home.tsx` — page content and interactions
-- `app/components/blur-glow-hero.tsx` — React lifecycle for the WebGL hero
+- `app/components/particle-typography.tsx` — interactive particle hero renderer
 - `app/app.css` — Adwaita-inspired visual system and responsive states
-- `app/lib/blur-glow/` — mask, palette, shader, and bloom rendering core
-- `app/lib/preferences.ts` — validated theme choices and agent prompts
+- `app/lib/preferences.ts` — validated theme and accent choices
 - `app/data/extensions.json` — reviewed extension listings
 - `app/lib/extension-catalog.ts` — extension search, filters, and sorting
 - `docs/implementation/listing-review.md` — extension submission review workflow
-- `tests/` — deterministic preference and prompt tests
+- `tests/` — deterministic behavior tests
 - `docs/` — architecture, setup, references, and user guidance
 
 The original icon is kept at `website/logo.svg`; the web-ready copy is

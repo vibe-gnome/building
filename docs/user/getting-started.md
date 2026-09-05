@@ -1,11 +1,9 @@
 # Getting started
 
-1. Open the guide and choose **App** or **Extension** in the agent window.
-2. Copy the starter prompt into your coding agent.
-3. Answer the three opening questions with a concrete user need and supported
-   GNOME version.
-4. Run each generated increment locally before asking for the next change.
-5. Use the verification checklist before packaging or publishing.
+1. Open the guide and choose an **App** or **Extension** project.
+2. Start with a concrete user need and supported GNOME version.
+3. Run each generated increment locally before asking for the next change.
+4. Use the verification checklist before packaging or publishing.
 
 Use the appearance menu in the header to follow your system style or choose a
 light/dark style and GNOME accent color explicitly. Preferences stay in your

@@ -49,9 +49,7 @@ replacing that record.
 
 ## Adding content
 
-Edit guide sections and resource metadata in `app/routes/home.tsx`. Edit the two
-copyable prompts in `app/lib/preferences.ts`, then update the assertions in
-`tests/preferences.test.ts` if their required platform language changes.
+Edit guide sections and resource metadata in `app/routes/home.tsx`.
 
 Vibe Tools category descriptions and accepted community entries live in
 `app/lib/tools.ts`. To accept a submission, follow the copy-ready entry example
