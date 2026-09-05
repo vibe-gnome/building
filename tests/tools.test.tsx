@@ -39,7 +39,7 @@ describe("Vibe Tools navigation", () => {
 
     const url = new URL(toolSubmissionUrl("skills"));
     expect(url.origin).toBe("https://github.com");
-    expect(url.pathname).toBe("/vibe-gnome/website/issues/new");
+    expect(url.pathname).toBe("/vibe-gnome/building/issues/new");
     const template = url.searchParams.get("template");
     const form = Bun.YAML.parse(
       await Bun.file(

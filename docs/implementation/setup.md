@@ -57,7 +57,7 @@ Vibe Tools category descriptions and accepted community entries live in
 `app/lib/tools.ts`. To accept a submission, follow the copy-ready entry example
 in `examples/tool-submissions.md`, run `bun run check`, and rebuild.
 
-The submission link opens an issue form in `vibe-gnome/website`. Publish
+The submission link opens an issue form in `vibe-gnome/building`. Publish
 `.github/ISSUE_TEMPLATE/submit-skill.yml` to that repository's default branch to
 activate the form. GitHub Issues must remain enabled. Change
 the repository URL in `toolSubmissionUrl` if the submission inbox moves.
@@ -65,7 +65,7 @@ the repository URL in `toolSubmissionUrl` if the submission inbox moves.
 ## Extension submissions
 
 The extension catalog is maintained in `app/data/extensions.json`. Submit,
-update, and report/remove actions target `vibe-gnome/website`, alongside skills.
+update, and report/remove actions target `vibe-gnome/building`, alongside skills.
 Publish `submit-extension.yml`, `update-extension.yml`, and
 `remove-extension.yml` from `.github/ISSUE_TEMPLATE/` to the default branch to
 activate them. No issue is created by running the site locally.

@@ -29,7 +29,7 @@ export const toolCollections: Record<ToolCategory, ToolCollection> = {
 };
 
 export function toolSubmissionUrl(category: ToolCategory): string {
-  const url = new URL("https://github.com/vibe-gnome/website/issues/new");
+  const url = new URL("https://github.com/vibe-gnome/building/issues/new");
   url.searchParams.set("template", toolCollections[category].issueTemplate);
   return url.href;
 }

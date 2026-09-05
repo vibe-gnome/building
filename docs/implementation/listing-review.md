@@ -1,6 +1,6 @@
 # Maintainer Listing Review
 
-1. Open the submission, update, or removal issue in `vibe-gnome/website`.
+1. Open the submission, update, or removal issue in `vibe-gnome/building`.
 2. Verify the upstream source and requester's relationship to it. For updates,
    match the existing listing by GNOME UUID. Investigate report/removal reasons.
 3. Read the extension's official GNOME `metadata.json`. Check UUID, name,

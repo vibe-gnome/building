@@ -56,7 +56,7 @@ describe("integrated extension pages", () => {
       );
       expect(html).toContain("template=update-extension.yml");
       expect(html).toContain("template=remove-extension.yml");
-      expect(html).toContain("/vibe-gnome/website/issues/new");
+      expect(html).toContain("/vibe-gnome/building/issues/new");
       expect(html).toContain(`src="${entry.icon}"`);
     }
   });

@@ -16,7 +16,7 @@ light, and dark styles plus the nine GNOME accent colors.
 Browse the integrated extension catalog at `/extensions`, view individual
 listings at `/extensions/:slug`, and request listing changes through GitHub
 issues. Submission, update, and removal issue forms are included
-in `.github/ISSUE_TEMPLATE/` and target `vibe-gnome/website`.
+in `.github/ISSUE_TEMPLATE/` and target `vibe-gnome/building`.
 
 ## Quality checks
 

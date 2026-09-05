@@ -1,6 +1,6 @@
 # Accepting a Vibe Tools submission
 
-Review the Skills submission issue in `vibe-gnome/website`. Check that the
+Review the Skills submission issue in `vibe-gnome/building`. Check that the
 project URL is public, the installation instructions are usable, and the summary
 accurately describes the tool. Keep credentials out of the listing.
 

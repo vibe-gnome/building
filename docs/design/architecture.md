@@ -58,7 +58,7 @@ renders a single still frame when reduced motion is requested.
 ## Tool submissions
 
 Skills are submitted through a category-specific GitHub issue form in
-`vibe-gnome/website`. Maintainers review submissions and add accepted entries to
+`vibe-gnome/building`. Maintainers review submissions and add accepted entries to
 `app/lib/tools.ts`; the site does not automatically publish issue content or fetch
 GitHub data in the browser. Forms live in `.github/ISSUE_TEMPLATE/` and become
 available when published to the repository's default branch.
@@ -83,7 +83,7 @@ Installation links point to verified GNOME listings when supplied, or to the
 source repository's instructions. The site never executes extension code.
 
 Submission, update, and removal issue forms live alongside the skill form in
-`.github/ISSUE_TEMPLATE/` and target `vibe-gnome/website` through
+`.github/ISSUE_TEMPLATE/` and target `vibe-gnome/building` through
 `app/lib/extension-submissions.ts`. Maintainers review requests before editing
 the catalog. Issues are not automatically published. The catalog's submission
 link and each detail page's update/report links open the GitHub issue forms.

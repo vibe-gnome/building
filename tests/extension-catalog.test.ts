@@ -92,7 +92,7 @@ describe("issue submission workflow", () => {
         issueUrl(action, action === "submit" ? undefined : entry),
       );
       expect(url.origin + url.pathname).toBe(`${site.repository}/issues/new`);
-      expect(url.pathname).toBe("/vibe-gnome/website/issues/new");
+      expect(url.pathname).toBe("/vibe-gnome/building/issues/new");
       const template = url.searchParams.get("template");
       const form = Bun.YAML.parse(
         readFileSync(`.github/ISSUE_TEMPLATE/${template}`, "utf8"),

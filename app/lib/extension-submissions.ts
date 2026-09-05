@@ -2,7 +2,7 @@ import type { ExtensionListing } from "./extension-catalog";
 
 export const site = {
   home: "/",
-  repository: "https://github.com/vibe-gnome/website",
+  repository: "https://github.com/vibe-gnome/building",
   reddit: "https://www.reddit.com/r/vibe_gnome/",
   gnome: "https://extensions.gnome.org/",
   guidelines:

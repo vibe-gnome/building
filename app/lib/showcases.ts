@@ -30,7 +30,7 @@ export const showcaseCollections: Record<ShowcaseCategory, ShowcaseCollection> =
   };
 
 export function showcaseSubmissionUrl(category: ShowcaseCategory) {
-  const url = new URL("https://github.com/vibe-gnome/website/issues/new");
+  const url = new URL("https://github.com/vibe-gnome/building/issues/new");
   url.searchParams.set(
     "template",
     category === "apps" ? "submit-app.yml" : "submit-extension.yml",
