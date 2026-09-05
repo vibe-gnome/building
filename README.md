@@ -3,6 +3,21 @@
 A practical, Adwaita-inspired guide for people building GNOME apps and Shell
 extensions with an AI coding agent.
 
+## About
+
+We love GNOME: the desktop, the apps, and the community behind them.
+
+Vibe GNOME is a home for projects made through vibe coding for GNOME. From
+[apps](/apps) to [Shell extensions](/extensions), small experiments and
+everyday improvements deserve a place to be discovered.
+
+We also want to make GNOME more AI-friendly. By sharing [agent skills](/skills)
+and practical knowledge, we aim to help people use AI to get more from their
+GNOME desktop, automate everyday tasks, and build better GNOME software.
+
+Whether you are sharing something you made, improving a tool, or just getting
+started, you are welcome here.
+
 ## Run locally
 
 ```bash
