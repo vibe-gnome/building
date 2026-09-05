@@ -1,0 +1,17 @@
+{
+  "name": "Vibe GNOME",
+  "short_name": "Vibe GNOME",
+  "description": "A practical guide to vibe coding GNOME apps and extensions.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f8fa",
+  "theme_color": "#2190a4",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

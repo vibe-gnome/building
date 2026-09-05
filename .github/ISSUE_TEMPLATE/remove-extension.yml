@@ -1,0 +1,32 @@
+name: Report or remove a listing
+description: Report a listing problem or request removal from the marketplace.
+title: "[Remove] "
+body:
+  - type: input
+    id: extension-name
+    attributes:
+      label: Extension name
+    validations:
+      required: true
+  - type: input
+    id: uuid
+    attributes:
+      label: Extension UUID
+    validations:
+      required: true
+  - type: input
+    id: repository
+    attributes:
+      label: Source repository
+  - type: textarea
+    id: reason
+    attributes:
+      label: Reason
+      description: Describe the problem or why the listing should be removed. Include relevant source links.
+    validations:
+      required: true
+  - type: input
+    id: relationship
+    attributes:
+      label: Your relationship to the extension
+      placeholder: Author, maintainer, or community member

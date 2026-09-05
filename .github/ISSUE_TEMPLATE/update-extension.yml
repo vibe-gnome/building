@@ -1,0 +1,42 @@
+name: Update an extension
+description: Update an existing marketplace listing.
+title: "[Update] "
+body:
+  - type: input
+    id: extension-name
+    attributes:
+      label: Extension name
+    validations:
+      required: true
+  - type: input
+    id: uuid
+    attributes:
+      label: Extension UUID
+    validations:
+      required: true
+  - type: input
+    id: repository
+    attributes:
+      label: Source repository
+    validations:
+      required: true
+  - type: textarea
+    id: changes
+    attributes:
+      label: Requested changes
+      description: Describe the new release, compatibility changes, or listing correction. Link to the release or commit where applicable.
+    validations:
+      required: true
+  - type: textarea
+    id: metadata
+    attributes:
+      label: Updated metadata.json
+      description: Paste the official GNOME metadata.json if it has changed.
+      render: json
+  - type: input
+    id: relationship
+    attributes:
+      label: Your relationship to the extension
+      placeholder: Author, maintainer, or community member
+    validations:
+      required: true

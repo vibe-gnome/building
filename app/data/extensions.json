@@ -1,0 +1,57 @@
+[
+  {
+    "slug": "codex-usage-indicator",
+    "metadata": {
+      "uuid": "codex-usage-indicator@stone.dev",
+      "name": "Codex Usage Indicator",
+      "description": "Shows Codex usage from the local Codex CLI auth in the GNOME top bar.",
+      "version": 14,
+      "shell-version": ["45", "46", "47", "48", "49", "50"],
+      "url": "https://github.com/stonega/codex-usage-indicator"
+    },
+    "author": "stonega",
+    "source": "https://github.com/stonega/codex-usage-indicator",
+    "category": "Developer tools",
+    "tags": ["Codex", "Usage", "Top bar"],
+    "icon": "/extensions/icons/codex.svg",
+    "color": "teal",
+    "added": "2026-09-05",
+    "updated": "2026-09-04",
+    "summary": "Keep an eye on your Codex limits, right from the top bar.",
+    "details": "See remaining or used Codex usage at a glance, with 5-hour and weekly windows in the panel menu. Choose a refresh interval, switch between used and remaining values, and get notified when a limit resets.",
+    "requirements": "Requires an existing Codex CLI sign-in on this computer. The extension reads the local CLI authentication file to retrieve usage.",
+    "features": [
+      "5-hour and weekly usage windows",
+      "Configurable refresh interval",
+      "Used or remaining display",
+      "Limit-reset notifications"
+    ]
+  },
+  {
+    "slug": "kitty-session-restorer",
+    "metadata": {
+      "uuid": "kitty-session-restorer@stone.dev",
+      "name": "Kitty Session Restorer",
+      "description": "Saves and restores Kitty layouts, workspaces, allowlisted foreground commands, and exact per-tab Codex threads through optional hooks.",
+      "version": 2,
+      "shell-version": ["50"]
+    },
+    "author": "stonega",
+    "source": "https://github.com/stonega/kitty-paw",
+    "category": "Workflow",
+    "tags": ["Kitty", "Sessions", "Workspaces"],
+    "icon": "/extensions/icons/kitty.svg",
+    "color": "blue",
+    "added": "2026-09-05",
+    "updated": "2026-07-26",
+    "summary": "Bring back your terminal windows, tabs, and workspaces.",
+    "details": "Continuously save Kitty window layouts and restore the latest complete snapshot from the top panel. Preserve tabs, splits, working directories, and GNOME workspace placement. Optional hooks reconnect each tab to its own Codex thread.",
+    "requirements": "Requires GNOME Shell 50, Kitty and Kitten 0.48 or newer, and Kitty remote control over a Unix socket. Close all Kitty windows before restoring a session.",
+    "features": [
+      "Window, tab, and split restoration",
+      "GNOME workspace placement",
+      "Working-directory preservation",
+      "Optional foreground-command restoration"
+    ]
+  }
+]

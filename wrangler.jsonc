@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vibe-gnome",
+  "compatibility_date": "2026-09-04",
+  "workers_dev": false,
+  "assets": {
+    "directory": "./build/client",
+    "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "pattern": "vibe-gnome.org/*",
+      "zone_name": "vibe-gnome.org"
+    }
+  ]
+}

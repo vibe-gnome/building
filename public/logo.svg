@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-labelledby="title description">
+  <title id="title">vibe-gnome cat paw logo</title>
+  <desc id="description">A compact white cat paw on a solid blue square.</desc>
+  <defs>
+    <symbol id="paw-print" viewBox="0 0 1024 1024">
+      <ellipse cx="264" cy="507" rx="68" ry="96" transform="rotate(-20 264 507)"/>
+      <ellipse cx="410" cy="371" rx="79" ry="98" transform="rotate(-8 410 371)"/>
+      <ellipse cx="617" cy="371" rx="79" ry="98" transform="rotate(8 617 371)"/>
+      <ellipse cx="763" cy="507" rx="68" ry="96" transform="rotate(20 763 507)"/>
+      <path d="M 514 484 C 420 486, 328 580, 304 657 C 284 721, 299 777, 340 800 C 383 824, 427 810, 465 783 C 485 770, 500 765, 514 765 C 528 765, 543 770, 563 783 C 601 810, 645 824, 688 800 C 729 777, 744 721, 724 657 C 700 580, 608 486, 514 484 Z"/>
+    </symbol>
+  </defs>
+  <rect width="1024" height="1024" fill="#437CCB"/>
+  <use href="#paw-print" fill="#FFFFFF"/>
+</svg>

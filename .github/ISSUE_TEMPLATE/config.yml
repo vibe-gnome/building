@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Official GNOME extension guidelines
+    url: https://gjs.guide/extensions/review-guidelines/review-guidelines.html
+    about: GNOME's existing extension requirements and review guidelines.
