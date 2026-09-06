@@ -1,11 +1,19 @@
 import { Plus } from "lucide-react";
+import { Link } from "react-router";
 import {
   type ShowcaseCategory,
+  type ShowcaseEntry,
   showcaseCollections,
   showcaseSubmissionUrl,
 } from "../lib/showcases";
 
-export function ShowcasePage({ category }: { category: ShowcaseCategory }) {
+export function ShowcasePage({
+  category,
+  entries,
+}: {
+  category: ShowcaseCategory;
+  entries: readonly ShowcaseEntry[];
+}) {
   const collection = showcaseCollections[category];
 
   return (
@@ -39,19 +47,21 @@ export function ShowcasePage({ category }: { category: ShowcaseCategory }) {
       >
         <header className="directory-section-heading">
           <h2 id="showcase-submissions-title">Community submissions</h2>
-          <span>{collection.entries.length} submissions</span>
+          <span>{entries.length} submissions</span>
         </header>
-        {collection.entries.length === 0 ? (
+        {entries.length === 0 ? (
           <p className="empty-state directory-empty">No submissions yet.</p>
         ) : (
           <div className="community-entry-grid">
-            {collection.entries.map((entry) => (
+            {entries.map((entry) => (
               <article
                 className="extension-card community-entry"
-                key={entry.name}
+                key={entry.id}
               >
                 <span className="eyebrow">{entry.submittedBy}</span>
-                <h2>{entry.name}</h2>
+                <h2>
+                  <Link to={`/${category}/${entry.id}`}>{entry.name}</Link>
+                </h2>
                 <p className="card-summary">{entry.summary}</p>
                 <div className="tag-list">
                   {entry.tags.map((tag) => (

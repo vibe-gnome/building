@@ -1,0 +1,4 @@
+{
+  "title": "[App] Example App",
+  "body": "### App name\n\nExample App\n\n### Repository or project URL\n\nhttps://github.com/example/app\n\n### Summary\n\nA focused GNOME desktop app.\n\n### Installation and usage\n\nInstall the Flatpak package from the project README, then launch Example App.\n\n### Author and license\n\nExample Maintainer, MIT"
+}

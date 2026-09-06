@@ -1,0 +1,4 @@
+{
+  "title": "[Submit] Example Extension",
+  "body": "### Extension name\n\nExample Extension\n\n### Source repository\n\nhttps://github.com/example/extension\n\n### GNOME Extensions listing\n\n_No response_\n\n### metadata.json\n\n```json\n{\n  \"uuid\": \"example@example.org\",\n  \"name\": \"Example Extension\",\n  \"description\": \"A focused desktop extension.\",\n  \"shell-version\": [\"50\"]\n}\n```\n\n### Summary\n\nA focused desktop extension.\n\n### Your relationship to the extension\n\nAuthor"
+}

@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
+import seed from "../app/data/extensions.json";
+import type { ExtensionListing } from "../app/lib/extension-catalog";
+
+const extensions: ExtensionListing[] = seed;
+
 import { existsSync, readFileSync } from "node:fs";
-import {
-  extensions,
-  filterExtensions,
-  formatDate,
-} from "../app/lib/extension-catalog";
+import { filterExtensions, formatDate } from "../app/lib/extension-catalog";
 import { issueUrl, site } from "../app/lib/extension-submissions";
 
 describe("catalog browsing", () => {

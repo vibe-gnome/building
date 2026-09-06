@@ -1,4 +1,5 @@
 import { ArrowUpRight, Plus } from "lucide-react";
+import { Link } from "react-router";
 import {
   type ToolCategory,
   type ToolEntry,
@@ -12,7 +13,9 @@ function ToolList({ entries }: { entries: readonly ToolEntry[] }) {
       {entries.map((entry) => (
         <article className="extension-card community-entry" key={entry.id}>
           <span className="eyebrow">Community submission</span>
-          <h2>{entry.name}</h2>
+          <h2>
+            <Link to={`/skills/${entry.id}`}>{entry.name}</Link>
+          </h2>
           <p className="card-summary">{entry.description}</p>
           {entry.bestFor ? (
             <p className="best-for">Best for: {entry.bestFor}</p>
@@ -33,7 +36,13 @@ function ToolList({ entries }: { entries: readonly ToolEntry[] }) {
   );
 }
 
-export function ToolPage({ category }: { category: ToolCategory }) {
+export function ToolPage({
+  category,
+  entries,
+}: {
+  category: ToolCategory;
+  entries: readonly ToolEntry[];
+}) {
   const collection = toolCollections[category];
 
   return (
@@ -67,12 +76,12 @@ export function ToolPage({ category }: { category: ToolCategory }) {
       >
         <header className="directory-section-heading">
           <h2 id="submissions-title">Community submissions</h2>
-          <span>{collection.entries.length} submissions</span>
+          <span>{entries.length} submissions</span>
         </header>
-        {collection.entries.length === 0 ? (
+        {entries.length === 0 ? (
           <p className="empty-state directory-empty">No submissions yet.</p>
         ) : (
-          <ToolList entries={collection.entries} />
+          <ToolList entries={entries} />
         )}
       </section>
     </main>

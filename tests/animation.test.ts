@@ -31,21 +31,6 @@ describe("motion restraint", () => {
     expect(stylesheet).toContain("animation: none");
   });
 
-  test("lets Matter.js settle idea bubbles freely at the bottom", () => {
-    expect(home).toContain("function IdeaChat()");
-    expect(home).toContain('from "matter-js"');
-    expect(home).toContain("Engine.create({ enableSleeping: true })");
-    expect(home).toContain("Bodies.rectangle(");
-    expect(home).toContain("const boundaryInset = 28");
-    expect(home).toContain("stageHeight - boundaryInset + 30");
-    expect(home).toContain("boundaryInset - 30");
-    expect(home).toContain("stageWidth - boundaryInset + 30");
-    expect(home).toContain("Runner.stop(runner)");
-    expect(home).toContain('Events.on(runner, "afterUpdate", syncElements)');
-    expect(stylesheet).toContain(".idea-chat.is-active li");
-    expect(stylesheet).not.toContain("@keyframes idea-bubble-drop");
-  });
-
   test("uses the shared paw mark with accent-aware colors", () => {
     expect(logo).toContain('id="paw-print"');
     expect(home).toContain('className="brand-logo"');

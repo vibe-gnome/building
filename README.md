@@ -28,6 +28,10 @@ bun run dev
 Open the local URL printed by React Router. The appearance menu supports system,
 light, and dark styles plus the nine GNOME accent colors.
 
+Catalogs and view counts use D1. For those pages, first build the assets, run
+`bun run db:migrate:local`, and start `bun run dev:worker` in a second terminal.
+See [catalog setup](docs/implementation/catalog-storage.md).
+
 Browse the integrated extension catalog at `/extensions`, view individual
 listings at `/extensions/:slug`, and request listing changes through GitHub
 issues. Submission, update, and removal issue forms are included
@@ -56,11 +60,10 @@ bun run deploy
 - `app/components/particle-typography.tsx` — interactive particle hero renderer
 - `app/app.css` — Adwaita-inspired visual system and responsive states
 - `app/lib/preferences.ts` — validated theme and accent choices
-- `app/data/extensions.json` — reviewed extension listings
+- `app/server/migrations/` — D1 catalog, review history, and view-count schema
+- `app/server/catalog-api.ts` — published app, extension, and skill records
+- `app/data/extensions.json` — original extension import/test fixture
 - `app/lib/extension-catalog.ts` — extension search, filters, and sorting
 - `docs/implementation/listing-review.md` — extension submission review workflow
 - `tests/` — deterministic behavior tests
 - `docs/` — architecture, setup, references, and user guidance
-
-The original icon is kept at `website/logo.svg`; the web-ready copy is
-`public/logo.svg`.

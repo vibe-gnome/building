@@ -11,13 +11,23 @@ import {
 } from "lucide-react";
 import { useSearchParams } from "react-router";
 import { ExtensionCard } from "../components/extensions/extension-card";
-import {
-  categories,
-  extensions,
-  filterExtensions,
-  shellVersions,
-} from "../lib/extension-catalog";
+import { loadCatalog } from "../lib/catalog-client";
+import { extensionFilters, filterExtensions } from "../lib/extension-catalog";
 import { issueUrl } from "../lib/extension-submissions";
+import type { Route } from "./+types/extensions";
+
+export {
+  CatalogError as ErrorBoundary,
+  CatalogLoading as HydrateFallback,
+} from "../components/catalog-status";
+
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  return loadCatalog("extensions", request.signal);
+}
+
+export function shouldRevalidate() {
+  return false;
+}
 
 export function meta() {
   return [
@@ -30,7 +40,10 @@ export function meta() {
   ];
 }
 
-export default function Catalog() {
+export default function Catalog({
+  loaderData: extensions,
+}: Route.ComponentProps) {
+  const { categories, shellVersions } = extensionFilters(extensions);
   const [params, setParams] = useSearchParams();
   const results = filterExtensions(extensions, params);
   const selectedCategory = params.get("category") ?? "";

@@ -1,4 +1,15 @@
 import { ToolPage } from "../components/tool-page";
+import { loadCatalog } from "../lib/catalog-client";
+import type { Route } from "./+types/skills";
+
+export {
+  CatalogError as ErrorBoundary,
+  CatalogLoading as HydrateFallback,
+} from "../components/catalog-status";
+
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  return loadCatalog("skills", request.signal);
+}
 
 export function meta() {
   return [
@@ -11,6 +22,6 @@ export function meta() {
   ];
 }
 
-export default function Skills() {
-  return <ToolPage category="skills" />;
+export default function Skills({ loaderData }: Route.ComponentProps) {
+  return <ToolPage category="skills" entries={loaderData} />;
 }

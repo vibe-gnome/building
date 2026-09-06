@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 
 interface ParticleTypographyProps {
   text: string;
+  mobileText?: string;
   className?: string;
   fontSize?: number;
   particleSize?: number;
@@ -63,14 +64,13 @@ class Particle {
 
   draw(context: CanvasRenderingContext2D) {
     context.fillStyle = this.color;
-    context.beginPath();
-    context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    context.fill();
+    context.fillRect(this.x, this.y, this.size, this.size);
   }
 }
 
 export function ParticleTypography({
   text,
+  mobileText,
   className,
   fontSize = 120,
   particleSize = 1.5,
@@ -97,6 +97,7 @@ export function ParticleTypography({
     const motionPreference = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
+    const mobileLayout = window.matchMedia("(max-width: 680px)");
 
     const draw = () => {
       context.clearRect(0, 0, width, height);
@@ -129,11 +130,13 @@ export function ParticleTypography({
       const color = getComputedStyle(container).color;
       const fontFamily = getComputedStyle(container).fontFamily;
       context.font = `800 ${fontSize}px ${fontFamily}`;
-      const lines = text.split("\n");
+      const lines = (
+        mobileText && mobileLayout.matches ? mobileText : text
+      ).split("\n");
       const measuredWidth = Math.max(
         ...lines.map((line) => context.measureText(line).width),
       );
-      const lineSpacing = 1.25;
+      const lineSpacing = mobileLayout.matches ? 1.16 : 1.25;
       const effectiveFontSize = Math.min(
         fontSize,
         measuredWidth > 0
@@ -155,6 +158,11 @@ export function ParticleTypography({
       const detailScale = Math.min(1, effectiveFontSize / 80);
       const density = Math.max(1, particleDensity * detailScale);
       const step = Math.max(1, Math.floor(density * dpr));
+      // Fill each sampled cell so the background cannot dilute the accent.
+      const cellSize = Math.max(
+        step / dpr,
+        particleSize * Math.max(0.5, detailScale) * 2,
+      );
       particles = [];
       for (let y = 0; y < pixels.height; y += step) {
         for (let x = 0; x < pixels.width; x += step) {
@@ -164,7 +172,7 @@ export function ParticleTypography({
               new Particle(
                 x / dpr,
                 y / dpr,
-                particleSize * Math.max(0.5, detailScale),
+                cellSize,
                 color,
                 dispersionStrength,
                 returnSpeed,
@@ -220,6 +228,7 @@ export function ParticleTypography({
       attributeFilter: ["data-theme", "data-accent"],
     });
     motionPreference.addEventListener("change", syncMotion);
+    mobileLayout.addEventListener("change", initialize);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", clearPointer);
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
@@ -236,6 +245,7 @@ export function ParticleTypography({
       resizeObserver.disconnect();
       themeObserver.disconnect();
       motionPreference.removeEventListener("change", syncMotion);
+      mobileLayout.removeEventListener("change", initialize);
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", clearPointer);
       canvas.removeEventListener("touchmove", handleTouchMove);
@@ -243,6 +253,7 @@ export function ParticleTypography({
     };
   }, [
     text,
+    mobileText,
     fontSize,
     particleSize,
     particleDensity,

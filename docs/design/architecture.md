@@ -19,8 +19,11 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
 - The community directories at `/apps`, `/extensions`, and `/skills`
   share `app/routes/community-layout.tsx` for their shell and
   `app/extensions.css` for their catalog presentation.
-- `app/lib/tools.ts` owns the Skills directory's reviewed entries and GitHub
-  issue submission links.
+- `app/lib/tools.ts` owns Skills directory copy and GitHub issue submission links.
+  Catalog entries for all three directories are stored in D1 and read through
+  `app/lib/catalog-client.ts`.
+- `app/components/idea-footprints.tsx` owns the eight homepage ideas and their
+  hover, keyboard-focus, and touch disclosure behavior.
 - `app/components/particle-typography.tsx` renders the interactive hero text and
   owns its particle lifecycle, pointer interaction, and resize behavior.
 - `app/lib/preferences.ts` is the source of truth for supported themes, GNOME
@@ -36,55 +39,116 @@ before React loads to avoid a light/dark flash.
 The site borrows GNOME's restraint rather than reproducing desktop widgets
 literally. It uses system-first Adwaita/Cantarell typography, neutral surfaces,
 compact controls, clear focus states, and the official nine-color accent
-family. Guide sections use simple rules
-and grouped lists instead of decorative cards. Practical app and extension ideas
-alternate as labeled conversation bubbles inside a gravity stage. Matter.js gives
-them real gravity, collisions, and free rotation so they remain loosely piled at
-the bottom rather than snapping into a regular list. The particle hero statement
-stays centered at every viewport width.
+family. Guide sections use simple rules and grouped lists instead of decorative
+cards. The opening section fills the available viewport below the header and
+centers the particle slogan. Eight small logo paw
+marks are scattered around it in stable, irregular positions, with separate
+phone coordinates that keep the text clear. Each mark reveals an app or extension
+idea on hover, keyboard focus, or tap. Cards fade and scale from their anchor,
+open toward the center, and stay within the viewport's horizontal edges. Moving
+onto a card keeps it open; leaving the mark and card, moving focus away, pressing
+Escape, or tapping outside dismisses it. Only one idea is open at a time. Reduced
+motion removes the transitions. The footprints use the shared logo symbol with
+crisp pixel edges and the unmodified GNOME accent, matching the slogan's solid
+color and pixel treatment in both themes.
 
 The layout is responsive at tablet and phone widths and respects
 `prefers-reduced-motion`.
 
+The home showcase uses three equal-width cards in one row above 680px and
+horizontal, stacked cards on phones. Apps, Extensions, and Skills have blue,
+green, and purple surfaces respectively, mixed with the active theme's surface.
+Their original SVG icons in `public/icons/showcase/` use rounded silhouettes,
+soft highlights, and shallow bottom edges inspired by GNOME app icons. The icons
+are decorative; each card's title and description label its link. Global accent
+preferences still control keyboard focus, and reduced motion disables card
+transitions.
+
 The particle hero includes a screen-reader label, caps device pixel ratio at 2,
 and renders a still frame when reduced motion is requested. The enlarged headline
-uses two centered lines, sized to fit the longest line. Particles follow the
+uses two centered lines on desktop and three at phone widths (680px and below):
+“Vibe coding” / “for GNOME.” / “Why not?”. Each layout is sized to fit its longest
+line, giving the phone headline larger lettering and tighter line spacing.
+Particles follow the
 active theme and GNOME accent immediately, including in reduced-motion mode.
+Particles fill their sampling cells with the unmodified accent color so the
+resting slogan appears solid, without background gaps washing out its color.
 
-## Tool submissions
+## Catalog storage and publication
 
-Skills are submitted through a category-specific GitHub issue form in
-`vibe-gnome/building`. Maintainers review submissions and add accepted entries to
-`app/lib/tools.ts`; the site does not automatically publish issue content or fetch
-GitHub data in the browser. Forms live in `.github/ISSUE_TEMPLATE/` and become
-available when published to the repository's default branch.
+D1 is the source of truth for apps, extensions, and skills. The existing `DB`
+binding holds `listings`, `listing_reviews`, and `listing_views` together.
+`listings` uses `(category, slug)` as its stable primary key and stores each
+category's typed metadata as JSON. GNOME `metadata.json` field names remain
+unchanged. UUID and issue identity indexes reject duplicate entries.
 
-## Extension catalog
+`app/server/catalog-store.ts` reads published rows through the D1 binding.
+`app/server/catalog-api.ts` exposes read-only `/api/catalog/:category` and
+`/api/catalog/:category/:slug` endpoints. List responses use cursor pagination;
+review evidence and unpublished rows are never returned. Responses are uncached
+so accepted changes become visible on the next navigation/reload. Database
+failures return 503 and an explicit unavailable UI, never a fabricated empty list.
 
-The former standalone extension marketplace is part of this application:
-`/extensions` lists reviewed extensions, and `/extensions/:slug` shows each
-extension's details. All submissions and listing changes use GitHub issues.
-`app/routes/community-layout.tsx` owns their navigation and uses the site's
-shared footer, including its About and community links.
-Catalog CSS in `app/extensions.css` is scoped under `.extensions-site`; it
-inherits the main site's theme and GNOME accent tokens. Appearance preferences
-now persist across the guide and catalog on the same origin.
+React Router `clientLoader` functions load each directory and detail page from
+this API. Extension search, sorting, categories, and Shell filters operate on the
+fetched records. Build-time prerendering covers `/about` and the three directory
+shells; dynamic details use the SPA fallback. Listing content and its detail
+metadata now require JavaScript, and builds do not fetch D1. New records do not
+need a frontend rebuild. The shared catalog shell, appearance controls, footer,
+keyboard focus, and reduced-motion support remain in place.
 
-`app/data/extensions.json` contains reviewed listings. GNOME `metadata.json`
-fields retain their upstream names; category, slug, dates, and display copy are
-catalog fields, not a new extension format. `app/lib/extension-catalog.ts`
-filters and sorts this local data using URL parameters. Compatibility is taken
-from `metadata["shell-version"]`; no installs, ratings, or approval are implied.
-Installation links point to verified GNOME listings when supplied, or to the
-source repository's instructions. The site never executes extension code.
+`app/server/migrations/0003_catalog_seed.sql` imports the original two reviewed
+extensions once. `app/data/extensions.json` is retained only as the immutable
+import/test fixture; editing it does not change the live catalog. The app and
+skill catalogs were empty at migration. Existing view counts are preserved.
 
-Submission, update, and removal issue forms live alongside the skill form in
-`.github/ISSUE_TEMPLATE/` and target `vibe-gnome/building` through
-`app/lib/extension-submissions.ts`. Maintainers review requests before editing
-the catalog. Issues are not automatically published. The catalog's submission
-link and each detail page's update/report links open the GitHub issue forms.
+GitHub remains the submission and discussion interface. Basic app/extension
+checks read the current published extension identities from the API. Skill
+checks require PASS from Gen Agent Trust Hub and Socket on skills.sh; Snyk is
+informational. Passing reports include a hash of the exact issue title/body.
+A human maintainer reviews the content and posts `/publish-listing <fingerprint>`.
+The dedicated publishing workflow verifies current write/admin permissions,
+the passing bot report, the latest issue content, and current validation; skills
+are checked again against skills.sh before writing.
 
-The community directory landing pages and known detail URLs are prerendered at
-build time. Other routes continue to use `index.html` as the SPA fallback because `/`
-is not included in the prerender list. No server runtime or new dependency is
-required. Unknown extension paths show a not-found page with a catalog link.
+The publisher uses the Cloudflare D1 API from GitHub Actions. The website exposes
+no catalog write endpoint. A conditional SQL upsert and database triggers save
+both the listing and its immutable review evidence atomically, with revision
+checks to reject competing edits. Retrying the same approval does not duplicate
+writes or replay an older version. Edits after publication do not change the
+accepted row until a new review and approval completes. Extension updates keep
+their UUID, slug, original added date, assets, and view counts.
+
+See [D1 catalog operations](../implementation/catalog-storage.md),
+[app/extension review](../implementation/listing-review.md), and
+[skill review](../implementation/skill-review.md).
+
+## Listing view counts
+
+`app/worker.ts` adds a same-origin Cloudflare API alongside the static assets.
+Only `/api/*` runs the Worker first; other requests retain the existing asset
+and SPA handling. `GET /api/views/:category/:slug` reads the count, and `POST`
+increments it and returns the total. Categories are `apps`, `extensions`, and
+`skills`. The API verifies published listing identities in D1, so newly published records
+can receive views without a Worker rebuild.
+
+D1 stores one `listing_views` row per category and stable listing ID (extension
+`slug`, app/skill `id`). One SQL upsert increments and returns the total atomically.
+Counts survive deployments and are independent across categories. IDs must stay
+stable; renaming an ID requires a database migration to retain its count. No
+visitor identifiers, cookies, or IP addresses are stored in the counter table.
+
+`app/components/view-count.tsx` records one visit when a valid detail page mounts
+or a new router navigation reaches it. Reloads and later visits count again;
+rerenders and Strict Mode effect replay do not. Prerendering, catalog pages,
+prefetching, and not-found pages do not record views. These are page views, not
+unique visitors or verified human visits. The browser does not retry increments
+automatically because a failed response might already have committed the write.
+API failures show “Unavailable”; the rest of the page remains usable.
+
+App and skill cards link to `/apps/:slug` and `/skills/:slug`. Their shared detail
+component preserves the catalog copy and external project links. Details load from D1 through the catalog API; view counts start after a valid
+listing loads.
+Cloudflare runtime types are generated by Wrangler and checked separately through
+`tsconfig.worker.json` to avoid changing browser and Bun globals. No new dependency
+is required; the Worker uses the existing Wrangler toolchain and a D1 binding.

@@ -1,5 +1,11 @@
 {
   "include": ["**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
+  "exclude": [
+    "node_modules",
+    "build",
+    "app/worker.ts",
+    "worker-configuration.d.ts"
+  ],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "types": ["bun", "vite/client"],

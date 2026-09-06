@@ -1,6 +1,8 @@
 export type ShowcaseCategory = "apps" | "extensions";
 
 export interface ShowcaseEntry {
+  id: string;
+  href: string;
   name: string;
   summary: string;
   submittedBy: string;
@@ -10,7 +12,6 @@ export interface ShowcaseEntry {
 export interface ShowcaseCollection {
   description: string;
   eyebrow: string;
-  entries: readonly ShowcaseEntry[];
 }
 
 export const showcaseCollections: Record<ShowcaseCategory, ShowcaseCollection> =
@@ -19,13 +20,11 @@ export const showcaseCollections: Record<ShowcaseCategory, ShowcaseCollection> =
       eyebrow: "App showcase",
       description:
         "Community-built desktop tools shaped around GTK, Libadwaita, and focused workflows.",
-      entries: [],
     },
     extensions: {
       eyebrow: "Extension showcase",
       description:
         "Focused GNOME Shell extensions submitted by people improving one desktop behavior at a time.",
-      entries: [],
     },
   };
 

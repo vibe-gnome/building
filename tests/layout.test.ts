@@ -6,6 +6,9 @@ const stylesheet = await Bun.file(
 const home = await Bun.file(
   new URL("../app/routes/home.tsx", import.meta.url),
 ).text();
+const ideas = await Bun.file(
+  new URL("../app/components/idea-footprints.tsx", import.meta.url),
+).text();
 const footer = await Bun.file(
   new URL("../app/components/site-footer.tsx", import.meta.url),
 ).text();
@@ -19,37 +22,19 @@ describe("hero layout", () => {
     expect(home).toContain('text={"Vibe coding for GNOME.\\nWhy not?"}');
     expect(home).toContain("ParticleTypography");
     expect(stylesheet).toMatch(
-      /\.hero\.page-shell \{[\s\S]*?padding-bottom: 0;/,
+      /\.hero \{[\s\S]*?min-height: calc\(100svh - var\(--site-header-height\)\);/,
     );
   });
 });
 
-describe("idea list", () => {
-  test("presents app and extension ideas as a conversation", () => {
-    expect(home).toContain('aria-label="Vibe coding ideas"');
-    expect(home).toContain('className="idea-chat"');
-    expect(home.match(/kind: "App"/g)).toHaveLength(4);
-    expect(home.match(/kind: "Extension"/g)).toHaveLength(4);
-    expect(home).toContain("local photo culler");
-    expect(home).toContain("workspace scratchpad");
-    expect(home).not.toContain("Ideas to try");
-    expect(home).not.toContain("What could you vibe code?");
-    expect(home).not.toContain('className="path-list"');
-    expect(stylesheet).toContain(".ideas-section");
-    expect(stylesheet).toContain(".content-section.ideas-section");
-    expect(stylesheet).toMatch(
-      /\.content-section\.ideas-section \{[\s\S]*?width: 100%;[\s\S]*?padding-top: 0;/,
-    );
-    expect(stylesheet).toMatch(
-      /\.content-section\.ideas-section \{[\s\S]*?border-top: 0;/,
-    );
-    expect(stylesheet).toMatch(
-      /\.content-section\.ideas-section \+ \.showcase-section \{[\s\S]*?border-top: 0;/,
-    );
-    expect(stylesheet).toMatch(/\.idea-chat \{[\s\S]*?width: 100%;/);
-    expect(stylesheet).toContain("width: 84%");
-    expect(stylesheet).toContain('.idea-chat li[data-kind="extension"]');
-    expect(stylesheet).toContain("box-shadow: var(--bubble-shadow)");
+describe("idea discovery", () => {
+  test("keeps all eight app and extension ideas available from the hero", () => {
+    expect(home).toContain("<IdeaFootprints />");
+    expect(ideas).toContain('aria-label="Vibe coding ideas"');
+    expect(ideas.match(/kind: "App"/g)).toHaveLength(4);
+    expect(ideas.match(/kind: "Extension"/g)).toHaveLength(4);
+    expect(ideas).toContain("local photo culler");
+    expect(ideas).toContain("workspace scratchpad");
   });
 });
 

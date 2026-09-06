@@ -1,7 +1,23 @@
 name: Submit a skill
-description: Suggest an agent skill for the Vibe Tools directory.
+description: Submit a skill with passing skills.sh audits for maintainer review.
 title: "[Skill] "
 body:
+  - type: markdown
+    id: review-process
+    attributes:
+      value: |
+        Submit one skill per issue, already listed on [skills.sh](https://skills.sh).
+        Under **Security Audits**, **Gen Agent Trust Hub** and **Socket** must both show **PASS**.
+        GitHub Actions verifies these results directly on skills.sh. Missing, pending, WARN, FAIL,
+        or unavailable required audits block review. Snyk is informational and does not block review.
+        After the checks pass, a human maintainer reviews the skill and approves its catalog change.
+        Passing audits alone does not publish a listing.
+  - type: input
+    id: listing-id
+    attributes:
+      label: Listing ID
+      description: Optional URL ID using lowercase letters, numbers, and hyphens. Keep it stable after publication. Defaults to submission-<issue-number>.
+      placeholder: my-gnome-project
   - type: input
     id: name
     attributes:
@@ -11,8 +27,24 @@ body:
   - type: input
     id: url
     attributes:
-      label: Repository or documentation URL
+      label: Source repository URL
       placeholder: https://github.com/owner/repository
+    validations:
+      required: true
+  - type: input
+    id: skills-sh-url
+    attributes:
+      label: skills.sh URL
+      description: The exact skill page, matching the source repository above. Screenshots and repository-only links are not accepted as audit evidence.
+      placeholder: https://skills.sh/owner/repository/skill-name
+    validations:
+      required: true
+  - type: input
+    id: skill-file
+    attributes:
+      label: SKILL.md permalink
+      description: Link to this skill's SKILL.md at a full 40-character commit SHA in the same repository. Reviewers use this to identify the submitted version.
+      placeholder: https://github.com/owner/repository/blob/0123456789abcdef0123456789abcdef01234567/skills/skill-name/SKILL.md
     validations:
       required: true
   - type: textarea
@@ -35,3 +67,26 @@ body:
       label: Author and license
     validations:
       required: true
+  - type: input
+    id: relationship
+    attributes:
+      label: Your relationship to the skill
+      placeholder: Author, maintainer, or community member
+    validations:
+      required: true
+  - type: textarea
+    id: permissions
+    attributes:
+      label: Permissions and external services
+      description: Describe commands, downloads, file changes, network access, or credentials the skill needs. Write "None" if none are needed. Do not include secrets.
+    validations:
+      required: true
+  - type: checkboxes
+    id: review-agreement
+    attributes:
+      label: Review requirements
+      options:
+        - label: Gen Agent Trust Hub and Socket both show PASS on the linked skills.sh page.
+          required: true
+        - label: The repository, SKILL.md, and skills.sh links describe the same skill, and I understand a human maintainer must approve the listing.
+          required: true

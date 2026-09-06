@@ -1,12 +1,10 @@
 import { ArrowUpRight, MessageCircle } from "lucide-react";
-import Matter from "matter-js";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { AppearanceControl } from "../components/appearance-control";
+import { IdeaFootprints } from "../components/idea-footprints";
 import { ParticleTypography } from "../components/particle-typography";
 import { SiteFooter } from "../components/site-footer";
 import type { Route } from "./+types/home";
-
-const { Bodies, Body, Composite, Engine, Events, Runner } = Matter;
 
 export function meta(_: Route.MetaArgs) {
   return [
@@ -60,54 +58,22 @@ const resources = [
 
 const showcaseLinks = [
   {
+    category: "apps",
     description: "Native desktop tools shared by community builders.",
     href: "/apps",
     title: "Apps",
   },
   {
+    category: "extensions",
     description: "Focused ways to reshape and extend GNOME Shell.",
     href: "/extensions",
     title: "Extensions",
   },
   {
+    category: "skills",
     description: "Reusable agent guidance for reliable GNOME builds.",
     href: "/skills",
     title: "Skills",
-  },
-] as const;
-
-const projectIdeas = [
-  {
-    kind: "App",
-    text: "A searchable clipboard shelf for recent text, links, and images.",
-  },
-  {
-    kind: "Extension",
-    text: "A Quick Settings timer for focused work and intentional breaks.",
-  },
-  {
-    kind: "App",
-    text: "A local voice-note inbox that transcribes and tags recordings.",
-  },
-  {
-    kind: "Extension",
-    text: "A window rule helper that remembers where specific apps belong.",
-  },
-  {
-    kind: "App",
-    text: "A simple drop zone that batch-renames and converts images.",
-  },
-  {
-    kind: "Extension",
-    text: "A panel indicator that makes microphone and camera use obvious.",
-  },
-  {
-    kind: "App",
-    text: "A local photo culler that groups similar shots and keeps every decision offline.",
-  },
-  {
-    kind: "Extension",
-    text: "A workspace scratchpad that keeps one small note attached to each desktop.",
   },
 ] as const;
 
@@ -187,197 +153,6 @@ function FootprintTrail() {
   );
 }
 
-function IdeaChat() {
-  const listRef = useRef<HTMLUListElement>(null);
-
-  useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-
-    const items = Array.from(list.querySelectorAll<HTMLLIElement>("li"));
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      list.classList.add("is-static");
-      return;
-    }
-
-    const horizontalStarts = [0.22, 0.72, 0.34, 0.8, 0.18, 0.64, 0.42, 0.76];
-    const horizontalVelocity = [
-      0.45, -0.35, -0.2, 0.3, 0.25, -0.4, 0.32, -0.28,
-    ];
-    let disposePhysics: (() => void) | undefined;
-    let resizeTimer: number | undefined;
-    let hasStarted = false;
-
-    const startPhysics = () => {
-      disposePhysics?.();
-      list.classList.remove("is-active");
-      for (const item of items) item.style.removeProperty("transform");
-
-      const stageWidth = list.clientWidth;
-      const stageHeight = list.clientHeight;
-      if (stageWidth === 0 || stageHeight === 0) return;
-
-      const engine = Engine.create({ enableSleeping: true });
-      engine.gravity.y = 1;
-      engine.gravity.scale = 0.0018;
-
-      const runner = Runner.create({
-        frameDeltaSmoothing: false,
-        frameDeltaSnapping: false,
-        maxFrameTime: 1000,
-        maxUpdates: 60,
-      });
-      const itemBodies = items.map((item, index) => {
-        const rect = item.getBoundingClientRect();
-        const width = rect.width;
-        const height = rect.height;
-        const minX = width / 2 + 10;
-        const maxX = stageWidth - width / 2 - 10;
-        const startX = Math.min(
-          maxX,
-          Math.max(minX, stageWidth * (horizontalStarts[index] ?? 0.5)),
-        );
-        const body = Bodies.rectangle(
-          startX,
-          -height / 2 - index * 112,
-          width,
-          height,
-          {
-            angle: index % 2 === 0 ? -0.025 : 0.025,
-            chamfer: { radius: 14 },
-            friction: 0.68,
-            frictionAir: 0.012,
-            frictionStatic: 0.9,
-            restitution: 0.28,
-            sleepThreshold: 75,
-          },
-        );
-        Body.setVelocity(body, {
-          x: horizontalVelocity[index] ?? 0,
-          y: 0,
-        });
-        Body.setAngularVelocity(body, index % 2 === 0 ? -0.006 : 0.006);
-        return { body, height, item, width };
-      });
-
-      const boundaryOptions = {
-        friction: 0.9,
-        isStatic: true,
-        restitution: 0.12,
-      };
-      const boundaryInset = 28;
-      const floor = Bodies.rectangle(
-        stageWidth / 2,
-        stageHeight - boundaryInset + 30,
-        stageWidth + 120,
-        60,
-        boundaryOptions,
-      );
-      const leftWall = Bodies.rectangle(
-        boundaryInset - 30,
-        0,
-        60,
-        stageHeight * 4,
-        boundaryOptions,
-      );
-      const rightWall = Bodies.rectangle(
-        stageWidth - boundaryInset + 30,
-        0,
-        60,
-        stageHeight * 4,
-        boundaryOptions,
-      );
-      Composite.add(engine.world, [
-        floor,
-        leftWall,
-        rightWall,
-        ...itemBodies.map(({ body }) => body),
-      ]);
-
-      let calmFrames = 0;
-      let safetyTimer = 0;
-      let runnerStopped = false;
-      const stopRunner = () => {
-        if (runnerStopped) return;
-        runnerStopped = true;
-        window.clearTimeout(safetyTimer);
-        Events.off(runner, "afterUpdate", syncElements);
-        Runner.stop(runner);
-      };
-      const syncElements = () => {
-        for (const { body, height, item, width } of itemBodies) {
-          item.style.transform = `translate3d(${body.position.x - width / 2}px, ${body.position.y - height / 2}px, 0) rotate(${body.angle}rad)`;
-        }
-
-        const isCalm = itemBodies.every(
-          ({ body }) =>
-            body.isSleeping || (body.speed < 0.08 && body.angularSpeed < 0.008),
-        );
-        calmFrames = isCalm ? calmFrames + 1 : 0;
-        if (calmFrames > 50) stopRunner();
-      };
-
-      syncElements();
-      list.classList.add("is-active");
-      Events.on(runner, "afterUpdate", syncElements);
-      Runner.run(runner, engine);
-      safetyTimer = window.setTimeout(stopRunner, 12_000);
-
-      disposePhysics = () => {
-        stopRunner();
-        Composite.clear(engine.world, false);
-        Engine.clear(engine);
-      };
-    };
-
-    const reveal = () => {
-      if (hasStarted) return;
-      hasStarted = true;
-      window.requestAnimationFrame(startPhysics);
-    };
-
-    const handleResize = () => {
-      if (!hasStarted) return;
-      window.clearTimeout(resizeTimer);
-      resizeTimer = window.setTimeout(startPhysics, 180);
-    };
-    window.addEventListener("resize", handleResize);
-
-    let observer: IntersectionObserver | undefined;
-    if ("IntersectionObserver" in window) {
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (!entry?.isIntersecting) return;
-          reveal();
-          observer?.disconnect();
-        },
-        { rootMargin: "0px 0px -8%", threshold: 0.15 },
-      );
-      observer.observe(list);
-    } else {
-      reveal();
-    }
-
-    return () => {
-      observer?.disconnect();
-      window.removeEventListener("resize", handleResize);
-      window.clearTimeout(resizeTimer);
-      disposePhysics?.();
-    };
-  }, []);
-
-  return (
-    <ul aria-label="Vibe coding ideas" className="idea-chat" ref={listRef}>
-      {projectIdeas.map((idea) => (
-        <li data-kind={idea.kind.toLowerCase()} key={idea.text}>
-          <span className="small-label">{idea.kind}</span>
-          <p>{idea.text}</p>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 function LogoMark() {
   return (
     <svg
@@ -440,19 +215,14 @@ export default function Home() {
       </header>
 
       <main id="main-content">
-        <section className="hero page-shell" id="top">
+        <section className="hero" id="top">
           <ParticleTypography
             text={"Vibe coding for GNOME.\nWhy not?"}
+            mobileText={"Vibe coding\nfor GNOME.\nWhy not?"}
             fontSize={160}
             particleDensity={4}
           />
-        </section>
-
-        <section
-          className="content-section ideas-section page-shell"
-          id="paths"
-        >
-          <IdeaChat />
+          <IdeaFootprints />
         </section>
 
         <section
@@ -468,8 +238,15 @@ export default function Home() {
           </div>
           <div className="showcase-link-list">
             {showcaseLinks.map((item) => (
-              <a href={item.href} key={item.href}>
-                <div>
+              <a data-category={item.category} href={item.href} key={item.href}>
+                <img
+                  alt=""
+                  className="showcase-card-icon"
+                  height={112}
+                  src={`/icons/showcase/${item.category}.svg`}
+                  width={112}
+                />
+                <div className="showcase-card-copy">
                   <h3>{item.title}</h3>
                   <p>{item.description}</p>
                 </div>

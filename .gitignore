@@ -6,6 +6,9 @@ out
 dist
 build
 .react-router
+.wrangler
+worker-configuration.d.ts
+.dev.vars*
 *.tgz
 
 # code coverage

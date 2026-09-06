@@ -1,4 +1,15 @@
 import { ShowcasePage } from "../components/showcase-page";
+import { loadCatalog } from "../lib/catalog-client";
+import type { Route } from "./+types/apps";
+
+export {
+  CatalogError as ErrorBoundary,
+  CatalogLoading as HydrateFallback,
+} from "../components/catalog-status";
+
+export function clientLoader({ request }: Route.ClientLoaderArgs) {
+  return loadCatalog("apps", request.signal);
+}
 
 export function meta() {
   return [
@@ -10,6 +21,6 @@ export function meta() {
   ];
 }
 
-export default function Apps() {
-  return <ShowcasePage category="apps" />;
+export default function Apps({ loaderData }: Route.ComponentProps) {
+  return <ShowcasePage category="apps" entries={loaderData} />;
 }

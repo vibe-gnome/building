@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <title>Extensions</title>
+  <defs>
+    <linearGradient id="face" x1="28" y1="27" x2="102" y2="110" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8FF0A4"/>
+      <stop offset=".48" stop-color="#57D99A"/>
+      <stop offset="1" stop-color="#2EC27E"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="18" y1="60" x2="116" y2="98" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#26A269"/>
+      <stop offset="1" stop-color="#1A8A59"/>
+    </linearGradient>
+    <path id="piece" d="M50 32V22a12 12 0 0 1 24 0v10h18a8 8 0 0 1 8 8v18h8a12 12 0 0 1 0 24h-8v18a8 8 0 0 1-8 8H74v-8a12 12 0 0 0-24 0v8H28a8 8 0 0 1-8-8V82h8a12 12 0 0 0 0-24h-8V40a8 8 0 0 1 8-8h22Z"/>
+    <clipPath id="clip"><use href="#piece"/></clipPath>
+  </defs>
+  <use href="#piece" fill="url(#edge)" transform="translate(0 5)"/>
+  <use href="#piece" fill="url(#face)"/>
+  <g clip-path="url(#clip)">
+    <path d="M61 9v100" stroke="#FFF" stroke-opacity=".13" stroke-width="12"/>
+    <path d="M19 70h102" stroke="#FFF" stroke-opacity=".08" stroke-width="24"/>
+    <path d="M21 47v-7a7 7 0 0 1 7-7h23V22a11 11 0 0 1 22 0v11h19a7 7 0 0 1 7 7" stroke="#FFF" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -11,8 +11,11 @@ The website does not install extensions or control the running GNOME desktop.
 
 "Submit extension" opens a GitHub issue form. To correct, update, report, or
 remove a listing, use the GitHub issue links on its detail page.
-GitHub sign-in is needed to submit the request. Maintainers review requests
-before changing the published catalog.
+GitHub sign-in is needed to submit the request. Submissions and updates first
+receive an automatic check of required fields and GNOME metadata. Fix any
+reported problems by editing the issue; checks rerun automatically. A maintainer
+then reviews and confirms the submission before changing the published catalog.
+Reports and removal requests go directly to a maintainer.
 
 The appearance menu uses the same light, dark, system, and GNOME accent
 preferences as the guide.

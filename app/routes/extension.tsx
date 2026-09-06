@@ -9,13 +9,23 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { ExtensionIcon } from "../components/extensions/extension-card";
-import { extensions, formatDate } from "../lib/extension-catalog";
+import { ViewCount } from "../components/view-count";
+import { loadListing } from "../lib/catalog-client";
+import { formatDate } from "../lib/extension-catalog";
 import { issueUrl } from "../lib/extension-submissions";
 import type { Route } from "./+types/extension";
 import NotFound from "./extensions-not-found";
 
-export function meta({ params }: Route.MetaArgs) {
-  const entry = extensions.find((item) => item.slug === params.slug);
+export {
+  CatalogError as ErrorBoundary,
+  CatalogLoading as HydrateFallback,
+} from "../components/catalog-status";
+
+export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
+  return loadListing("extensions", params.slug, request.signal);
+}
+
+export function meta({ data: entry }: Route.MetaArgs) {
   return [
     { title: `${entry?.metadata.name ?? "Extension not found"} | Vibe GNOME` },
     {
@@ -27,8 +37,7 @@ export function meta({ params }: Route.MetaArgs) {
   ];
 }
 
-export default function Extension({ params }: Route.ComponentProps) {
-  const entry = extensions.find((item) => item.slug === params.slug);
+export default function Extension({ loaderData: entry }: Route.ComponentProps) {
   const [copyState, setCopyState] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(
@@ -116,6 +125,7 @@ export default function Extension({ params }: Route.ComponentProps) {
             View source <ArrowUpRight size={16} aria-hidden="true" />
           </a>
           <dl>
+            <ViewCount category="extensions" slug={entry.slug} />
             <div>
               <dt>GNOME Shell</dt>
               <dd>{entry.metadata["shell-version"].join(", ")}</dd>

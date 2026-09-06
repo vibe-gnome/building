@@ -25,7 +25,7 @@ describe("Vibe Tools navigation", () => {
     const collection = toolCollections.skills;
     const html = renderToStaticMarkup(
       <MemoryRouter>
-        <ToolPage category="skills" />
+        <ToolPage category="skills" entries={[]} />
       </MemoryRouter>,
     );
     expect(html).toContain(`<span>${collection.title}</span>`);
@@ -52,7 +52,17 @@ describe("Vibe Tools navigation", () => {
     };
     expect(form.name).toBe(collection.submitLabel);
     expect(form.description.length).toBeGreaterThan(0);
-    for (const id of ["name", "url", "summary", "setup", "attribution"]) {
+    for (const id of [
+      "name",
+      "url",
+      "skills-sh-url",
+      "skill-file",
+      "summary",
+      "setup",
+      "attribution",
+      "relationship",
+      "permissions",
+    ]) {
       expect(
         form.body.find((field) => field.id === id)?.validations.required,
       ).toBe(true);

@@ -2,6 +2,11 @@ name: Update an extension
 description: Update an existing marketplace listing.
 title: "[Update] "
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Basic metadata checks run automatically after submission and edits.
+        A maintainer must then review and confirm the update before the listing changes.
   - type: input
     id: extension-name
     attributes:

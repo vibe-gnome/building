@@ -1,5 +1,3 @@
-import entries from "../data/extensions.json";
-
 export interface ExtensionListing {
   slug: string;
   metadata: {
@@ -25,13 +23,16 @@ export interface ExtensionListing {
   features: string[];
 }
 
-export const extensions: ExtensionListing[] = entries;
-export const categories = [
-  ...new Set(extensions.map((entry) => entry.category)),
-].sort();
-export const shellVersions = [
-  ...new Set(extensions.flatMap((entry) => entry.metadata["shell-version"])),
-].sort((a, b) => Number(b) - Number(a));
+export function extensionFilters(extensions: readonly ExtensionListing[]) {
+  return {
+    categories: [...new Set(extensions.map((entry) => entry.category))].sort(),
+    shellVersions: [
+      ...new Set(
+        extensions.flatMap((entry) => entry.metadata["shell-version"]),
+      ),
+    ].sort((a, b) => Number(b) - Number(a)),
+  };
+}
 export const sortOptions = ["added", "updated", "name"] as const;
 export type SortOrder = (typeof sortOptions)[number];
 

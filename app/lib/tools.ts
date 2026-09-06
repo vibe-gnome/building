@@ -13,8 +13,6 @@ interface ToolCollection {
   description: string;
   submitLabel: string;
   issueTemplate: string;
-  recommended: readonly ToolEntry[];
-  entries: readonly ToolEntry[];
 }
 
 export const toolCollections: Record<ToolCategory, ToolCollection> = {
@@ -23,8 +21,6 @@ export const toolCollections: Record<ToolCategory, ToolCollection> = {
     description: "Reusable agent guidance for reliable GNOME builds.",
     submitLabel: "Submit a skill",
     issueTemplate: "submit-skill.yml",
-    recommended: [],
-    entries: [],
   },
 };
 

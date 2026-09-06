@@ -5,8 +5,15 @@ body:
   - type: markdown
     attributes:
       value: |
-        Share your GNOME Shell extension. A maintainer will review the listing.
+        Share your GNOME Shell extension. Basic metadata checks run automatically after submission and edits.
+        A maintainer must then review and confirm the extension before it can be listed.
         Extensions follow the [official GNOME guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html).
+  - type: input
+    id: listing-id
+    attributes:
+      label: Listing ID
+      description: Optional URL ID using lowercase letters, numbers, and hyphens. Keep it stable after publication. Defaults to submission-<issue-number>.
+      placeholder: my-gnome-project
   - type: input
     id: extension-name
     attributes:

@@ -12,15 +12,13 @@ const showcases = await Bun.file(
 const showcasePage = await Bun.file(
   new URL("../app/components/showcase-page.tsx", import.meta.url),
 ).text();
-const stylesheet = await Bun.file(
-  new URL("../app/app.css", import.meta.url),
-).text();
 
 describe("community showcases", () => {
-  test("links community apps and extensions to local pages", () => {
+  test("links community apps, extensions, and skills to local pages", () => {
     expect(home).toContain("Community showcase");
     expect(home).toContain('href: "/apps"');
     expect(home).toContain('href: "/extensions"');
+    expect(home).toContain('href: "/skills"');
     expect(home).toContain('title: "Skills"');
     expect(home).not.toContain("Working loop");
     expect(home).not.toContain("Keep every step runnable.");
@@ -32,10 +30,6 @@ describe("community showcases", () => {
     expect(home).not.toContain("Agent guidance");
     expect(home).not.toContain("extensions.gnome.org");
     expect(home).toContain("showcase-section");
-    expect(stylesheet).toContain(
-      "grid-template-columns: repeat(2, minmax(0, 1fr))",
-    );
-    expect(home).not.toContain("showcase-card-icon");
   });
 
   test("keeps existing routes and registers the Skills directory", () => {
@@ -53,9 +47,9 @@ describe("community showcases", () => {
 
   test("renders empty showcase pages without example submissions", () => {
     expect(showcasePage).toContain("Community submissions");
-    expect(showcasePage).toContain("collection.entries.map");
+    expect(showcasePage).toContain("entries.map");
     expect(showcasePage).toContain("No submissions yet.");
-    expect(showcases.match(/entries: \[\]/g)).toHaveLength(2);
+    expect(showcases).not.toContain("entries:");
     expect(showcases).not.toContain("Vibe GNOME community");
   });
 

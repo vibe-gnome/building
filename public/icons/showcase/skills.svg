@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <title>Skills</title>
+  <defs>
+    <linearGradient id="cover" x1="25" y1="16" x2="106" y2="94" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#C3A0EA"/>
+      <stop offset=".5" stop-color="#A56DE2"/>
+      <stop offset="1" stop-color="#9141AC"/>
+    </linearGradient>
+    <linearGradient id="spine" x1="20" y1="50" x2="34" y2="50" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#613583"/>
+      <stop offset="1" stop-color="#8652B4"/>
+    </linearGradient>
+    <linearGradient id="pages" x1="60" y1="94" x2="60" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DEDDDA"/>
+      <stop offset=".45" stop-color="#FFF"/>
+      <stop offset="1" stop-color="#F6F5F4"/>
+    </linearGradient>
+  </defs>
+  <path d="M32 19h70a6 6 0 0 1 6 6v84a5 5 0 0 1-5 5H32a12 12 0 0 1-12-12V31a12 12 0 0 1 12-12Z" fill="#613583"/>
+  <path d="M33 91h70v17H33a8 8 0 0 1 0-17Z" fill="url(#pages)"/>
+  <path d="M37 98h65M37 103h65" stroke="#C8C4CE" stroke-opacity=".7"/>
+  <path d="M84 94h12v22l-6-5-6 5V94Z" fill="#C061CB"/>
+  <path d="M84 94h4v19l-4 3V94Z" fill="#DC8ADD"/>
+  <path d="M32 13h70a6 6 0 0 1 6 6v73a4 4 0 0 1-4 4H32a12 12 0 0 0-12 12V25a12 12 0 0 1 12-12Z" fill="url(#cover)"/>
+  <path d="M32 13h2v83h-2a12 12 0 0 0-12 12V25a12 12 0 0 1 12-12Z" fill="url(#spine)"/>
+  <path d="M36 14h66a5 5 0 0 1 5 5v70" stroke="#FFF" stroke-opacity=".3" stroke-width="2" stroke-linecap="round"/>
+  <path d="m50 43 12 11-12 11m20 0h14" stroke="#613583" stroke-opacity=".3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 2)"/>
+  <path d="m50 43 12 11-12 11m20 0h14" stroke="#FFF" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M49 80h34" stroke="#E6D1F2" stroke-width="3" stroke-linecap="round"/>
+</svg>

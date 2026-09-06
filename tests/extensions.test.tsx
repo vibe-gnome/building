@@ -2,11 +2,14 @@ import { describe, expect, test } from "bun:test";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
-import { extensions } from "../app/lib/extension-catalog";
+import seed from "../app/data/extensions.json";
+import type { ExtensionListing } from "../app/lib/extension-catalog";
 import Extension, { meta } from "../app/routes/extension";
 import Catalog from "../app/routes/extensions";
 import NotFound from "../app/routes/extensions-not-found";
 import config from "../react-router.config";
+
+const extensions: ExtensionListing[] = seed;
 
 function render(page: ReactNode, path: string) {
   return renderToStaticMarkup(
@@ -16,13 +19,23 @@ function render(page: ReactNode, path: string) {
 
 function detail(slug: string) {
   return (
-    <Extension {...({ params: { slug } } as Parameters<typeof Extension>[0])} />
+    <Extension
+      {...({
+        params: { slug },
+        loaderData: extensions.find((entry) => entry.slug === slug) ?? null,
+      } as Parameters<typeof Extension>[0])}
+    />
   );
 }
 
 describe("integrated extension pages", () => {
   test("catalog links stay under /extensions and filters render from the URL", () => {
-    const html = render(<Catalog />, "/extensions?q=kitty&shell=50&view=list");
+    const html = render(
+      <Catalog
+        {...({ loaderData: extensions } as Parameters<typeof Catalog>[0])}
+      />,
+      "/extensions?q=kitty&shell=50&view=list",
+    );
     expect(html).toContain("Kitty Session Restorer");
     expect(html).not.toContain("Codex Usage Indicator");
     expect(html).toContain('href="/extensions/kitty-session-restorer"');
@@ -35,7 +48,12 @@ describe("integrated extension pages", () => {
   });
 
   test("unknown filters show an empty catalog with a reset action", () => {
-    const html = render(<Catalog />, "/extensions?shell=999");
+    const html = render(
+      <Catalog
+        {...({ loaderData: extensions } as Parameters<typeof Catalog>[0])}
+      />,
+      "/extensions?shell=999",
+    );
     expect(html).toContain("No extensions found");
     expect(html).toContain("Clear filters");
     expect(html).not.toContain('class="extension-card"');
@@ -45,6 +63,7 @@ describe("integrated extension pages", () => {
     for (const entry of extensions) {
       const html = render(detail(entry.slug), `/extensions/${entry.slug}`);
       expect(html).toContain(`<h1>${entry.metadata.name}</h1>`);
+      expect(html).toContain("<dt>Views</dt>");
       expect(html).toContain('href="/extensions"');
       for (const tag of entry.tags) {
         expect(html).toContain(
@@ -67,13 +86,14 @@ describe("integrated extension pages", () => {
       expect(html).toContain("Page not found");
       expect(html).toContain('href="/extensions"');
     }
-    const metadata = meta({ params: { slug: "missing" } } as Parameters<
-      typeof meta
-    >[0]);
+    const metadata = meta({
+      params: { slug: "missing" },
+      data: null,
+    } as Parameters<typeof meta>[0]);
     expect(metadata).toContainEqual({ name: "robots", content: "noindex" });
   });
 
-  test("prerenders every reviewed listing while preserving the host's index fallback", () => {
+  test("prerenders directory shells and lets D1 supply dynamic detail routes", () => {
     expect(config.ssr).toBe(false);
     expect(config.prerender).not.toContain("/");
     expect(config.prerender).toEqual([
@@ -81,7 +101,6 @@ describe("integrated extension pages", () => {
       "/apps",
       "/extensions",
       "/skills",
-      ...extensions.map((entry) => `/extensions/${entry.slug}`),
     ]);
   });
 });

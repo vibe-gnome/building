@@ -1,12 +1,24 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "vibe-gnome",
+  "main": "app/worker.ts",
   "compatibility_date": "2026-09-04",
   "workers_dev": false,
   "assets": {
+    "binding": "ASSETS",
     "directory": "./build/client",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vibe-gnome-views",
+      "database_id": "7ce747d9-eea2-4e06-a02b-0d96193bbeb7",
+      "migrations_dir": "app/server/migrations"
+    }
+  ],
+  "observability": { "enabled": true },
   "routes": [
     {
       "pattern": "vibe-gnome.org/*",

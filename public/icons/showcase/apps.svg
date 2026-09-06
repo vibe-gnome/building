@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <title>Apps</title>
+  <defs>
+    <linearGradient id="back" x1="40" y1="14" x2="110" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#99C1F1"/>
+      <stop offset="1" stop-color="#62A0EA"/>
+    </linearGradient>
+    <linearGradient id="front" x1="18" y1="34" x2="94" y2="104" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#62A0EA"/>
+      <stop offset="1" stop-color="#3584E4"/>
+    </linearGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#FFF"/>
+      <stop offset="1" stop-color="#DCEBFC"/>
+    </linearGradient>
+  </defs>
+  <rect x="34" y="17" width="80" height="76" rx="12" fill="#1A5FB4"/>
+  <rect x="34" y="13" width="80" height="76" rx="12" fill="url(#back)"/>
+  <path d="M46 14h56a11 11 0 0 1 11 11" stroke="#FFF" stroke-opacity=".45" stroke-width="2" stroke-linecap="round"/>
+  <rect x="14" y="33" width="88" height="80" rx="12" fill="#1A5FB4"/>
+  <rect x="14" y="29" width="88" height="80" rx="12" fill="url(#front)"/>
+  <path d="M26 30h64a11 11 0 0 1 11 11" stroke="#FFF" stroke-opacity=".4" stroke-width="2" stroke-linecap="round"/>
+  <path d="M15 49h86" stroke="#1A5FB4" stroke-opacity=".4" stroke-width="2"/>
+  <path d="M15 50h86" stroke="#FFF" stroke-opacity=".18"/>
+  <circle cx="25" cy="40" r="2" fill="#FFF" fill-opacity=".9"/>
+  <circle cx="33" cy="40" r="2" fill="#FFF" fill-opacity=".55"/>
+  <circle cx="41" cy="40" r="2" fill="#FFF" fill-opacity=".35"/>
+  <g fill="#1A5FB4" opacity=".35" transform="translate(0 2)">
+    <rect x="30" y="60" width="21" height="16" rx="4"/>
+    <rect x="63" y="60" width="21" height="16" rx="4"/>
+    <rect x="30" y="84" width="21" height="16" rx="4"/>
+    <rect x="63" y="84" width="21" height="16" rx="4"/>
+  </g>
+  <g fill="url(#tile)">
+    <rect x="30" y="59" width="21" height="16" rx="4"/>
+    <rect x="63" y="59" width="21" height="16" rx="4"/>
+    <rect x="30" y="83" width="21" height="16" rx="4"/>
+    <rect x="63" y="83" width="21" height="16" rx="4"/>
+  </g>
+</svg>
