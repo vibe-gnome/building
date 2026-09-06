@@ -477,7 +477,10 @@ export default function Home() {
         <section className="content-section page-shell" id="resources">
           <div className="section-heading">
             <p className="kicker">Trusted resources</p>
-            <h2>Keep the official docs close.</h2>
+            <h2>
+              Keep the <span className="heading-accent">official</span> docs
+              close.
+            </h2>
           </div>
           <div className="resource-list">
             {resources.map((resource) => (
