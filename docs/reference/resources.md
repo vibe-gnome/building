@@ -1,6 +1,8 @@
 # External GNOME references
 
 - [GNOME Developer](https://developer.gnome.org/) — official platform portal
+- [GNOME Project Handbook](https://handbook.gnome.org/) - contributor guidance,
+  teams, and development processes
 - [GNOME Human Interface Guidelines](https://developer.gnome.org/hig/) — native
   interaction and visual patterns
 - [GNOME JavaScript extension guide](https://gjs.guide/extensions/) — current

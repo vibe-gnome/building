@@ -32,6 +32,11 @@ const resources = [
     href: "https://developer.gnome.org/",
   },
   {
+    title: "GNOME Project Handbook",
+    description: "Contributing to GNOME, its teams, and development processes.",
+    href: "https://handbook.gnome.org/",
+  },
+  {
     title: "Human Interface Guidelines",
     description: "Design patterns that make an app feel at home on GNOME.",
     href: "https://developer.gnome.org/hig/",
