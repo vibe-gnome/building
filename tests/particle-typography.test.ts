@@ -10,7 +10,6 @@ describe("particle typography", () => {
     expect(component).toContain("returnSpeed");
     expect(component).toContain("requestAnimationFrame(animate)");
     expect(component).toContain("aria-label={text}");
-    expect(component).toContain("context.measureText(text).width");
   });
 
   test("keeps the renderer responsive and reduced-motion aware", () => {

@@ -16,7 +16,7 @@ describe("hero layout", () => {
       /\.hero \{[\s\S]*?grid-template-columns: 1fr;[\s\S]*?justify-items: center;/,
     );
     expect(stylesheet).toContain(".particle-typography");
-    expect(home).toContain('text="Vibe coding for GNOME. Why not?"');
+    expect(home).toContain('text={"Vibe coding for GNOME.\\nWhy not?"}');
     expect(home).toContain("ParticleTypography");
     expect(stylesheet).toMatch(
       /\.hero\.page-shell \{[\s\S]*?padding-bottom: 0;/,

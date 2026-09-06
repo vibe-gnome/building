@@ -18,7 +18,7 @@ class Particle {
   vx: number;
   vy: number;
   readonly size: number;
-  readonly color: string;
+  color: string;
   readonly dispersion: number;
   readonly returnSpeed: number;
 
@@ -94,6 +94,24 @@ export function ParticleTypography({
     let width = 0;
     let height = 0;
     let disposed = false;
+    const motionPreference = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+
+    const draw = () => {
+      context.clearRect(0, 0, width, height);
+      for (const particle of particles) particle.draw(context);
+    };
+
+    const settle = () => {
+      for (const particle of particles) {
+        particle.x = particle.originX;
+        particle.y = particle.originY;
+        particle.vx = 0;
+        particle.vy = 0;
+      }
+      draw();
+    };
 
     const initialize = () => {
       width = container.clientWidth;
@@ -111,19 +129,32 @@ export function ParticleTypography({
       const color = getComputedStyle(container).color;
       const fontFamily = getComputedStyle(container).fontFamily;
       context.font = `800 ${fontSize}px ${fontFamily}`;
-      const measuredWidth = context.measureText(text).width;
+      const lines = text.split("\n");
+      const measuredWidth = Math.max(
+        ...lines.map((line) => context.measureText(line).width),
+      );
+      const lineSpacing = 1.25;
       const effectiveFontSize = Math.min(
         fontSize,
-        measuredWidth > 0 ? (fontSize * width * 0.9) / measuredWidth : fontSize,
+        measuredWidth > 0
+          ? (fontSize * width * 0.94) / measuredWidth
+          : fontSize,
+        (height * 0.8) / (lines.length * lineSpacing),
       );
       context.font = `800 ${effectiveFontSize}px ${fontFamily}`;
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillStyle = color;
-      context.fillText(text, width / 2, height / 2);
+      const lineHeight = effectiveFontSize * lineSpacing;
+      const firstLineY = (height - (lines.length - 1) * lineHeight) / 2;
+      for (const [index, line] of lines.entries()) {
+        context.fillText(line, width / 2, firstLineY + index * lineHeight);
+      }
 
       const pixels = context.getImageData(0, 0, canvas.width, canvas.height);
-      const step = Math.max(1, Math.floor(particleDensity * dpr));
+      const detailScale = Math.min(1, effectiveFontSize / 80);
+      const density = Math.max(1, particleDensity * detailScale);
+      const step = Math.max(1, Math.floor(density * dpr));
       particles = [];
       for (let y = 0; y < pixels.height; y += step) {
         for (let x = 0; x < pixels.width; x += step) {
@@ -133,7 +164,7 @@ export function ParticleTypography({
               new Particle(
                 x / dpr,
                 y / dpr,
-                particleSize,
+                particleSize * Math.max(0.5, detailScale),
                 color,
                 dispersionStrength,
                 returnSpeed,
@@ -142,15 +173,28 @@ export function ParticleTypography({
           }
         }
       }
+      if (motionPreference.matches) settle();
+      else draw();
     };
 
     const animate = () => {
-      context.clearRect(0, 0, width, height);
       for (const particle of particles) {
         particle.update(mouseX, mouseY);
-        particle.draw(context);
       }
+      draw();
       if (!disposed) animationFrame = requestAnimationFrame(animate);
+    };
+
+    const syncMotion = () => {
+      cancelAnimationFrame(animationFrame);
+      if (motionPreference.matches) settle();
+      else animationFrame = requestAnimationFrame(animate);
+    };
+
+    const syncColor = () => {
+      const color = getComputedStyle(container).color;
+      for (const particle of particles) particle.color = color;
+      draw();
     };
 
     const updatePointer = (event: MouseEvent | Touch) => {
@@ -170,26 +214,28 @@ export function ParticleTypography({
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
+    const themeObserver = new MutationObserver(syncColor);
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme", "data-accent"],
+    });
+    motionPreference.addEventListener("change", syncMotion);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseleave", clearPointer);
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
     canvas.addEventListener("touchend", clearPointer);
     initialize();
-
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      for (const particle of particles) {
-        particle.x = particle.originX;
-        particle.y = particle.originY;
-      }
-      for (const particle of particles) particle.draw(context);
-    } else {
-      animationFrame = requestAnimationFrame(animate);
-    }
+    syncMotion();
+    void document.fonts.ready.then(() => {
+      if (!disposed) initialize();
+    });
 
     return () => {
       disposed = true;
       cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
+      themeObserver.disconnect();
+      motionPreference.removeEventListener("change", syncMotion);
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", clearPointer);
       canvas.removeEventListener("touchmove", handleTouchMove);

@@ -436,7 +436,11 @@ export default function Home() {
 
       <main id="main-content">
         <section className="hero page-shell" id="top">
-          <ParticleTypography text="Vibe coding for GNOME. Why not?" />
+          <ParticleTypography
+            text={"Vibe coding for GNOME.\nWhy not?"}
+            fontSize={160}
+            particleDensity={4}
+          />
         </section>
 
         <section

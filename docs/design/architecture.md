@@ -47,7 +47,9 @@ The layout is responsive at tablet and phone widths and respects
 `prefers-reduced-motion`.
 
 The particle hero includes a screen-reader label, caps device pixel ratio at 2,
-and renders a still frame when reduced motion is requested.
+and renders a still frame when reduced motion is requested. The enlarged headline
+uses two centered lines, sized to fit the longest line. Particles follow the
+active theme and GNOME accent immediately, including in reduced-motion mode.
 
 ## Tool submissions
 
