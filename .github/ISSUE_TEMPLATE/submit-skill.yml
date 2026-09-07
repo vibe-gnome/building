@@ -13,12 +13,6 @@ body:
         After the checks pass, a human maintainer reviews the skill and approves its catalog change.
         Passing audits alone does not publish a listing.
   - type: input
-    id: listing-id
-    attributes:
-      label: Listing ID
-      description: Optional URL ID using lowercase letters, numbers, and hyphens. Keep it stable after publication. Defaults to submission-<issue-number>.
-      placeholder: my-gnome-project
-  - type: input
     id: name
     attributes:
       label: Skill name

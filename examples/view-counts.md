@@ -20,7 +20,7 @@ curl -X POST -H 'X-Vibe-View: 1' \
 ```
 
 The response contains `category`, `slug`, and `views`. Open
-`http://localhost:8787/extensions/codex-usage-indicator` to see the counter in the
+`http://localhost:8787/extensions/1/codex-usage-indicator` to see the counter in the
 information panel. A reload adds one view. Restarting the Worker preserves the
 total. Unknown listings return 404; unsupported methods return 405; cross-origin
 writes return 403; database failures return 503. Counts are not cached.

@@ -1,18 +1,11 @@
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  Check,
-  Copy,
-  Flag,
-  Pencil,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Check, Copy, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { ExtensionIcon } from "../components/extensions/extension-card";
 import { ViewCount } from "../components/view-count";
-import { loadListing } from "../lib/catalog-client";
 import { formatDate } from "../lib/extension-catalog";
 import { issueUrl } from "../lib/extension-submissions";
+import { loadListingPage } from "../lib/listing-loader";
 import type { Route } from "./+types/extension";
 import NotFound from "./extensions-not-found";
 
@@ -22,7 +15,7 @@ export {
 } from "../components/catalog-status";
 
 export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
-  return loadListing("extensions", params.slug, request.signal);
+  return loadListingPage("extensions", params, request);
 }
 
 export function meta({ data: entry }: Route.MetaArgs) {
@@ -174,14 +167,6 @@ export default function Extension({ loaderData: entry }: Route.ComponentProps) {
             {copyState}
           </p>
           <div className="detail-listing-actions">
-            <a
-              href={issueUrl("update", entry)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              <Pencil size={15} aria-hidden="true" />
-              Update listing
-            </a>
             <a
               href={issueUrl("remove", entry)}
               target="_blank"

@@ -1,4 +1,5 @@
-import { isListingSlug } from "./listings";
+import { type AppIdentity, appRepository } from "./app-identity";
+import type { ExtensionIdentity } from "./extension-identity";
 
 export type ListingKind = "app" | "extension" | "extension-update";
 
@@ -12,6 +13,8 @@ export interface ListingReview {
   kind: ListingKind;
   passed: boolean;
   checks: ListingCheck[];
+  appIdentity?: AppIdentity;
+  extensionIdentity?: ExtensionIdentity;
 }
 
 export interface CatalogIdentity {
@@ -66,7 +69,7 @@ function hasText(value: unknown): value is string {
   );
 }
 
-/** Syntax only: submitted URLs are never fetched by the review runner. */
+/** Validate URL syntax without making a network request. */
 export function isPublicHttpsUrl(value: unknown): value is string {
   if (typeof value !== "string" || /\s/.test(value)) return false;
   try {
@@ -98,6 +101,7 @@ export function reviewListing(
   title: string,
   body: string,
   catalog: readonly CatalogIdentity[],
+  extensionIdentity?: ExtensionIdentity,
 ): ListingReview | null {
   const { fields, duplicates } = parseIssueFields(body);
   // Reports/removals need direct human triage, even when fields are incomplete.
@@ -136,28 +140,30 @@ export function reviewListing(
       ? "Remove repeated field headings."
       : "Field headings are unique.",
   );
-  const listingId = fields.get("listing id");
-  if (hasText(listingId)) {
-    add(
-      "Listing ID",
-      isListingSlug(listingId),
-      "Use at most 128 lowercase letters or numbers separated by hyphens.",
-    );
-  }
   if (kind === "app") {
     required("App name");
     checkUrl(
       "Repository or project URL",
       fields.get("repository or project url"),
     );
+    try {
+      appRepository(fields.get("repository or project url") ?? "");
+    } catch (error) {
+      add("App repository", false, (error as Error).message);
+    }
     required("Summary");
-    required("Installation and usage");
-    required("Author and license");
   } else {
     const name = required("Extension name");
     checkUrl("Source repository", fields.get("source repository"));
-    required("Your relationship to the extension");
     const updating = kind === "extension-update";
+    if (updating) required("Your relationship to the extension");
+    if (!updating) {
+      try {
+        appRepository(fields.get("source repository") ?? "");
+      } catch (error) {
+        add("Extension repository", false, (error as Error).message);
+      }
+    }
     required(updating ? "Requested changes" : "Summary");
     const uuid = updating ? required("Extension UUID") : undefined;
     if (updating) {
@@ -168,7 +174,7 @@ export function reviewListing(
       );
     }
     const gnomeUrl = fields.get("gnome extensions listing");
-    if (hasText(gnomeUrl)) {
+    if (updating && hasText(gnomeUrl)) {
       add(
         "GNOME Extensions listing",
         isPublicHttpsUrl(gnomeUrl) &&
@@ -177,10 +183,18 @@ export function reviewListing(
         "Use an extensions.gnome.org/extension/<number>/ listing URL.",
       );
     }
-    const raw = fields.get(
-      updating ? "updated metadata.json" : "metadata.json",
-    );
-    if (updating && !hasText(raw)) {
+    const raw = updating
+      ? fields.get("updated metadata.json")
+      : extensionIdentity
+        ? JSON.stringify(extensionIdentity.metadata)
+        : undefined;
+    if (!updating && !extensionIdentity) {
+      add(
+        "Repository metadata",
+        true,
+        "UUID and metadata.json will be read from the repository during review.",
+      );
+    } else if (updating && !hasText(raw)) {
       add(
         "metadata.json",
         true,
@@ -261,11 +275,16 @@ export function reviewListing(
           add(
             "New UUID",
             !catalog.some((entry) => entry.metadata.uuid === metadata.uuid),
-            "Existing UUIDs must use the update form.",
+            "This extension is already listed. Use Report listing on its detail page to request a correction.",
           );
         }
       }
     }
   }
-  return { kind, passed: checks.every((check) => check.passed), checks };
+  return {
+    kind,
+    passed: checks.every((check) => check.passed),
+    checks,
+    ...(extensionIdentity ? { extensionIdentity } : {}),
+  };
 }

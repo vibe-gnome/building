@@ -1,11 +1,14 @@
 import type { ListingCategory, ListingTypes } from "./listings";
 
-type Fetcher = (url: string, init: RequestInit) => Promise<Response>;
+export type CatalogFetcher = (
+  url: string,
+  init: RequestInit,
+) => Promise<Response>;
 
 async function catalogResponse(
   path: string,
   signal: AbortSignal,
-  fetcher: Fetcher,
+  fetcher: CatalogFetcher,
 ) {
   const response = await fetcher(path, {
     signal,
@@ -28,7 +31,7 @@ async function catalogResponse(
 export async function loadCatalog<C extends ListingCategory>(
   category: C,
   signal: AbortSignal,
-  fetcher: Fetcher = fetch,
+  fetcher: CatalogFetcher = fetch,
 ): Promise<ListingTypes[C][]> {
   const entries: ListingTypes[C][] = [];
   let after = "";
@@ -57,7 +60,7 @@ export async function loadListing<C extends ListingCategory>(
   category: C,
   slug: string,
   signal: AbortSignal,
-  fetcher: Fetcher = fetch,
+  fetcher: CatalogFetcher = fetch,
 ): Promise<ListingTypes[C] | null> {
   const data = await catalogResponse(
     `/api/catalog/${category}/${encodeURIComponent(slug)}`,
@@ -67,6 +70,23 @@ export async function loadListing<C extends ListingCategory>(
   if (!data) return null;
   const id = data.entry?.slug ?? data.entry?.id;
   if (data.category !== category || id !== slug)
+    throw new Response("Invalid listing response.", { status: 503 });
+  return data.entry;
+}
+
+export async function loadListingById<C extends ListingCategory>(
+  category: C,
+  dbId: number,
+  signal: AbortSignal,
+  fetcher: CatalogFetcher = fetch,
+): Promise<ListingTypes[C] | null> {
+  const data = await catalogResponse(
+    `/api/catalog/${category}/by-id/${dbId}`,
+    signal,
+    fetcher,
+  );
+  if (!data) return null;
+  if (data.category !== category || data.entry?.dbId !== dbId)
     throw new Response("Invalid listing response.", { status: 503 });
   return data.entry;
 }

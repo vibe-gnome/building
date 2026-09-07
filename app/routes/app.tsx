@@ -2,7 +2,7 @@ import {
   CommunityDetail,
   communityDetailMeta,
 } from "../components/community-detail";
-import { loadListing } from "../lib/catalog-client";
+import { loadListingPage } from "../lib/listing-loader";
 import type { Route } from "./+types/app";
 
 export {
@@ -11,7 +11,7 @@ export {
 } from "../components/catalog-status";
 
 export function clientLoader({ params, request }: Route.ClientLoaderArgs) {
-  return loadListing("apps", params.slug, request.signal);
+  return loadListingPage("apps", params, request);
 }
 
 export function meta({ data }: Route.MetaArgs) {

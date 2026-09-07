@@ -29,20 +29,19 @@ https://github.com/vercel-labs/skills/blob/0123456789abcdef0123456789abcdef01234
 `;
 
 describe("skills.sh submission validation", () => {
-  test("validates an optional public listing ID before fetching audits", () => {
-    for (const id of ["find-skills", "", "_No response_"])
+  test("ignores legacy manual listing IDs and uses the verified skill URL", () => {
+    for (const id of [
+      "find-skills",
+      "",
+      "_No response_",
+      "UPPER",
+      "../escape",
+      "two--hyphens",
+      "a".repeat(129),
+    ])
       expect(submissionTarget(`${body}\n### Listing ID\n\n${id}`).href).toBe(
         skillUrl(url).href,
       );
-    for (const id of ["UPPER", "../escape", "two--hyphens", "a".repeat(129)])
-      expect(() =>
-        submissionTarget(`${body}\n### Listing ID\n\n${id}`),
-      ).toThrow("Listing ID");
-    expect(() =>
-      submissionTarget(
-        `${body}\n### Listing ID\nfirst\n### Listing ID\nsecond`,
-      ),
-    ).toThrow("Listing ID");
   });
 
   test("normalizes the supplied www URL and trailing slash", () => {

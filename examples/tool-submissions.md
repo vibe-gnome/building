@@ -14,10 +14,6 @@ them with the actual skill and immutable commit being submitted.
 
 GNOME Workflow
 
-### Listing ID
-
-gnome-workflow
-
 ### Source repository URL
 
 https://github.com/owner/gnome-workflow
@@ -77,6 +73,9 @@ provided by that report; do not invent one.
 
 The publication action checks your repository permissions and both audits again,
 then saves the listing and review evidence in D1. Its Actions summary links to
-`/skills/gnome-workflow`. Refresh the page to see it; no source edit, PR, or rebuild
+`/skills/<db-id>/gnome-workflow`. Refresh the page to see it; no source edit, PR, or rebuild
 is required. Configure the publisher first using
 [D1 catalog operations](../docs/implementation/catalog-storage.md).
+
+The database assigns the numeric ID automatically. The readable URL segment comes
+from the verified skills.sh page. Older manual Listing ID fields are ignored.

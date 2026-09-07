@@ -1,5 +1,6 @@
 import { Plus } from "lucide-react";
 import { Link } from "react-router";
+import { listingPath } from "../lib/listing-links";
 import {
   type ShowcaseCategory,
   type ShowcaseEntry,
@@ -60,7 +61,7 @@ export function ShowcasePage({
               >
                 <span className="eyebrow">{entry.submittedBy}</span>
                 <h2>
-                  <Link to={`/${category}/${entry.id}`}>{entry.name}</Link>
+                  <Link to={listingPath(category, entry)}>{entry.name}</Link>
                 </h2>
                 <p className="card-summary">{entry.summary}</p>
                 <div className="tag-list">

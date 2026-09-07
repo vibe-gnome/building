@@ -6,7 +6,9 @@ export async function handleCatalogRequest(
   store: CatalogStore,
 ) {
   const url = new URL(request.url);
-  const match = /^\/api\/catalog\/([^/]+)(?:\/([^/]+))?$/.exec(url.pathname);
+  const byId = /^\/api\/catalog\/([^/]+)\/by-id\/([^/]+)$/.exec(url.pathname);
+  const match =
+    byId ?? /^\/api\/catalog\/([^/]+)(?:\/([^/]+))?$/.exec(url.pathname);
   const category = match?.[1];
   const slug = match?.[2];
   const json = (body: unknown, status = 200, headers?: HeadersInit) =>
@@ -21,7 +23,7 @@ export async function handleCatalogRequest(
   if (
     !category ||
     !isListingCategory(category) ||
-    (slug !== undefined && !isListingSlug(slug))
+    (slug !== undefined && !(byId ? isListingDbId(slug) : isListingSlug(slug)))
   ) {
     return json({ error: "Listing not found" }, 404);
   }
@@ -32,7 +34,9 @@ export async function handleCatalogRequest(
     return json({ error: "Invalid catalog cursor" }, 400);
   try {
     if (slug) {
-      const entry = await store.get(category, slug);
+      const entry = byId
+        ? await store.getById(category, Number(slug))
+        : await store.get(category, slug);
       return entry
         ? json({ category, entry })
         : json({ error: "Listing not found" }, 404);
@@ -51,3 +55,5 @@ export async function handleCatalogRequest(
     return json({ error: "Catalog unavailable" }, 503);
   }
 }
+
+import { isListingDbId } from "../lib/listing-links";

@@ -1,7 +1,9 @@
 export type ShowcaseCategory = "apps" | "extensions";
 
 export interface ShowcaseEntry {
+  dbId?: number;
   id: string;
+  appId?: string;
   href: string;
   name: string;
   summary: string;

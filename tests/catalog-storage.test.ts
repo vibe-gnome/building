@@ -39,7 +39,9 @@ describe("D1 catalog migration and reads", () => {
       ),
     );
     databases.push(data);
-    expect(await data.catalog.list("extensions")).toEqual(seed);
+    expect(await data.catalog.list("extensions")).toEqual(
+      seed.map((entry, index) => ({ ...entry, dbId: index + 1 })),
+    );
     expect(await data.catalog.list("apps")).toEqual([]);
     expect(await data.catalog.list("skills")).toEqual([]);
     expect(await data.views.read("extensions", "codex-usage-indicator")).toBe(
@@ -56,9 +58,9 @@ describe("D1 catalog migration and reads", () => {
     data.insert("skills", skill);
     data.insert("apps", { ...app, id: "hidden" }, "unpublished");
     for (const [category, id, entry] of [
-      ["apps", app.id, app],
-      ["skills", skill.id, skill],
-      ["extensions", seed[0]?.slug, seed[0]],
+      ["apps", app.id, { ...app, dbId: 3 }],
+      ["skills", skill.id, { ...skill, dbId: 4 }],
+      ["extensions", seed[0]?.slug, { ...seed[0], dbId: 1 }],
     ] as const) {
       const response = await handleCatalogRequest(
         request(`${category}/${id}`),
@@ -71,7 +73,7 @@ describe("D1 catalog migration and reads", () => {
     const list = await handleCatalogRequest(request("apps"), data.catalog);
     expect(await list.json()).toEqual({
       category: "apps",
-      entries: [app],
+      entries: [{ ...app, dbId: 3 }],
       next: null,
     });
     expect(

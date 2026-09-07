@@ -1,12 +1,23 @@
 import { createHash } from "node:crypto";
 import { appendFileSync, readFileSync } from "node:fs";
 import catalog from "../app/data/extensions.json";
+import { type AppIdentity, appIdentitySource } from "../app/lib/app-identity";
 import { loadCatalog } from "../app/lib/catalog-client";
+import type { ExtensionIdentity } from "../app/lib/extension-identity";
 import {
   type CatalogIdentity,
   type ListingReview,
+  parseIssueFields,
   reviewListing,
 } from "../app/lib/listing-review";
+import {
+  type ResolveAppIdentity,
+  resolveAppIdentity,
+} from "../app/server/app-identity";
+import {
+  type ResolveExtensionIdentity,
+  resolveExtensionIdentity,
+} from "../app/server/extension-identity";
 
 const marker = "<!-- vibe-gnome-listing-review -->";
 export const reviewLabels = {
@@ -31,7 +42,8 @@ interface Comment {
 }
 
 export interface ReviewEvent {
-  action: string;
+  action?: string;
+  inputs?: { issue_number?: unknown };
   issue?: Issue;
   comment?: Comment;
 }
@@ -51,9 +63,27 @@ class GitHubError extends Error {
   }
 }
 
-export function listingFingerprint(issue: Pick<Issue, "title" | "body">) {
+export function listingFingerprint(
+  issue: Pick<Issue, "title" | "body">,
+  identity?: AppIdentity | ExtensionIdentity,
+) {
   return createHash("sha256")
-    .update(JSON.stringify([issue.title, issue.body ?? ""]))
+    .update(
+      JSON.stringify([
+        issue.title,
+        issue.body ?? "",
+        ...(identity
+          ? [
+              [
+                "appId" in identity ? identity.appId : identity.metadata.uuid,
+                identity.repository,
+                identity.commit,
+                identity.path,
+              ],
+            ]
+          : []),
+      ]),
+    )
     .digest("hex");
 }
 
@@ -74,6 +104,10 @@ export function renderReview(
   confirmedBy?: string,
 ) {
   const passed = review?.passed ?? false;
+  const localIdentityCheck =
+    passed &&
+    ((review?.kind === "app" && !review.appIdentity) ||
+      (review?.kind === "extension" && !review.extensionIdentity));
   return [
     marker,
     `<!-- submission:${fingerprint} checks:${passed ? "passed" : "failed"} -->`,
@@ -82,7 +116,9 @@ export function renderReview(
     confirmedBy
       ? `**Human confirmation recorded from ${escapeReport(confirmedBy)}.**`
       : passed
-        ? "**Basic checks passed — awaiting human confirmation.**"
+        ? localIdentityCheck
+          ? "**Field checks passed — repository identity discovery runs on GitHub.**"
+          : "**Basic checks passed — awaiting human confirmation.**"
         : "**Basic checks need changes before human confirmation.**",
     "",
     ...(review?.checks.map(
@@ -91,10 +127,22 @@ export function renderReview(
     ) ?? [
       "Restore the app or extension submission fields to run the basic checks.",
     ]),
+    ...(review?.appIdentity
+      ? [
+          "",
+          `App ID: \`${review.appIdentity.appId}\`. [Repository metadata](<${appIdentitySource(review.appIdentity)}>), commit \`${review.appIdentity.commit}\`.`,
+        ]
+      : []),
     "",
-    "These checks validate submitted fields and URL syntax. A maintainer must verify upstream metadata, ownership, license, installation instructions, and suitability. Submitted links and code are not fetched or executed. Nothing is published automatically.",
+    ...(review?.extensionIdentity
+      ? [
+          "",
+          `Extension UUID: \`${review.extensionIdentity.metadata.uuid}\`. [Repository metadata](<${appIdentitySource(review.extensionIdentity)}>), commit \`${review.extensionIdentity.commit}\`.`,
+        ]
+      : []),
+    "These checks validate submitted fields and URL syntax. New app and extension reviews read public repository metadata to detect their identities. A maintainer must verify ownership, license, installation instructions, and suitability. Repository code is never executed. Nothing is published automatically.",
     "",
-    ...(passed && !confirmedBy
+    ...(passed && !localIdentityCheck && !confirmedBy
       ? [
           "After reviewing this exact submission, a maintainer with repository write access can post:",
           "",
@@ -102,7 +150,7 @@ export function renderReview(
           `/confirm-listing ${fingerprint}`,
           "```",
           "",
-          "Editing the title or body requires new checks and confirmation.",
+          "Editing the title or body, or changing the reviewed repository revision, requires new checks and confirmation.",
           "",
           "To approve and publish this exact submission to D1, post this command instead:",
           "",
@@ -180,7 +228,18 @@ export async function runListingReview(
   event: ReviewEvent,
   request: GitHubRequest,
   entries: readonly CatalogIdentity[] = catalog,
+  resolveIdentity: ResolveAppIdentity = resolveAppIdentity,
+  resolveExtension: ResolveExtensionIdentity = resolveExtensionIdentity,
 ) {
+  if (!event.issue && event.inputs) {
+    const number = event.inputs.issue_number;
+    if (typeof number !== "string" || !/^[1-9]\d{0,9}$/.test(number))
+      throw new Error("Enter a positive issue number without leading zeros.");
+    event = {
+      action: "opened",
+      issue: await request<Issue>(`/issues/${number}`),
+    };
+  }
   if (!event.issue || event.issue.pull_request)
     return "Skipped: not a listing issue.";
   const confirming = !!event.comment;
@@ -209,10 +268,59 @@ export async function runListingReview(
   if (issue.state !== "open" || issue.pull_request)
     return "Skipped: issue is closed or is a pull request.";
   const existing = await findReport(request, issue.number);
-  const review = reviewListing(issue.title, issue.body ?? "", entries);
+  let review = reviewListing(issue.title, issue.body ?? "", entries);
   if (!review && !existing)
     return "Skipped: not an app or extension submission.";
-  const fingerprint = listingFingerprint(issue);
+  const issueFingerprint = listingFingerprint(issue);
+  if (review?.kind === "app" && review.passed) {
+    try {
+      const repository =
+        parseIssueFields(issue.body ?? "").fields.get(
+          "repository or project url",
+        ) ?? "";
+      review.appIdentity = await resolveIdentity(repository);
+      review.checks.push({
+        name: "App ID",
+        passed: true,
+        detail: review.appIdentity.appId,
+      });
+    } catch (error) {
+      review.passed = false;
+      review.checks.push({
+        name: "App ID",
+        passed: false,
+        detail:
+          error instanceof Error
+            ? error.message
+            : "Could not detect the repository app ID.",
+      });
+    }
+  }
+  if (review?.kind === "extension" && review.passed) {
+    const pendingReview = review;
+    try {
+      const repository =
+        parseIssueFields(issue.body ?? "").fields.get("source repository") ??
+        "";
+      const identity = await resolveExtension(repository);
+      review = reviewListing(issue.title, issue.body ?? "", entries, identity);
+    } catch (error) {
+      review = pendingReview;
+      review.passed = false;
+      review.checks.push({
+        name: "Repository metadata",
+        passed: false,
+        detail:
+          error instanceof Error
+            ? error.message
+            : "Could not detect the extension UUID.",
+      });
+    }
+  }
+  const fingerprint = listingFingerprint(
+    issue,
+    review?.appIdentity ?? review?.extensionIdentity,
+  );
   let confirmedBy: string | undefined;
   if (confirming) {
     if (
@@ -229,7 +337,10 @@ export async function runListingReview(
   const report = renderReview(review, fingerprint, confirmedBy);
   // Recheck after reading comments/permissions and before recording the result.
   const latest = await request<Issue>(`/issues/${issue.number}`);
-  if (latest.state !== "open" || listingFingerprint(latest) !== fingerprint)
+  if (
+    latest.state !== "open" ||
+    listingFingerprint(latest) !== issueFingerprint
+  )
     throw new Error(
       "Submission changed during review. Rerun the workflow for the current issue.",
     );

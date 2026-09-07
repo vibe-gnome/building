@@ -94,9 +94,9 @@ Publishing a listing does not rebuild or redeploy the website.
 ## Extension submissions
 
 The extension catalog is maintained in D1. The old `app/data/extensions.json`
-is a seed/test fixture only. Submit,
-update, and report/remove actions target `vibe-gnome/building`, alongside skills.
-Publish `submit-extension.yml`, `update-extension.yml`, and
+is a seed/test fixture only. Submit and report/remove actions target
+`vibe-gnome/building`, alongside skills.
+Publish `submit-extension.yml` and
 `remove-extension.yml` from `.github/ISSUE_TEMPLATE/` to the default branch to
 activate them. No issue is created by running the site locally.
 

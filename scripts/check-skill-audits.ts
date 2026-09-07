@@ -1,6 +1,3 @@
-import { parseIssueFields } from "../app/lib/listing-review";
-import { isListingSlug } from "../app/lib/listings";
-
 export const auditProviders = [
   { slug: "agent-trust-hub", name: "Gen Agent Trust Hub", required: true },
   { slug: "socket", name: "Socket", required: true },
@@ -53,15 +50,6 @@ export function issueField(body: string, label: string): string {
 }
 
 export function submissionTarget(body: string): URL {
-  const { fields, duplicates } = parseIssueFields(body);
-  const listingId = fields.get("listing id");
-  if (
-    duplicates.includes("listing id") ||
-    (listingId && listingId !== "_No response_" && !isListingSlug(listingId))
-  )
-    throw new Error(
-      "Provide one Listing ID using at most 128 lowercase letters or numbers separated by hyphens, or leave it empty.",
-    );
   const url = skillUrl(issueField(body, "skills.sh URL"));
   const [owner, repository] = url.pathname.slice(1).split("/");
   const source = `https://github.com/${owner}/${repository}`;

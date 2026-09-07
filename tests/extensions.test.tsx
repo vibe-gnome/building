@@ -9,7 +9,10 @@ import Catalog from "../app/routes/extensions";
 import NotFound from "../app/routes/extensions-not-found";
 import config from "../react-router.config";
 
-const extensions: ExtensionListing[] = seed;
+const extensions: ExtensionListing[] = seed.map((entry, index) => ({
+  ...entry,
+  dbId: index + 1,
+}));
 
 function render(page: ReactNode, path: string) {
   return renderToStaticMarkup(
@@ -38,7 +41,7 @@ describe("integrated extension pages", () => {
     );
     expect(html).toContain("Kitty Session Restorer");
     expect(html).not.toContain("Codex Usage Indicator");
-    expect(html).toContain('href="/extensions/kitty-session-restorer"');
+    expect(html).toContain('href="/extensions/2/kitty-session-restorer"');
     expect(html).not.toContain('href="/extensions/manage"');
     expect(html).not.toContain('aria-label="Marketplace"');
     expect(html).not.toContain("Manage listings");
@@ -73,7 +76,7 @@ describe("integrated extension pages", () => {
       expect(html).toContain(
         `href="${entry.gnomeUrl ?? `${entry.source}#readme`}"`,
       );
-      expect(html).toContain("template=update-extension.yml");
+      expect(html).not.toContain("Update listing");
       expect(html).toContain("template=remove-extension.yml");
       expect(html).toContain("/vibe-gnome/building/issues/new");
       expect(html).toContain(`src="${entry.icon}"`);

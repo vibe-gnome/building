@@ -7,6 +7,36 @@ export type SqlQuery = (
   params?: (string | number | null)[],
 ) => Promise<SqlResult>;
 
+export async function assertListingIdSchema(query: SqlQuery) {
+  const { results } = await query(
+    "SELECT name FROM sqlite_schema WHERE (type = 'table' AND name = 'listing_ids') OR (type = 'trigger' AND name IN ('listings_assign_db_id', 'listing_ids_immutable'))",
+  );
+  if (
+    ["listing_ids", "listings_assign_db_id", "listing_ids_immutable"].some(
+      (name) => !results.some((row) => row.name === name),
+    )
+  )
+    throw new Error(
+      "Apply D1 migration 0005_listing_ids.sql with bun run db:migrate:remote before publishing listings.",
+    );
+}
+
+export async function assertAppIdentitySchema(query: SqlQuery) {
+  const required = [
+    "listings_app_id",
+    "listings_app_id_insert",
+    "listings_app_id_update",
+    "listings_app_id_immutable",
+  ];
+  const { results } = await query(
+    "SELECT name FROM sqlite_schema WHERE (type = 'index' AND name = 'listings_app_id') OR (type = 'trigger' AND name IN ('listings_app_id_insert', 'listings_app_id_update', 'listings_app_id_immutable'))",
+  );
+  if (required.some((name) => !results.some((row) => row.name === name)))
+    throw new Error(
+      "Apply D1 migration 0004_app_identity.sql with bun run db:migrate:remote before publishing apps.",
+    );
+}
+
 export function d1QueryFromEnv(): SqlQuery {
   const {
     CLOUDFLARE_ACCOUNT_ID: account,

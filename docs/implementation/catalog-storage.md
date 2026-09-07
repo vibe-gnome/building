@@ -7,12 +7,23 @@ so existing data does not move when catalog storage is added.
 | Table | Data |
 | --- | --- |
 | `listings` | Published/unpublished records keyed by category and stable slug; metadata, issue, and current review revision |
+| `listing_ids` | Immutable auto-increment numeric IDs mapped to the existing category/slug keys |
 | `listing_reviews` | Immutable copies of accepted metadata, submission text, reviewer, approval comment, and skill audit evidence |
 | `listing_views` | Persistent counts keyed by the same category and slug |
 
 `0002_catalog.sql` creates the catalog schema, constraints, and review triggers.
 `0003_catalog_seed.sql` imports the original two extensions without overwriting
-existing rows. Apps and skills initially have no records. Existing view counts
+existing rows. `0004_app_identity.sql` adds a unique index on the app's native
+`payload.appId`, validates supplied ID types/values, and prevents a recorded ID
+from being changed or removed. The native ID stays in the canonical JSON payload;
+there is no second column to keep synchronized. Older apps without this field
+remain valid and acquire it through reviewed publication. A migration encountering
+duplicate native IDs fails for investigation instead of rewriting records.
+`0005_listing_ids.sql` backfills numeric IDs for all rows and assigns IDs to new
+listings in the same insert transaction. IDs are global across categories and
+never reused. Reads join this mapping and override any `dbId` inside the JSON
+payload. Existing keys, payloads, history, and counts are preserved.
+Apps and skills initially have no records. Existing view counts
 are untouched. `app/data/extensions.json` remains an import/test fixture only;
 do not edit it to publish new entries or modify the applied seed migration.
 
@@ -30,7 +41,8 @@ build time. Vite proxies `/api` to the Worker for frontend hot reload. Static-on
 preview cannot serve catalog data. Database failures show an unavailable state.
 
 The production database is provisioned and its ID is recorded in `wrangler.jsonc`.
-All three migrations have been applied. For a separate Cloudflare account only,
+The original three migrations have been applied. Apply migrations 0004 and 0005 before deploying the updated site or using the
+updated publication workflow. For a separate Cloudflare account only,
 create a database and replace the `DB` binding's ID:
 
 ```bash
@@ -55,6 +67,9 @@ before manual maintenance. Source rollbacks do not roll back database records.
 Merge the review and `publish-listing.yml` workflows and their imported modules
 to the default branch. Deploy the Worker API before enabling live review jobs;
 app/extension reviews read current extension identities from that API.
+Run `bun run db:migrate:remote` before deploying the new API/routes or approving
+listings. The publisher verifies the ID mapping table and triggers for every
+category, and the native app ID index and triggers for apps. Issue comments never apply schema migrations.
 
 Configure these repository Actions variables and secret:
 
@@ -73,6 +88,9 @@ The GitHub token needs only contents/issue read access for publication. The revi
 workflows separately need issues write access for their reports. Database
 credentials are supplied only to the publishing step, never the browser or
 submitted code. No catalog mutation endpoint is exposed on the website.
+Review and publication jobs share a per-issue concurrency group; only eligible
+jobs take the lock. All three jobs use Bun 1.3.14. App/extension review and
+publication run their focused tests before any issue or database writes.
 
 ## Approve and publish
 
@@ -85,37 +103,58 @@ submitted code. No catalog mutation endpoint is exposed on the website.
    report into a **new comment**. This is the human approval action. Repository
    write/admin access is required. No extra confirmation command is necessary.
 4. The **Publish reviewed listing to D1** action verifies current permissions,
-   the latest issue hash, and the bot-owned passing report, then revalidates data.
-   Skill audits are fetched again. Any mismatch or failed required audit blocks
+   the latest submission fingerprint, and the bot-owned passing report, then revalidates data.
+   New app IDs and extension UUIDs are resolved again from the repository; the identity and source revision
+   must match the approved report. Skill audits are fetched again. Any mismatch or failed required audit blocks
    publication. Check the Actions run summary for success and the listing URL.
 5. Open the published page and close the issue with the run/page link. The
    publisher does not post comments, close issues, or merge code automatically.
 
 The SQL write records approval evidence atomically using triggers. A matching
 revision is required to update an existing row, preventing concurrent overwrites.
-Retries of the same approval comment are idempotent. Do not change an issue's
-Listing ID after publication. A new approval is needed for later issue edits;
+Retries of the same approval comment are idempotent. Database IDs stay stable after
+publication; the readable URL suffix follows the upstream identity. A new approval is needed for later issue edits;
 the accepted version stays visible while an edit is under review.
 
 ## How fields become records
 
-- Apps: name, summary, project URL, author/license attribution, and optional
-  comma-separated `Tags`. Installation instructions and full issue content are
-  retained in the review evidence.
+- Apps: name, summary, repository URL, detected native `appId`, and optional comma-separated `Tags`. Older
+  submissions can still supply author/license attribution; it is left empty when
+  absent. The full issue content and resolved app identity (repository, commit,
+  metadata path, and ID) are retained in the review evidence.
 - Skills: skill name, summary, and the verified skills.sh page. Full instructions,
   source permalink, permissions, author/license, and fresh audit results are
   retained in review evidence.
-- Extensions: official GNOME metadata, source, summary, optional category/tags
-  and GNOME listing URL. New entries use `/logo.svg` until a reviewed asset is
-  supplied. Updates match UUID in D1 and preserve slug, added date, icon, features,
+- Extensions: GNOME metadata fetched at a pinned repository commit, source, summary,
+  and optional category/tags. Optional `Screenshots` content is retained verbatim in
+  review evidence, including attachment links and attribution. New submissions
+  ignore removed manual ID, UUID, GNOME listing URL, metadata, and relationship fields.
+  New entries use `/logo.svg` until a reviewed asset is supplied. Existing update
+  issues can still supply a GNOME listing URL, match UUID in D1, and preserve slug, added date, icon, features,
   and view counts. Optional `Summary`, `Details`, and `Requirements` fields can
   make specific copy changes; freeform `Requested changes` is review context and
   is not interpreted as executable instructions or an automatic text rewrite.
 
-For new entries, `Listing ID` chooses the public URL slug. If omitted, it becomes
-`submission-<issue-number>`. IDs are at most 128 lowercase letters/digits separated
-by hyphens. An ID belonging to another submission cannot be overwritten. Extension
-UUIDs and source issue IDs also have uniqueness constraints.
+All three submission forms omit Listing ID and ignore older manual values.
+New app internal keys derive from the full native ID; new extension/skill keys
+use `submission-<issue-number>`. Existing app/skill issues preserve their stored
+key on republication. UUID, app ID, and source issue uniqueness prevent duplicates.
+Recorded app IDs cannot change or disappear without maintainer investigation.
+
+Public links use `/<category>/<db-id>/<name-id>`:
+
+- Apps: `/apps/3/planner` for native ID `us.hagreli.Planner`, if assigned ID 3.
+  The last dot-separated native ID component supplies the name; older apps
+  without native IDs fall back to their display name.
+- Extensions: `/extensions/1/codex-usage-indicator`, using the UUID before `@`.
+- Skills: `/skills/4/find-skills`, using the verified skills.sh URL's last segment.
+
+Readable segments are lowercase and normalized to letters, digits and hyphens.
+The numeric ID identifies the row, so two apps named Planner can coexist with
+different IDs. Single-segment legacy URLs and stale suffixes redirect to the
+canonical path, retaining query parameters. Numeric legacy keys take precedence
+on single-segment requests. Views and review history still use the original
+internal key. Unpublishing retains both IDs; restoring a listing restores its URL.
 
 ## Read API
 
@@ -123,12 +162,13 @@ UUIDs and source issue IDs also have uniqueness constraints.
 GET /api/catalog/apps
 GET /api/catalog/extensions
 GET /api/catalog/skills
-GET /api/catalog/:category/:slug
+GET /api/catalog/:category/by-id/:dbId
+GET /api/catalog/:category/:slug  # legacy/internal lookup
 ```
 
 Lists return `{ category, entries, next }`, up to 100 records sorted by slug.
 Request the next page using `?after=<next>`. Details return `{ category, entry }`.
-Only published records are exposed; review evidence stays private. GET requests
+Each entry includes its database-assigned numeric `dbId`. Only published records are exposed; review evidence stays private. GET requests
 are read-only and responses use `Cache-Control: no-store`. Missing records return
 404, unsupported methods 405, and storage errors 503. Client loaders distinguish
 these states and preserve extension filters in the URL. Dynamic catalog content
@@ -136,7 +176,7 @@ requires JavaScript; the static build contains directory shells, not DB snapshot
 
 ## Unpublish and restore
 
-Removal/report issues still receive direct human triage. After approval, use a
+Removal/report issues omit the Reason field and receive direct human triage. After approval, use a
 reviewed SQL maintenance file with `wrangler d1 execute DB --remote --file ...`.
 Use a unique revision so the trigger can retain the operation in history:
 
@@ -145,7 +185,7 @@ UPDATE listings SET status = 'unpublished',
   revision = 'removal-ISSUE-COMMENT', reviewed_by = 'MAINTAINER',
   evidence = json_object('reason', 'Reviewed removal issue #ISSUE'),
   updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE category = 'extensions' AND slug = 'LISTING-ID';
+WHERE category = 'extensions' AND slug = 'INTERNAL-KEY';
 ```
 
 Substitute reviewed values in a local file; do not insert issue text into shell

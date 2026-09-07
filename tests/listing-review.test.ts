@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import type { ExtensionIdentity } from "../app/lib/extension-identity";
 import {
   isPublicHttpsUrl,
   parseIssueFields,
@@ -11,8 +12,29 @@ import {
   type ReviewEvent,
   renderReview,
   reviewLabels,
-  runListingReview,
+  runListingReview as runListingReviewWithRepository,
 } from "../scripts/listing-review";
+
+const appIdentity = {
+  appId: "org.example.App",
+  repository: "https://github.com/example/app",
+  commit: "a".repeat(40),
+  path: "data/org.example.App.metainfo.xml",
+};
+const runListingReview: typeof runListingReviewWithRepository = (
+  event,
+  request,
+  entries,
+  resolve = async () => appIdentity,
+  resolveExtension = async () => extensionIdentity,
+) =>
+  runListingReviewWithRepository(
+    event,
+    request,
+    entries,
+    resolve,
+    resolveExtension,
+  );
 
 const metadata = {
   uuid: "example@example.org",
@@ -20,55 +42,58 @@ const metadata = {
   description: "A focused desktop extension.",
   "shell-version": ["3.38", "45", "50"],
 };
+const extensionIdentity = {
+  metadata,
+  repository: "https://github.com/example/extension",
+  commit: "b".repeat(40),
+  path: "metadata.json",
+};
 const appFields = {
   "App name": "Example App",
   "Repository or project URL": "https://github.com/example/app",
   Summary: "A focused desktop app.",
-  "Installation and usage":
-    "Install from the documented Flatpak package, then open Example App.",
-  "Author and license": "Example Maintainer, MIT",
 };
 const extensionFields = {
   "Extension name": metadata.name,
   "Source repository": "https://github.com/example/extension",
-  "GNOME Extensions listing": "_No response_",
-  "metadata.json": `\`\`\`json\n${JSON.stringify(metadata, null, 2)}\n\`\`\``,
   Summary: metadata.description,
-  "Your relationship to the extension": "Author",
 };
 const body = (fields: Record<string, string>) =>
   Object.entries(fields)
     .map(([name, value]) => `### ${name}\n\n${value}`)
     .join("\n\n");
 const extensionReview = (changes: Record<string, unknown>) =>
-  reviewListing(
-    "[Submit] Example",
-    body({
-      ...extensionFields,
-      "metadata.json": JSON.stringify({ ...metadata, ...changes }),
-    }),
-    [],
-  );
+  reviewListing("[Submit] Example", body(extensionFields), [], {
+    ...extensionIdentity,
+    metadata: { ...metadata, ...changes } as ExtensionIdentity["metadata"],
+  });
 
 describe("basic listing checks", () => {
-  test("validates optional public listing IDs before requesting approval", () => {
-    for (const fields of [appFields, extensionFields]) {
-      for (const id of ["my-project", "", "_No response_"]) {
-        expect(
-          reviewListing("", body({ ...fields, "Listing ID": id }), [])?.passed,
-        ).toBe(true);
-      }
-      for (const id of [
-        "UPPER",
-        "../escape",
-        "two--hyphens",
-        "a".repeat(129),
-      ]) {
-        expect(
-          reviewListing("", body({ ...fields, "Listing ID": id }), [])?.passed,
-        ).toBe(false);
-      }
-    }
+  test("app identity is automatic even when an older issue contains a manual Listing ID", () => {
+    expect(
+      reviewListing(
+        "[App] Example",
+        body({ ...appFields, "Listing ID": "IGNORED-manual-id" }),
+        [],
+      )?.passed,
+    ).toBe(true);
+  });
+  test("ignores removed fields in new extension submissions", () => {
+    expect(
+      reviewListing(
+        "",
+        body({
+          ...extensionFields,
+          "Listing ID": "../ignored",
+          "Extension UUID": "ignored@example.org",
+          "metadata.json": "{invalid submitted metadata}",
+          "GNOME Extensions listing": "javascript:alert(1)",
+          "Your relationship to the extension": "_No response_",
+        }),
+        [],
+        extensionIdentity,
+      )?.passed,
+    ).toBe(true);
   });
 
   test("accepts complete app submissions and the official minimal extension metadata", () => {
@@ -76,7 +101,12 @@ describe("basic listing checks", () => {
       true,
     );
     expect(
-      reviewListing("[Submit] Example", body(extensionFields), [])?.passed,
+      reviewListing(
+        "[Submit] Example",
+        body(extensionFields),
+        [],
+        extensionIdentity,
+      )?.passed,
     ).toBe(true);
     // Numeric version and metadata URL are optional for the local catalog.
     expect(
@@ -100,25 +130,6 @@ describe("basic listing checks", () => {
   });
 
   test("reports incomplete and malformed extension metadata", () => {
-    for (const raw of [
-      "",
-      "_No response_",
-      "{broken}",
-      "[]",
-      "null",
-      '"text"',
-      "42",
-    ]) {
-      const result = reviewListing(
-        "[Submit] Example",
-        body({ ...extensionFields, "metadata.json": raw }),
-        [],
-      );
-      expect(result?.passed).toBe(false);
-      expect(
-        result?.checks.find((check) => check.name === "metadata.json")?.passed,
-      ).toBe(false);
-    }
     for (const changes of [
       { uuid: "not-a-uuid" },
       { uuid: "name@example.org/escape" },
@@ -141,7 +152,12 @@ describe("basic listing checks", () => {
   test("rejects duplicate submissions and matches updates to catalog UUIDs", () => {
     const catalog = [{ metadata }];
     expect(
-      reviewListing("[Submit] Example", body(extensionFields), catalog)?.passed,
+      reviewListing(
+        "[Submit] Example",
+        body(extensionFields),
+        catalog,
+        extensionIdentity,
+      )?.passed,
     ).toBe(false);
     const update = {
       "Extension name": metadata.name,
@@ -224,7 +240,7 @@ describe("basic listing checks", () => {
     ).toBe(true);
   });
 
-  test("validates HTTPS and GNOME listing URL syntax without network requests", () => {
+  test("validates HTTPS and legacy update GNOME listing URLs without network requests", () => {
     for (const url of [
       "javascript:alert(1)",
       "http://example.org",
@@ -240,6 +256,12 @@ describe("basic listing checks", () => {
     expect(isPublicHttpsUrl("https://gitlab.gnome.org/example/project")).toBe(
       true,
     );
+    const update = {
+      ...extensionFields,
+      "Extension UUID": metadata.uuid,
+      "Requested changes": "Correct the GNOME listing URL.",
+      "Your relationship to the extension": "Author",
+    };
     for (const url of [
       "https://extensions.gnome.org.attacker.org/extension/1/test",
       "https://extensions.gnome.org/",
@@ -247,20 +269,20 @@ describe("basic listing checks", () => {
     ])
       expect(
         reviewListing(
-          "[Submit] Example",
-          body({ ...extensionFields, "GNOME Extensions listing": url }),
-          [],
+          "[Update] Example",
+          body({ ...update, "GNOME Extensions listing": url }),
+          [{ metadata }],
         )?.passed,
       ).toBe(false);
     expect(
       reviewListing(
-        "[Submit] Example",
+        "[Update] Example",
         body({
-          ...extensionFields,
+          ...update,
           "GNOME Extensions listing":
             "https://extensions.gnome.org/extension/123/example/",
         }),
-        [],
+        [{ metadata }],
       )?.passed,
     ).toBe(true);
   });
@@ -363,7 +385,9 @@ function fakeGitHub() {
     event(): ReviewEvent {
       return { action: "opened", issue: structuredClone(issue) };
     },
-    confirmation(fingerprint = listingFingerprint(issue)): ReviewEvent {
+    confirmation(
+      fingerprint = listingFingerprint(issue, appIdentity),
+    ): ReviewEvent {
       return {
         action: "created",
         issue: structuredClone(issue),
@@ -378,6 +402,132 @@ function fakeGitHub() {
 }
 
 describe("automated checks then human confirmation", () => {
+  test("extension review detects the UUID and binds confirmation to repository metadata", async () => {
+    const api = fakeGitHub();
+    api.issue.title = "[Submit] Example";
+    api.issue.body = body(extensionFields);
+    const report = await runListingReview(api.event(), api.request, []);
+    const fingerprint = listingFingerprint(api.issue, extensionIdentity);
+    expect(report).toContain(`Extension UUID: \`${metadata.uuid}\``);
+    expect(report).toContain(`/blob/${extensionIdentity.commit}/metadata.json`);
+    expect(report).toContain(`/publish-listing ${fingerprint}`);
+    expect(
+      await runListingReview(
+        api.confirmation(fingerprint),
+        api.request,
+        [],
+        undefined,
+        async () => ({ ...extensionIdentity, commit: "c".repeat(40) }),
+      ),
+    ).toContain("Confirmation refused");
+    expect(
+      await runListingReview(api.confirmation(fingerprint), api.request, []),
+    ).toContain("Human confirmation recorded");
+  });
+
+  test("extension discovery errors and invalid repository metadata block approval", async () => {
+    const api = fakeGitHub();
+    api.issue.title = "[Submit] Example";
+    api.issue.body = body(extensionFields);
+    for (const resolve of [
+      async () => {
+        throw new Error("No metadata.json");
+      },
+      async () => ({
+        ...extensionIdentity,
+        metadata: { ...metadata, "shell-version": [] },
+      }),
+    ]) {
+      const report = await runListingReview(
+        api.event(),
+        api.request,
+        [],
+        undefined,
+        resolve,
+      );
+      expect(report).toContain("checks:failed");
+      expect(report).not.toContain("/publish-listing");
+      expect(api.issue.labels.map((label) => label.name)).toContain(
+        reviewLabels.changes,
+      );
+    }
+    const offline = renderReview(
+      reviewListing(api.issue.title, api.issue.body, []),
+      listingFingerprint(api.issue),
+    );
+    expect(offline).not.toContain("/publish-listing");
+  });
+  test("manual reruns read live issue content and generate a fresh repository identity report", async () => {
+    const api = fakeGitHub();
+    const report = await runListingReview(
+      { inputs: { issue_number: "1" } },
+      api.request,
+      [],
+    );
+    expect(report).toContain("App ID: `org.example.App`");
+    expect(report).toContain(
+      `/publish-listing ${listingFingerprint(api.issue, appIdentity)}`,
+    );
+    expect(api.issue.labels.map((label) => label.name)).toContain(
+      reviewLabels.pending,
+    );
+  });
+
+  test("manual reruns reject invalid issue numbers before any GitHub request", async () => {
+    for (const number of [
+      undefined,
+      1,
+      "0",
+      "01",
+      "-1",
+      "1/labels",
+      "1; echo nope",
+      "999999999999999999",
+    ]) {
+      let calls = 0;
+      await expect(
+        runListingReview({ inputs: { issue_number: number } }, async () => {
+          calls++;
+          throw new Error("Unexpected request");
+        }, []),
+      ).rejects.toThrow("positive issue number");
+      expect(calls).toBe(0);
+    }
+  });
+  test("repository lookup failures request information instead of issuing an approval command", async () => {
+    const api = fakeGitHub();
+    const report = await runListingReview(
+      api.event(),
+      api.request,
+      [],
+      async () => {
+        throw new Error("No app ID found.");
+      },
+    );
+    expect(report).toContain("checks:failed");
+    expect(report).toContain("No app ID found");
+    expect(report).not.toContain("/publish-listing");
+    expect(api.issue.labels.map((label) => label.name)).toContain(
+      reviewLabels.changes,
+    );
+  });
+
+  test("reports the detected identity and invalidates approval after an upstream revision changes", async () => {
+    const api = fakeGitHub();
+    const report = await runListingReview(api.event(), api.request, []);
+    expect(report).toContain("App ID: `org.example.App`");
+    expect(report).toContain(`/blob/${appIdentity.commit}/${appIdentity.path}`);
+    expect(
+      await runListingReview(api.confirmation(), api.request, [], async () => ({
+        ...appIdentity,
+        commit: "b".repeat(40),
+      })),
+    ).toContain("Confirmation refused");
+    expect(api.issue.labels.map((label) => label.name)).not.toContain(
+      reviewLabels.confirmed,
+    );
+  });
+
   test("passing checks wait for a human and update one bot report", async () => {
     const api = fakeGitHub();
     await runListingReview(api.event(), api.request, []);
@@ -387,7 +537,7 @@ describe("automated checks then human confirmation", () => {
     ]);
     expect(api.comments).toHaveLength(1);
     expect(api.comments[0]?.body).toContain(
-      `/confirm-listing ${listingFingerprint(api.issue)}`,
+      `/confirm-listing ${listingFingerprint(api.issue, appIdentity)}`,
     );
     await runListingReview(api.confirmation(), api.request, []);
     expect(api.issue.labels.map((label) => label.name)).toEqual([
@@ -461,7 +611,7 @@ describe("automated checks then human confirmation", () => {
     const api = fakeGitHub();
     await runListingReview(api.event(), api.request, []);
     await runListingReview(api.confirmation(), api.request, []);
-    api.issue.body = body({ ...appFields, "Author and license": "" });
+    api.issue.body = body({ ...appFields, Summary: "" });
     await runListingReview(api.event(), api.request, []);
     expect(api.issue.labels.map((label) => label.name)).toEqual([
       "unrelated",
@@ -483,7 +633,7 @@ describe("automated checks then human confirmation", () => {
     const api = fakeGitHub();
     const fakeReport = renderReview(
       reviewListing(api.issue.title, api.issue.body, []),
-      listingFingerprint(api.issue),
+      listingFingerprint(api.issue, appIdentity),
     );
     for (let id = 1; id <= 100; id++)
       api.comments.push({
@@ -543,12 +693,18 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   const workflow = Bun.YAML.parse(
     readFileSync(".github/workflows/listing-review.yml", "utf8"),
   ) as {
-    on: { issues: { types: string[] }; issue_comment: { types: string[] } };
+    on: {
+      issues: { types: string[] };
+      issue_comment: { types: string[] };
+      workflow_dispatch: {
+        inputs: { issue_number: { required: boolean; type: string } };
+      };
+    };
     permissions: Record<string, string>;
-    concurrency: { group: string; "cancel-in-progress": boolean };
     jobs: {
       review: {
         if: string;
+        concurrency: { group: string; "cancel-in-progress": boolean };
         steps: {
           uses?: string;
           run?: string;
@@ -559,10 +715,22 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   };
   expect(workflow.on.issues.types).toEqual(["opened", "edited", "reopened"]);
   expect(workflow.on.issue_comment.types).toEqual(["created"]);
+  expect(workflow.on.workflow_dispatch.inputs.issue_number).toMatchObject({
+    required: true,
+    type: "string",
+  });
   expect(workflow.permissions).toEqual({ contents: "read", issues: "write" });
-  expect(workflow.concurrency.group).toContain("github.event.issue.number");
-  expect(workflow.concurrency["cancel-in-progress"]).toBe(false);
+  expect(workflow.jobs.review.concurrency.group).toContain(
+    "github.event.issue.number",
+  );
+  expect(workflow.jobs.review.concurrency["cancel-in-progress"]).toBe(false);
   expect(workflow.jobs.review.if).toContain("!github.event.issue.pull_request");
+  expect(workflow.jobs.review.if).toContain(
+    "github.event_name == 'workflow_dispatch'",
+  );
+  expect(workflow.jobs.review.if).toContain(
+    "github.event.repository.default_branch",
+  );
   const steps = workflow.jobs.review.steps;
   const checkout = steps.find((step) =>
     step.uses?.startsWith("actions/checkout@"),
@@ -575,6 +743,8 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   for (const step of steps.filter((step) => step.uses))
     expect(step.uses).toMatch(/@[a-f0-9]{40}$/);
   expect(steps.filter((step) => step.run).map((step) => step.run)).toEqual([
+    "bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/listing-review.test.ts",
+    "bun test tests/extension-submission-workflow.test.ts",
     "bun scripts/listing-review.ts --github",
   ]);
 });

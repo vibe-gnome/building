@@ -8,12 +8,6 @@ body:
         Basic metadata checks run automatically after submission and edits.
         A maintainer must then review and confirm your app before it can be listed.
   - type: input
-    id: listing-id
-    attributes:
-      label: Listing ID
-      description: Optional URL ID using lowercase letters, numbers, and hyphens. Keep it stable after publication. Defaults to submission-<issue-number>.
-      placeholder: my-gnome-project
-  - type: input
     id: name
     attributes:
       label: App name
@@ -23,6 +17,7 @@ body:
     id: url
     attributes:
       label: Repository or project URL
+      description: Link to the repository root on GitHub, GitLab.com, or GNOME GitLab. The app ID is detected from its metadata.
       placeholder: https://github.com/owner/repository
     validations:
       required: true
@@ -31,18 +26,5 @@ body:
     attributes:
       label: Summary
       description: What does this app do and who is it for?
-    validations:
-      required: true
-  - type: textarea
-    id: setup
-    attributes:
-      label: Installation and usage
-      description: Include prerequisites, packaging, and a short usage example.
-    validations:
-      required: true
-  - type: input
-    id: attribution
-    attributes:
-      label: Author and license
     validations:
       required: true

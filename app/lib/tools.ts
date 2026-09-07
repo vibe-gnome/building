@@ -1,6 +1,7 @@
 export type ToolCategory = "skills";
 
 export interface ToolEntry {
+  dbId?: number;
   id: string;
   name: string;
   description: string;

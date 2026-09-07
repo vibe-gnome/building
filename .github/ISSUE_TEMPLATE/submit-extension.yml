@@ -5,15 +5,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Share your GNOME Shell extension. Basic metadata checks run automatically after submission and edits.
+        Share your GNOME Shell extension. The UUID and metadata.json are read automatically from your repository after submission and edits.
         A maintainer must then review and confirm the extension before it can be listed.
         Extensions follow the [official GNOME guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html).
-  - type: input
-    id: listing-id
-    attributes:
-      label: Listing ID
-      description: Optional URL ID using lowercase letters, numbers, and hyphens. Keep it stable after publication. Defaults to submission-<issue-number>.
-      placeholder: my-gnome-project
   - type: input
     id: extension-name
     attributes:
@@ -24,21 +18,8 @@ body:
     id: repository
     attributes:
       label: Source repository
+      description: Public repository root on GitHub, GitLab.com, or GNOME GitLab containing one extension metadata.json.
       placeholder: https://github.com/username/extension
-    validations:
-      required: true
-  - type: input
-    id: gnome-url
-    attributes:
-      label: GNOME Extensions listing
-      description: Link to extensions.gnome.org, if published there.
-      placeholder: https://extensions.gnome.org/extension/...
-  - type: textarea
-    id: metadata
-    attributes:
-      label: metadata.json
-      description: Paste your extension's existing GNOME metadata.json.
-      render: json
     validations:
       required: true
   - type: textarea
@@ -56,12 +37,5 @@ body:
   - type: textarea
     id: preview
     attributes:
-      label: Icon or screenshots
-      description: Optional. Attach images or link to the assets in your repository and include attribution where needed.
-  - type: input
-    id: relationship
-    attributes:
-      label: Your relationship to the extension
-      placeholder: Author, maintainer, or community member
-    validations:
-      required: true
+      label: Screenshots
+      description: Optional. Attach screenshots or link to them in your repository and include attribution where needed.

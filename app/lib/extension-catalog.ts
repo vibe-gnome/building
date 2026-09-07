@@ -1,4 +1,5 @@
 export interface ExtensionListing {
+  dbId?: number;
   slug: string;
   metadata: {
     uuid: string;

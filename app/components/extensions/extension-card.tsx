@@ -1,6 +1,7 @@
 import { ArrowUpRight, ChevronRight } from "lucide-react";
 import { Link } from "react-router";
 import { type ExtensionListing, formatDate } from "../../lib/extension-catalog";
+import { listingPath } from "../../lib/listing-links";
 
 export function ExtensionIcon({
   entry,
@@ -30,7 +31,10 @@ export function ExtensionCard({ entry }: { entry: ExtensionListing }) {
       <div className="card-heading">
         <ExtensionIcon entry={entry} />
         <div>
-          <Link className="extension-title" to={`/extensions/${entry.slug}`}>
+          <Link
+            className="extension-title"
+            to={listingPath("extensions", entry)}
+          >
             <h2>{entry.metadata.name}</h2>
           </Link>
           <span className="author">by {entry.author}</span>
@@ -59,7 +63,7 @@ export function ExtensionCard({ entry }: { entry: ExtensionListing }) {
         <a href={entry.source} target="_blank" rel="noreferrer">
           Source <ArrowUpRight size={15} aria-hidden="true" />
         </a>
-        <Link to={`/extensions/${entry.slug}`}>
+        <Link to={listingPath("extensions", entry)}>
           View extension <ChevronRight size={16} aria-hidden="true" />
         </Link>
       </div>

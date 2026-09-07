@@ -85,7 +85,7 @@ describe("reviewed listing integrity", () => {
 });
 
 describe("issue submission workflow", () => {
-  for (const action of ["submit", "update", "remove"] as const) {
+  for (const action of ["submit", "remove"] as const) {
     test(`${action} targets a real form with matching prefill IDs`, () => {
       const entry = extensions[0];
       if (!entry) throw new Error("The catalog must have a fixture listing");
@@ -102,9 +102,10 @@ describe("issue submission workflow", () => {
       const ids = form.body.flatMap((field) => (field.id ? [field.id] : []));
       expect(new Set(ids).size).toBe(ids.length);
       if (action !== "submit") {
-        for (const key of ["extension-name", "uuid", "repository"])
+        for (const key of ["extension-name", "repository"])
           expect(ids).toContain(key);
-        expect(url.searchParams.get("uuid")).toBe(entry.metadata.uuid);
+        expect(ids).not.toContain("uuid");
+        expect(url.searchParams.has("uuid")).toBe(false);
         expect(url.searchParams.get("repository")).toBe(entry.source);
       }
     });
@@ -114,7 +115,7 @@ describe("issue submission workflow", () => {
     if (!entry) throw new Error("Missing fixture");
     const name = "Example & labels=approved #1";
     const url = new URL(
-      issueUrl("update", { ...entry, metadata: { ...entry.metadata, name } }),
+      issueUrl("remove", { ...entry, metadata: { ...entry.metadata, name } }),
     );
     expect(url.searchParams.get("extension-name")).toBe(name);
     expect(url.searchParams.has("labels")).toBe(false);

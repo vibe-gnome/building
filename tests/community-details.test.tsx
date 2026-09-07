@@ -14,6 +14,8 @@ test("apps and skills link to details that display views and preserve project li
   const apps: ShowcaseEntry[] = [
     {
       id: "example-app",
+      dbId: 1,
+      appId: "org.example.Example_App",
       name: "Example App",
       summary: "App description",
       href: "https://example.com/app",
@@ -24,6 +26,7 @@ test("apps and skills link to details that display views and preserve project li
   const skills: ToolEntry[] = [
     {
       id: "example-skill",
+      dbId: 2,
       name: "Example Skill",
       description: "Skill description",
       href: "https://example.com/skill",
@@ -41,7 +44,9 @@ test("apps and skills link to details that display views and preserve project li
         )}
       </MemoryRouter>,
     );
-    expect(index).toContain(`href="/${category}/${slug}"`);
+    expect(index).toContain(
+      `href="/${category}/${category === "apps" ? 1 : 2}/${slug}"`,
+    );
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <CommunityDetail

@@ -3,26 +3,25 @@
 Use the "Submit extension" action at `/extensions`. It opens the
 `submit-extension.yml` GitHub issue form in `vibe-gnome/building`.
 The existing GNOME `metadata.json` is the source for UUID, version,
-description, and Shell compatibility.
+description, and Shell compatibility. The workflow reads this file from a pinned
+commit in the public repository; no UUID or pasted metadata is requested. The
+repository must contain exactly one metadata.json outside test/example/vendor
+directories. GitHub, GitLab.com, and GNOME GitLab roots are supported.
 
 Copy-ready submission outline (replace the example values with upstream facts):
 
 ```text
 Extension name: My Extension
-Listing ID: my-extension
 Source repository: https://github.com/your-name/your-extension
-GNOME Extensions listing: Leave empty unless published on extensions.gnome.org.
-metadata.json: Paste the complete metadata.json from the release being submitted.
 Summary: Describe what the extension does and any additional requirements.
 Category and tags: Workflow, workspaces
-Icon or screenshots: Link to the source assets and include license/attribution.
-Your relationship to the extension: Author
+Screenshots: Attach screenshots or link to them and include attribution where needed.
 ```
 
-For changes to an existing listing, open its detail page and select its update
-or report link to open a GitHub issue. Its name, UUID, and source repository are prefilled.
-Include the release or commit supporting the request. Submissions and updates
-first receive automatic basic checks; edit the issue to fix any reported fields.
+For changes to an existing listing, open its detail page and select **Report
+listing** to open a GitHub issue for human triage. Its name and source repository
+are prefilled. Include the release or commit supporting the request in the issue discussion.
+New submissions first receive automatic basic checks; edit the issue to fix any reported fields.
 A maintainer then reviews the source and posts the `/publish-listing` command
 from the passing report. The publishing action rechecks the submission and writes
 the accepted record and review evidence to D1. It appears without rebuilding the
@@ -39,3 +38,13 @@ bun examples/catalog-query.ts
 
 The example searches for Kitty extensions compatible with GNOME Shell 50.
 See [listing review](../docs/implementation/listing-review.md) for acceptance.
+
+New links use `/extensions/<db-id>/<uuid-before-@>`. The database assigns the ID,
+and legacy URLs redirect while retaining view counts. The report/removal form
+has no Extension UUID or Reason field; maintainers can discuss the request in the issue.
+
+Preview repository discovery without writing to GitHub:
+
+```sh
+bun examples/resolve-extension-id.ts https://github.com/stonega/codex-usage-indicator
+```

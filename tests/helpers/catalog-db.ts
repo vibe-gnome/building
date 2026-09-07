@@ -5,15 +5,21 @@ import { createCatalogStore } from "../../app/server/catalog-store";
 import { createViewStore } from "../../app/server/view-store";
 import type { SqlQuery } from "../../scripts/d1-catalog";
 
-export function catalogDatabase(beforeCatalog?: (db: Database) => void) {
+export function catalogDatabase(
+  beforeCatalog?: (db: Database) => void,
+  beforeAppIdentity?: (db: Database) => void,
+) {
   const db = new Database(":memory:");
   db.exec("PRAGMA foreign_keys = ON");
   for (const file of [
     "0001_listing_views.sql",
     "0002_catalog.sql",
     "0003_catalog_seed.sql",
+    "0004_app_identity.sql",
+    "0005_listing_ids.sql",
   ]) {
     if (file === "0002_catalog.sql") beforeCatalog?.(db);
+    if (file === "0004_app_identity.sql") beforeAppIdentity?.(db);
     db.exec(
       readFileSync(
         new URL(`../../app/server/migrations/${file}`, import.meta.url),

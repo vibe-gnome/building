@@ -1,5 +1,8 @@
 import { appendFile } from "node:fs/promises";
+import { type AppIdentity, appIdentitySlug } from "../app/lib/app-identity";
 import type { ExtensionListing } from "../app/lib/extension-catalog";
+import type { ExtensionIdentity } from "../app/lib/extension-identity";
+import { listingPath } from "../app/lib/listing-links";
 import { parseIssueFields, reviewListing } from "../app/lib/listing-review";
 import {
   type CatalogListing,
@@ -7,11 +10,24 @@ import {
   type ListingCategory,
 } from "../app/lib/listings";
 import {
+  type ResolveAppIdentity,
+  resolveAppIdentity,
+} from "../app/server/app-identity";
+import {
+  type ResolveExtensionIdentity,
+  resolveExtensionIdentity,
+} from "../app/server/extension-identity";
+import {
   type AuditReport,
   checkSkillAudits,
   submissionTarget,
 } from "./check-skill-audits";
-import { d1QueryFromEnv, type SqlQuery } from "./d1-catalog";
+import {
+  assertAppIdentitySchema,
+  assertListingIdSchema,
+  d1QueryFromEnv,
+  type SqlQuery,
+} from "./d1-catalog";
 import {
   type GitHubRequest,
   githubRequest,
@@ -57,13 +73,21 @@ export function publicationData(
   issue: Issue,
   existing: ExtensionListing | null,
   now: string,
+  appIdentity?: AppIdentity,
+  existingSlug?: string,
+  extensionIdentity?: ExtensionIdentity,
 ): { category: ListingCategory; slug: string; payload: CatalogListing } {
   const field = fieldsFor(issue.body ?? "");
-  const slug = field("Listing ID", `submission-${issue.number}`);
+  const app = !!field("App name") && !field("Skill name");
+  if (app && !appIdentity)
+    throw new Error("A repository app ID is required for publication.");
+  const slug =
+    existingSlug ??
+    (app && appIdentity
+      ? appIdentitySlug(appIdentity.appId)
+      : `submission-${issue.number}`);
   if (!isListingSlug(slug))
-    throw new Error(
-      "Listing ID must be at most 128 lowercase letters, numbers, and hyphens.",
-    );
+    throw new Error("The stored listing key is invalid.");
   if (field("Skill name")) {
     const url = submissionTarget(issue.body ?? "");
     for (const label of [
@@ -94,6 +118,7 @@ export function publicationData(
       payload: {
         id: slug,
         name: field("App name"),
+        appId: appIdentity?.appId,
         summary: field("Summary"),
         href: field("Repository or project URL"),
         submittedBy: field("Author and license"),
@@ -103,9 +128,13 @@ export function publicationData(
           .filter(Boolean),
       },
     };
-  const updating = !!field("Extension UUID");
-  const raw = field(updating ? "Updated metadata.json" : "metadata.json");
-  const metadata = raw ? metadataJson(raw) : existing?.metadata;
+  const updating = !extensionIdentity && !!field("Extension UUID");
+  const raw = updating ? field("Updated metadata.json") : "";
+  const metadata = updating
+    ? raw
+      ? metadataJson(raw)
+      : existing?.metadata
+    : extensionIdentity?.metadata;
   if (!metadata)
     throw new Error("Extension metadata is required for publication.");
   if (updating && !existing)
@@ -128,8 +157,9 @@ export function publicationData(
         new URL(source).pathname.split("/").filter(Boolean)[0] ??
         "Community",
       source,
-      gnomeUrl:
-        field("GNOME Extensions listing", existing?.gnomeUrl) || undefined,
+      gnomeUrl: updating
+        ? field("GNOME Extensions listing", existing?.gnomeUrl) || undefined
+        : existing?.gnomeUrl,
       category: parts[0] ?? existing?.category ?? "Community",
       tags: parts.length ? parts.slice(1) : (existing?.tags ?? []),
       icon: existing?.icon ?? "/logo.svg",
@@ -152,7 +182,11 @@ export function publicationData(
 
 export const publishSql = `INSERT INTO listings
   (category, slug, status, payload, source_issue, revision, submission_fingerprint, reviewed_by, evidence, created_at, updated_at)
-  VALUES (?1, ?2, 'published', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9)
+  SELECT ?1, ?2, 'published', ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?9
+  WHERE ?1 != 'apps' OR json_extract(?3, '$.appId') IS NULL OR NOT EXISTS (
+    SELECT 1 FROM listings WHERE category = 'apps' AND slug != ?2
+      AND json_extract(payload, '$.appId') = json_extract(?3, '$.appId')
+  )
   ON CONFLICT (category, slug) DO UPDATE SET
     payload = excluded.payload, status = 'published', source_issue = excluded.source_issue,
     revision = excluded.revision, submission_fingerprint = excluded.submission_fingerprint,
@@ -195,6 +229,8 @@ export async function publishListing(
   github: GitHubRequest,
   query: SqlQuery,
   checkAudits = checkSkillAudits,
+  resolveIdentity: ResolveAppIdentity = resolveAppIdentity,
+  resolveExtension: ResolveExtensionIdentity = resolveExtensionIdentity,
 ): Promise<string> {
   const command = event.comment?.body
     .trim()
@@ -213,17 +249,40 @@ export async function publishListing(
   if (!["write", "admin"].includes(permission.permission))
     throw new Error("Publication requires repository write access.");
   const issue = await github<Issue>(`/issues/${event.issue.number}`);
-  const fingerprint = listingFingerprint(issue);
-  if (
-    issue.state !== "open" ||
-    issue.pull_request ||
-    command[1] !== fingerprint
-  )
+  const issueFingerprint = listingFingerprint(issue);
+  if (issue.state !== "open" || issue.pull_request)
     throw new Error(
       "Submission changed or closed. Wait for fresh checks and approve the current fingerprint.",
     );
   const field = fieldsFor(issue.body ?? "");
   const skill = !!field("Skill name");
+  let appIdentity: AppIdentity | undefined;
+  let extensionIdentity: ExtensionIdentity | undefined;
+  if (!skill && field("App name")) {
+    if (!reviewListing(issue.title, issue.body ?? "", [])?.passed)
+      throw new Error(
+        "Current listing validation failed. Fix the submission and review it again.",
+      );
+    appIdentity = await resolveIdentity(field("Repository or project URL"));
+  }
+  if (!skill && !appIdentity) {
+    const review = reviewListing(issue.title, issue.body ?? "", []);
+    if (review?.kind === "extension") {
+      if (!review.passed)
+        throw new Error(
+          "Current listing validation failed. Fix the submission and review it again.",
+        );
+      extensionIdentity = await resolveExtension(field("Source repository"));
+    }
+  }
+  const fingerprint = listingFingerprint(
+    issue,
+    appIdentity ?? extensionIdentity,
+  );
+  if (command[1] !== fingerprint)
+    throw new Error(
+      "Submission or repository revision changed. Rerun checks and approve the current fingerprint.",
+    );
   if (!(await hasPassingReport(github, issue.number, fingerprint, skill)))
     throw new Error(
       "Wait for the current submission's automated checks to pass before publishing.",
@@ -236,16 +295,20 @@ export async function publishListing(
   if (prior.results.length)
     return "This approval has already been published. No data changed.";
 
+  if (appIdentity) await assertAppIdentitySchema(query);
+  await assertListingIdSchema(query);
+
   const catalog = await query(
     "SELECT payload, revision, source_issue FROM listings WHERE category = 'extensions'",
   );
   const extensions = catalog.results.map(
     (row) => JSON.parse(String(row.payload)) as ExtensionListing,
   );
-  const existing =
-    extensions.find(
-      (entry) => entry.metadata.uuid === field("Extension UUID"),
-    ) ?? null;
+  const existing = extensionIdentity
+    ? null
+    : (extensions.find(
+        (entry) => entry.metadata.uuid === field("Extension UUID"),
+      ) ?? null);
   let audits: AuditReport | undefined;
   if (skill) {
     audits = await checkAudits(submissionTarget(issue.body ?? "").href);
@@ -254,14 +317,50 @@ export async function publishListing(
         "Both required skills.sh audits must still PASS at publication.",
       );
   } else {
-    const review = reviewListing(issue.title, issue.body ?? "", extensions);
+    const review = reviewListing(
+      issue.title,
+      issue.body ?? "",
+      extensions,
+      extensionIdentity,
+    );
     if (!review?.passed)
       throw new Error(
         "Current listing validation failed. Fix the submission and review it again.",
       );
   }
   const now = new Date().toISOString();
-  const { category, slug, payload } = publicationData(issue, existing, now);
+  const previousSubmission =
+    appIdentity || skill
+      ? (
+          await query(
+            "SELECT slug, payload, revision, source_issue FROM listings WHERE category = ? AND source_issue = ?",
+            [skill ? "skills" : "apps", issue.number],
+          )
+        ).results[0]
+      : undefined;
+  if (previousSubmission && appIdentity) {
+    const previousId = JSON.parse(String(previousSubmission.payload)).appId;
+    if (previousId && previousId !== appIdentity.appId)
+      throw new Error(
+        "The repository app ID changed for an existing listing. A maintainer must resolve the identity change.",
+      );
+  }
+  const { category, slug, payload } = publicationData(
+    issue,
+    existing,
+    now,
+    appIdentity,
+    previousSubmission ? String(previousSubmission.slug) : undefined,
+    extensionIdentity,
+  );
+  if (appIdentity) {
+    const duplicate = await query(
+      "SELECT slug FROM listings WHERE category = 'apps' AND json_extract(payload, '$.appId') = ? AND slug != ?",
+      [appIdentity.appId, slug],
+    );
+    if (duplicate.results.length)
+      throw new Error("This app ID belongs to another listing.");
+  }
   const previous = existing
     ? {
         results: catalog.results.filter(
@@ -275,10 +374,15 @@ export async function publishListing(
   const row = previous.results[0];
   if (row && !existing && row.source_issue !== issue.number)
     throw new Error(
-      "Listing ID belongs to another submission. Choose a unique Listing ID.",
+      category === "apps"
+        ? "The detected app ID belongs to another submission."
+        : "The stored listing belongs to another submission.",
     );
   const latest = await github<Issue>(`/issues/${issue.number}`);
-  if (latest.state !== "open" || listingFingerprint(latest) !== fingerprint)
+  if (
+    latest.state !== "open" ||
+    listingFingerprint(latest) !== issueFingerprint
+  )
     throw new Error(
       "Submission changed during publication. Run the checks again.",
     );
@@ -295,6 +399,8 @@ export async function publishListing(
       body: issue.body,
       approvalComment: event.comment.id,
       audits: audits ?? null,
+      appIdentity: appIdentity ?? null,
+      extensionIdentity: extensionIdentity ?? null,
     }),
     now,
     typeof row?.revision === "string" ? row.revision : null,
@@ -303,7 +409,15 @@ export async function publishListing(
     throw new Error(
       "Listing changed during publication. Review its latest version before retrying.",
     );
-  return `Published [${category}/${slug}](https://vibe-gnome.org/${category}/${slug}) to D1. Approved by ${actor}; submission fingerprint ${fingerprint}.`;
+  const identity = await query(
+    "SELECT id FROM listing_ids WHERE category = ? AND slug = ?",
+    [category, slug],
+  );
+  const path = listingPath(category, {
+    ...payload,
+    dbId: Number(identity.results[0]?.id),
+  });
+  return `Published [${path}](https://vibe-gnome.org${path}) to D1. Approved by ${actor}; submission fingerprint ${fingerprint}.`;
 }
 
 if (import.meta.main) {

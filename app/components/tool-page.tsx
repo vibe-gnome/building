@@ -1,5 +1,6 @@
 import { ArrowUpRight, Plus } from "lucide-react";
 import { Link } from "react-router";
+import { listingPath } from "../lib/listing-links";
 import {
   type ToolCategory,
   type ToolEntry,
@@ -14,7 +15,7 @@ function ToolList({ entries }: { entries: readonly ToolEntry[] }) {
         <article className="extension-card community-entry" key={entry.id}>
           <span className="eyebrow">Community submission</span>
           <h2>
-            <Link to={`/skills/${entry.id}`}>{entry.name}</Link>
+            <Link to={listingPath("skills", entry)}>{entry.name}</Link>
           </h2>
           <p className="card-summary">{entry.description}</p>
           {entry.bestFor ? (

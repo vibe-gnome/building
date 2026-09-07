@@ -39,7 +39,9 @@ describe("community showcases", () => {
     );
     expect(routeConfig).toContain('index("routes/extensions.tsx")');
     expect(routeConfig).not.toContain("routes/extensions-manage.tsx");
-    expect(routeConfig).toContain('route(":slug", "routes/extension.tsx")');
+    expect(routeConfig).toContain(
+      'route(":dbId/:slug?", "routes/extension.tsx")',
+    );
     expect(routeConfig).toContain(
       'route("skills", "routes/skills-layout.tsx", [',
     );

@@ -6,6 +6,11 @@ permalink, GNOME use case, installation example, license, submitter relationship
 and required permissions. Field headings used by the checker are an interface:
 update `submissionTarget` and its tests when renaming them.
 
+The form has no Listing ID. D1 assigns a stable numeric ID, and the final
+segment of the verified skills.sh URL supplies the readable name in
+`/skills/<db-id>/<skill-name>`. Older manual IDs are ignored; previously published
+skills keep their internal key and view counts when republished.
+
 ## Required audits
 
 The skill's **Security Audits** on skills.sh must contain both:

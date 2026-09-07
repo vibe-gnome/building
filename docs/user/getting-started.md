@@ -26,5 +26,5 @@ entry to the directory.
 
 Browse, search, and filter the extension catalog at `/extensions`. Each listing
 includes upstream installation instructions and source links. Use **Submit
-extension** to open the GitHub submission form. Each detail page has GitHub
-issue links for updates and reports. See [Extensions](extensions.md) for details.
+extension** to open the GitHub submission form. Each detail page has a **Report
+listing** link for corrections and reports. See [Extensions](extensions.md) for details.
