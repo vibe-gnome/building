@@ -13,15 +13,18 @@ test.each([
   { icon: undefined },
   {
     icon: `https://raw.githubusercontent.com/example/extension/${"a".repeat(40)}/icon.svg`,
+    screenshot:
+      "https://repository-images.githubusercontent.com/12345/extension-preview.png",
   },
 ])(
   "current extension form passes review and publication: %j",
-  async ({ icon }) => {
+  async ({ icon, screenshot }) => {
     const identity = {
       repository: "https://github.com/example/extension",
       commit: "a".repeat(40),
       path: "metadata.json",
       ...(icon ? { icon } : {}),
+      ...(screenshot ? { screenshot } : {}),
       metadata: {
         uuid: "example@example.org",
         name: "Example Extension",
@@ -111,6 +114,7 @@ test.each([
       expect(issue.labels).toContainEqual({ name: "review:needs-human" });
       expect(comments).toHaveLength(1);
       expect(report).toContain(icon ?? "Extensions puzzle icon");
+      if (screenshot) expect(report).toContain(screenshot);
       expect(await data.catalog.get("extensions", "submission-42")).toBeNull();
       const command = report.match(/\/publish-listing [a-f0-9]{64}/)?.[0];
       if (!command)
@@ -138,6 +142,7 @@ test.each([
       expect(saved?.category).toBe("Workflow");
       expect(saved?.tags).toEqual(["workspaces"]);
       expect(saved?.icon).toBe(icon ?? "/icons/showcase/extensions.svg");
+      expect(saved?.screenshot).toBe(screenshot);
       expect(saved?.gnomeUrl).toBeUndefined();
       expect(result).toContain(`/extensions/${saved?.dbId}/example`);
       const row = (

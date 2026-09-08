@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import seed from "../app/data/extensions.json";
+import type { AppIdentity } from "../app/lib/app-identity";
+import type { ExtensionIdentity } from "../app/lib/extension-identity";
 import { parseAudits } from "../scripts/check-skill-audits";
 import {
   type GitHubRequest,
@@ -165,17 +167,19 @@ test("review and publication jobs share issue locks and validate trusted code be
 function setup(
   title = "[App] Editor",
   values = appFields as Record<string, string>,
+  identity?: AppIdentity | ExtensionIdentity,
 ) {
   const data = catalogDatabase();
   databases.push(data);
   const issue = { number: 42, title, body: fields(values), state: "open" };
   const fingerprint = listingFingerprint(
     issue,
-    values["App name"]
-      ? appIdentity
-      : values["Extension name"] && !values["Requested changes"]
-        ? extensionIdentity
-        : undefined,
+    identity ??
+      (values["App name"]
+        ? appIdentity
+        : values["Extension name"] && !values["Requested changes"]
+          ? extensionIdentity
+          : undefined),
   );
   const event: PublishEvent = {
     action: "created",
@@ -225,6 +229,51 @@ function setup(
 }
 
 describe("human-approved database publication", () => {
+  test.each(["apps", "extensions"] as const)(
+    "publishes the reviewed social preview for %s and rejects changed previews",
+    async (category) => {
+      const screenshot =
+        "https://repository-images.githubusercontent.com/12345/reviewed-preview.png";
+      const identity = {
+        ...(category === "apps" ? appIdentity : extensionIdentity),
+        screenshot,
+      };
+      const data = setup(
+        category === "apps" ? "[App] Editor" : "[Submit] Example",
+        category === "apps" ? appFields : extensionFields,
+        identity,
+      );
+      const publish = (image: string | undefined) =>
+        publishListing(
+          data.event,
+          data.github,
+          data.query,
+          undefined,
+          async () => ({ ...appIdentity, screenshot: image }),
+          async () => ({ ...extensionIdentity, screenshot: image }),
+        );
+      await expect(
+        publish(
+          "https://repository-images.githubusercontent.com/12345/changed-preview.png",
+        ),
+      ).rejects.toThrow("revision changed");
+      await expect(publish(undefined)).rejects.toThrow("revision changed");
+      await publish(screenshot);
+      const entry = await data.catalog.getById(category, 3);
+      expect(entry?.screenshot).toBe(screenshot);
+      const row = (
+        await data.query(
+          "SELECT evidence, payload FROM listing_reviews WHERE source_issue = 42",
+        )
+      ).results[0];
+      expect(JSON.parse(String(row?.payload)).screenshot).toBe(screenshot);
+      expect(
+        JSON.parse(String(row?.evidence))[
+          category === "apps" ? "appIdentity" : "extensionIdentity"
+        ].screenshot,
+      ).toBe(screenshot);
+    },
+  );
   test("publishes a confirmed extension using the original human approval comment", async () => {
     const data = setup("[Submit] Example", extensionFields);
     data.event.comment.body = data.event.comment.body.replace(

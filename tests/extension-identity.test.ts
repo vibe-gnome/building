@@ -15,12 +15,18 @@ function github(
     truncated?: boolean;
     mode?: string;
     size?: number;
+    screenshot?: string;
     entries?: Record<string, { mode?: string; size?: number }>;
   } = {},
 ) {
   const requests: { url: string; init?: RequestInit }[] = [];
   const fetcher = async (url: string, init?: RequestInit) => {
     requests.push({ url, init });
+    if (url === repository)
+      return new Response(
+        `<head>${options.screenshot ? `<meta property="og:image" content="${options.screenshot}">` : ""}</head>`,
+        { headers: { "Content-Type": "text/html" } },
+      );
     if (url.endsWith("/example/extension"))
       return Response.json({ default_branch: "main" });
     if (url.endsWith("/commits/main")) return Response.json({ sha: commit });
@@ -59,11 +65,23 @@ test("extracts extension UUID from a pinned repository metadata.json, ignoring f
     path: "src/metadata.json",
     metadata,
   });
-  expect(data.requests).toHaveLength(4);
+  expect(data.requests).toHaveLength(5);
   for (const { init } of data.requests) {
     expect(init?.redirect).toBe("error");
     expect(new Headers(init?.headers).has("Authorization")).toBe(false);
   }
+});
+
+test("includes a custom repository social preview with the extension identity", async () => {
+  const screenshot =
+    "https://repository-images.githubusercontent.com/12345/extension-preview.png";
+  const data = github(
+    { "metadata.json": JSON.stringify(metadata) },
+    { screenshot },
+  );
+  expect(
+    (await resolveExtensionIdentity(repository, data.fetcher)).screenshot,
+  ).toBe(screenshot);
 });
 
 test.each([
@@ -89,7 +107,7 @@ test.each([
         ? `https://raw.githubusercontent.com/example/extension/${commit}/${selected.split("/").map(encodeURIComponent).join("/")}`
         : undefined,
     );
-    expect(data.requests).toHaveLength(4);
+    expect(data.requests).toHaveLength(5);
   },
 );
 

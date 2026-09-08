@@ -13,21 +13,26 @@ interface TreeEntry {
 const maxFileBytes = 256 * 1024;
 
 /** Read bounded public metadata only; never run a repository's code or build. */
-async function read(
+export async function readRepositoryText(
   url: string,
   fetcher: RepositoryFetcher,
   limit: number,
-  raw = false,
+  accept = "application/json",
 ) {
   const response = await fetcher(url, {
     redirect: "error",
     signal: AbortSignal.timeout(15_000),
     headers: {
-      Accept: raw ? "application/vnd.github.raw+json" : "application/json",
+      Accept: accept,
     },
   });
   if (!response.ok)
     throw new Error(`Repository metadata request failed (${response.status}).`);
+  if (
+    accept === "text/html" &&
+    !response.headers.get("Content-Type")?.toLowerCase().includes("text/html")
+  )
+    throw new Error("Repository did not return HTML.");
   if (!response.body) throw new Error("Repository returned an empty response.");
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -64,7 +69,7 @@ export async function repositoryMetadata(
     ? `https://api.github.com/repos/${repo.project}`
     : `https://${repo.host}/api/v4/projects/${encodeURIComponent(repo.project)}`;
   const json = async (url: string) =>
-    JSON.parse(await read(url, fetcher, 8 * 1024 * 1024));
+    JSON.parse(await readRepositoryText(url, fetcher, 8 * 1024 * 1024));
   const project = await json(api);
   if (typeof project.default_branch !== "string" || !project.default_branch)
     throw new Error("The repository has no default branch.");
@@ -138,7 +143,12 @@ export async function repositoryMetadata(
       const fileUrl = github
         ? `${api}/contents/${entry.path.split("/").map(encodeURIComponent).join("/")}?ref=${commit}`
         : `${api}/repository/files/${encodeURIComponent(entry.path)}/raw?ref=${commit}`;
-      return read(fileUrl, fetcher, maxFileBytes, true);
+      return readRepositoryText(
+        fileUrl,
+        fetcher,
+        maxFileBytes,
+        "application/vnd.github.raw+json",
+      );
     },
   };
 }

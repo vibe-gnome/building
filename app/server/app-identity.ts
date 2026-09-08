@@ -3,6 +3,7 @@ import {
   type RepositoryFetcher,
   repositoryMetadata,
 } from "./repository-metadata";
+import { repositoryScreenshot } from "./repository-screenshot";
 
 export type ResolveAppIdentity = (repository: string) => Promise<AppIdentity>;
 const metadataFile = /\.(?:metainfo|appdata)\.xml(?:\.in)?$/;
@@ -88,13 +89,19 @@ export async function resolveAppIdentity(
         "Multiple app IDs found in the repository; a maintainer must resolve the ambiguity upstream.",
       );
     const identity = identities.entries().next().value;
-    if (identity)
+    if (identity) {
+      const screenshot = await repositoryScreenshot(
+        snapshot.repository,
+        fetcher,
+      );
       return {
         appId: identity[0],
         repository: snapshot.repository,
         commit,
         path: identity[1],
+        ...(screenshot ? { screenshot } : {}),
       };
+    }
   }
   throw new Error(
     "No app ID found. The repository needs AppStream metadata or a reverse-DNS .desktop file.",

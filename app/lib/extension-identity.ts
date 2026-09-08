@@ -6,4 +6,5 @@ export interface ExtensionIdentity {
   commit: string;
   path: string;
   icon?: string;
+  screenshot?: string;
 }

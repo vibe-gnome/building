@@ -8,6 +8,12 @@ commit in the public repository; no UUID or pasted metadata is requested. The
 repository must contain exactly one metadata.json outside test/example/vendor
 directories. GitHub, GitLab.com, and GNOME GitLab roots are supported.
 
+For apps and extensions hosted on GitHub, a custom repository social preview
+image is imported automatically as the listing screenshot. Set it under the
+upstream repository's **Settings > General > Social preview** before review.
+Generated GitHub cards are omitted. The detected image URL appears in the review
+report; changing it requires fresh checks and approval.
+
 Copy-ready submission outline (replace the example values with upstream facts):
 
 ```text

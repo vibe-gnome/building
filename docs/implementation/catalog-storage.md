@@ -143,6 +143,11 @@ the accepted version stays visible while an edit is under review.
   is not interpreted as executable instructions or an automatic text rewrite.
 
 All three submission forms omit Listing ID and ignore older manual values.
+Apps and extensions automatically import a custom GitHub social preview URL as
+their optional `screenshot`; no screenshot field is required in either form.
+Generated GitHub repository cards and unavailable previews are omitted. The URL
+is part of the reviewed identity and stored in the published JSON and immutable
+review evidence. Images remain hosted by GitHub and appear on detail pages.
 New app internal keys derive from the full native ID; new extension/skill keys
 use `submission-<issue-number>`. Existing app/skill issues preserve their stored
 key on republication. UUID, app ID, and source issue uniqueness prevent duplicates.

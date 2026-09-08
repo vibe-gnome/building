@@ -5,6 +5,7 @@ export interface AppIdentity {
   repository: string;
   commit: string;
   path: string;
+  screenshot?: string;
 }
 
 export function appRepository(value: string) {

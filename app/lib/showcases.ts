@@ -7,6 +7,7 @@ export interface ShowcaseEntry {
   href: string;
   name: string;
   summary: string;
+  screenshot?: string;
   submittedBy: string;
   tags: readonly string[];
 }

@@ -11,13 +11,23 @@ const entry = (path: string) => ({ path, mode: "100644", type: "blob" });
 
 function github(
   files: Record<string, string> = { [path]: metadata },
-  options: { truncated?: boolean; status?: number; size?: number } = {},
+  options: {
+    truncated?: boolean;
+    status?: number;
+    size?: number;
+    screenshot?: string;
+  } = {},
 ) {
   const requests: { url: string; init?: RequestInit }[] = [];
   const fetcher = async (url: string, init?: RequestInit) => {
     requests.push({ url, init });
     if (options.status)
       return new Response("Unavailable", { status: options.status });
+    if (url === repository)
+      return new Response(
+        `<head>${options.screenshot ? `<meta property="og:image" content="${options.screenshot}">` : ""}</head>`,
+        { headers: { "Content-Type": "text/html" } },
+      );
     if (url.endsWith("/planner"))
       return Response.json({ default_branch: "stable/next" });
     if (url.endsWith("/commits/stable%2Fnext"))
@@ -40,6 +50,14 @@ function github(
 }
 
 describe("app repository identity", () => {
+  test("includes a custom repository social preview with the app identity", async () => {
+    const screenshot =
+      "https://repository-images.githubusercontent.com/12345/app-preview.png";
+    const data = github(undefined, { screenshot });
+    expect(
+      (await resolveAppIdentity(repository, data.fetcher)).screenshot,
+    ).toBe(screenshot);
+  });
   test("normalizes repository roots and rejects unsupported or ambiguous URLs before fetching", async () => {
     expect(appRepository(`${repository}.git/`).url).toBe(repository);
     expect(
@@ -76,7 +94,7 @@ describe("app repository identity", () => {
       path,
     });
     expect(appIdentitySlug("us.hagreli.Planner")).toBe("us-hagreli-planner");
-    expect(data.requests).toHaveLength(4);
+    expect(data.requests).toHaveLength(5);
     for (const request of data.requests) {
       expect(new Headers(request.init?.headers).has("Authorization")).toBe(
         false,
@@ -98,7 +116,7 @@ describe("app repository identity", () => {
     expect((await resolveAppIdentity(repository, data.fetcher)).appId).toBe(
       "us.hagreli.Planner",
     );
-    expect(data.requests).toHaveLength(4);
+    expect(data.requests).toHaveLength(5);
   });
 
   test("supports AppStream templates and desktop file fallback without evaluating expressions", async () => {

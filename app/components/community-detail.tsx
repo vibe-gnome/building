@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router";
 import type { ShowcaseEntry } from "../lib/showcases";
 import type { ToolEntry } from "../lib/tools";
+import { ListingScreenshot } from "./listing-screenshot";
 import { ViewCount } from "./view-count";
 
 type Category = "apps" | "skills";
@@ -10,7 +11,7 @@ function normalizeEntry(entry: ShowcaseEntry | ToolEntry | null) {
   if (!entry) return null;
   return "summary" in entry
     ? { ...entry, description: entry.summary, bestFor: undefined }
-    : { ...entry, submittedBy: undefined, tags: [] };
+    : { ...entry, submittedBy: undefined, tags: [], screenshot: undefined };
 }
 
 export function communityDetailMeta(
@@ -62,6 +63,9 @@ export function CommunityDetail({
       <div className="detail-layout">
         <div className="detail-content">
           <p className="detail-summary">{entry.description}</p>
+          {category === "apps" ? (
+            <ListingScreenshot src={entry.screenshot} name={entry.name} />
+          ) : null}
           {entry.bestFor ? <p>Best for: {entry.bestFor}</p> : null}
           {entry.tags.length > 0 ? (
             <div className="tag-list">

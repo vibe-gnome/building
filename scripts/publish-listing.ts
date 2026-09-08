@@ -164,6 +164,9 @@ export function publicationData(
         name: field("App name"),
         appId: appIdentity?.appId,
         summary: field("Summary"),
+        ...(appIdentity?.screenshot
+          ? { screenshot: appIdentity.screenshot }
+          : {}),
         href: field("Repository or project URL"),
         submittedBy: field("Author and license"),
         tags: field("Tags")
@@ -207,6 +210,9 @@ export function publicationData(
       category: parts[0] ?? existing?.category ?? "Community",
       tags: parts.length ? parts.slice(1) : (existing?.tags ?? []),
       icon: extensionIconSource(extensionIdentity?.icon ?? existing?.icon),
+      ...((extensionIdentity?.screenshot ?? existing?.screenshot)
+        ? { screenshot: extensionIdentity?.screenshot ?? existing?.screenshot }
+        : {}),
       color: existing?.color ?? "blue",
       added: existing?.added ?? now.slice(0, 10),
       updated: now.slice(0, 10),

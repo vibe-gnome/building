@@ -21,6 +21,7 @@ export interface ExtensionListing {
   category: string;
   tags: string[];
   icon: string;
+  screenshot?: string;
   color: string;
   added: string;
   updated: string;

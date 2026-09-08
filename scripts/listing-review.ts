@@ -82,6 +82,9 @@ export function listingFingerprint(
                 ...("metadata" in identity && identity.icon
                   ? [identity.icon]
                   : []),
+                ...(identity.screenshot
+                  ? [{ screenshot: identity.screenshot }]
+                  : []),
               ],
             ]
           : []),
@@ -107,6 +110,8 @@ export function renderReview(
   confirmedBy?: string,
 ) {
   const passed = review?.passed ?? false;
+  const screenshot = (review?.appIdentity ?? review?.extensionIdentity)
+    ?.screenshot;
   const localIdentityCheck =
     passed &&
     ((review?.kind === "app" && !review.appIdentity) ||
@@ -145,6 +150,9 @@ export function renderReview(
             ? `Repository icon: [view image](<${review.extensionIdentity.icon}>).`
             : "No repository icon detected; the Extensions puzzle icon will be used.",
         ]
+      : []),
+    ...(screenshot
+      ? [`Screenshot: [GitHub social preview](<${screenshot}>).`, ""]
       : []),
     "These checks validate submitted fields and URL syntax. New app and extension reviews read public repository metadata to detect their identities. A maintainer must verify ownership, license, installation instructions, and suitability. Repository code is never executed. Nothing is published automatically.",
     "",

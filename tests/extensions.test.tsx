@@ -32,6 +32,25 @@ function detail(slug: string) {
 }
 
 describe("integrated extension pages", () => {
+  test("shows repository screenshots only when available", () => {
+    const entry = extensions[0];
+    if (!entry) throw new Error("Missing extension fixture");
+    for (const screenshot of [
+      undefined,
+      "https://repository-images.githubusercontent.com/12345/extension-preview.png",
+    ]) {
+      const html = render(
+        <Extension
+          {...({ loaderData: { ...entry, screenshot } } as Parameters<
+            typeof Extension
+          >[0])}
+        />,
+        "/extensions/1/codex-usage-indicator",
+      );
+      if (screenshot) expect(html).toContain(`src="${screenshot}"`);
+      else expect(html).not.toContain('class="listing-screenshot"');
+    }
+  });
   test("catalog links stay under /extensions and filters render from the URL", () => {
     const html = render(
       <Catalog

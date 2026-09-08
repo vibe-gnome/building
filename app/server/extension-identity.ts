@@ -3,6 +3,7 @@ import {
   type RepositoryFetcher,
   repositoryMetadata,
 } from "./repository-metadata";
+import { repositoryScreenshot } from "./repository-screenshot";
 
 export type ResolveExtensionIdentity = (
   repository: string,
@@ -98,11 +99,13 @@ export async function resolveExtensionIdentity(
       "Repository metadata.json must contain a literal extension UUID (name@namespace).",
     );
   const icon = repositoryIcon(snapshot, file.path, metadata.uuid);
+  const screenshot = await repositoryScreenshot(snapshot.repository, fetcher);
   return {
     metadata,
     repository: snapshot.repository,
     commit: snapshot.commit,
     path: file.path,
     ...(icon ? { icon } : {}),
+    ...(screenshot ? { screenshot } : {}),
   };
 }

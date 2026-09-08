@@ -2,6 +2,7 @@ import { ArrowLeft, ArrowUpRight, Check, Copy, Flag } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { ExtensionIcon } from "../components/extensions/extension-card";
+import { ListingScreenshot } from "../components/listing-screenshot";
 import { ViewCount } from "../components/view-count";
 import { formatDate } from "../lib/extension-catalog";
 import { issueUrl } from "../lib/extension-submissions";
@@ -77,6 +78,10 @@ export default function Extension({ loaderData: entry }: Route.ComponentProps) {
       <div className="detail-layout">
         <div className="detail-content">
           <p className="detail-summary">{entry.summary}</p>
+          <ListingScreenshot
+            src={entry.screenshot}
+            name={entry.metadata.name}
+          />
           <p>{entry.details}</p>
           <h2>Features</h2>
           <ul className="feature-list">

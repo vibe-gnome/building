@@ -18,6 +18,8 @@ test("apps and skills link to details that display views and preserve project li
       appId: "org.example.Example_App",
       name: "Example App",
       summary: "App description",
+      screenshot:
+        "https://repository-images.githubusercontent.com/12345/app-preview.png",
       href: "https://example.com/app",
       submittedBy: "Maintainer",
       tags: ["GTK"],
@@ -62,6 +64,9 @@ test("apps and skills link to details that display views and preserve project li
       `href="https://example.com/${category === "apps" ? "app" : "skill"}"`,
     );
     expect(html).not.toContain("Page not found");
+    if (category === "apps")
+      expect(html).toContain(`src="${apps[0]?.screenshot}"`);
+    else expect(html).not.toContain('class="listing-screenshot"');
   }
 });
 

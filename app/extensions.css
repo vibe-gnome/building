@@ -646,6 +646,17 @@
     line-height: 1.55;
     font-weight: 650;
   }
+  .listing-screenshot {
+    display: block;
+    margin-bottom: 24px;
+  }
+  .listing-screenshot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 1;
+    object-fit: contain;
+  }
   .detail-content h2 {
     font-size: 16px;
     font-weight: 750;

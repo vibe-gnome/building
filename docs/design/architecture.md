@@ -142,6 +142,18 @@ catalog. Missing or broken icons use the existing green Extensions showcase
 asset; legacy site-logo placeholders also render this fallback. Image colors
 are preserved in both the catalog and detail view.
 
+App and extension discovery also reads the GitHub repository page for an optional
+custom social preview image. `repository-screenshot.ts` parses only Open Graph
+image metadata in the document head using the built-in HTMLRewriter. It accepts
+GitHub's uploaded-image CDN and omits generated repository cards. The selected
+URL is recorded as `screenshot` in the identity and catalog payload, linked in
+the review, and bound to approval. Social previews live outside Git history;
+changing the preview URL requires fresh approval even at the same commit.
+Detail pages share `ListingScreenshot`, which preserves the full image and
+opens it at its original URL. Missing or failed images leave no placeholder.
+Optional preview lookup failures do not block metadata discovery. GitLab
+repositories skip this GitHub-specific lookup, and skills do not use it.
+
 Review can be rerun manually from Actions to refresh a repository revision.
 Eligible review and publication jobs share a per-issue concurrency lock. Both
 run focused tests before writes. The publisher verifies numeric ID assignment for all categories and the native

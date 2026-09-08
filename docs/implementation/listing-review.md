@@ -66,6 +66,17 @@ are ignored. The report links the selected image, and its immutable raw URL is
 included in the approval fingerprint and saved with the listing. Browsers load
 it as an image, falling back to the puzzle icon on load failure. No image bytes
 are copied into D1 or the site repository.
+
+For both apps and extensions, an optional screenshot comes from the repository's
+custom GitHub social preview (`og:image` in the page head). Only uploaded images
+on `repository-images.githubusercontent.com` are accepted. GitHub's generated
+cards, avatars, non-GitHub repositories, missing previews, and fetch failures
+produce no screenshot. The page fetch follows no redirects, sends no credentials,
+and has a 15-second timeout and 2 MiB size limit. HTMLRewriter parses metadata
+without executing scripts. The preview URL is linked in the review and bound
+to approval separately from the repository revision. Publication checks it
+again, stores it as `screenshot`, and detail pages hide images that fail to load.
+
 Validation covers:
 
 - Valid JSON object, UUID format, matching name, and non-empty description.

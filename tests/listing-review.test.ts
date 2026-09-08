@@ -751,7 +751,7 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   for (const step of steps.filter((step) => step.uses))
     expect(step.uses).toMatch(/@[a-f0-9]{40}$/);
   expect(steps.filter((step) => step.run).map((step) => step.run)).toEqual([
-    "bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/listing-review.test.ts",
+    "bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/repository-screenshot.test.ts tests/listing-review.test.ts",
     "bun test tests/extension-submission-workflow.test.ts",
     "bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts",
     "bun scripts/listing-review.ts --github",
