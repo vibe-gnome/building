@@ -217,10 +217,7 @@ export function publicationData(
       added: existing?.added ?? now.slice(0, 10),
       updated: now.slice(0, 10),
       summary: field("Summary", existing?.summary ?? metadata.description),
-      details: field(
-        "Details",
-        existing?.details ?? field("Summary", metadata.description),
-      ),
+      details: field("Details", existing?.details ?? ""),
       requirements: field(
         "Requirements",
         existing?.requirements ?? "See the source repository for requirements.",

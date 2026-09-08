@@ -32,6 +32,77 @@ function detail(slug: string) {
 }
 
 describe("integrated extension pages", () => {
+  test.each([
+    "A focused desktop extension.",
+    "  A focused\n desktop\t extension.  ",
+    "",
+    " \n\t ",
+  ])("omits duplicate or empty details: %j", (details) => {
+    const entry = extensions[0];
+    if (!entry) throw new Error("Missing extension fixture");
+    const html = render(
+      <Extension
+        {...({
+          loaderData: {
+            ...entry,
+            summary: "A focused desktop extension.",
+            details,
+          },
+        } as Parameters<typeof Extension>[0])}
+      />,
+      "/extensions/1/codex-usage-indicator",
+    );
+    expect(html).toContain(
+      '<p class="detail-summary">A focused desktop extension.</p>',
+    );
+    expect(html).not.toContain(`<p>${details}</p>`);
+    expect(html).toContain("<h2>Requirements</h2>");
+  });
+
+  test("preserves distinct details", () => {
+    const entry = extensions[0];
+    if (!entry) throw new Error("Missing extension fixture");
+    const details = "  Additional\nconfiguration options are available.  ";
+    const html = render(
+      <Extension
+        {...({ loaderData: { ...entry, details } } as Parameters<
+          typeof Extension
+        >[0])}
+      />,
+      "/extensions/1/codex-usage-indicator",
+    );
+    expect(html).toContain(`<p>${details}</p>`);
+  });
+
+  test.each([
+    { features: [] },
+    { features: ["", " \n\t "] },
+    { features: ["", "Track usage", " "] },
+  ])(
+    "shows Features only when populated: %j",
+    ({ features: fixtureFeatures }) => {
+      const features: string[] = [...fixtureFeatures];
+      const entry = extensions[0];
+      if (!entry) throw new Error("Missing extension fixture");
+      const html = render(
+        <Extension
+          {...({ loaderData: { ...entry, features } } as Parameters<
+            typeof Extension
+          >[0])}
+        />,
+        "/extensions/1/codex-usage-indicator",
+      );
+      if (features.includes("Track usage")) {
+        expect(html).toContain("<h2>Features</h2>");
+        expect(html).toContain("Track usage</li>");
+        expect(html.match(/<li>/g)).toHaveLength(1);
+      } else {
+        expect(html).not.toContain("<h2>Features</h2>");
+        expect(html).not.toContain('class="feature-list"');
+      }
+    },
+  );
+
   test("shows repository screenshots only when available", () => {
     const entry = extensions[0];
     if (!entry) throw new Error("Missing extension fixture");

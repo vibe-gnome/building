@@ -141,6 +141,10 @@ the accepted version stays visible while an edit is under review.
   and view counts. Optional `Summary`, `Details`, and `Requirements` fields can
   make specific copy changes; freeform `Requested changes` is review context and
   is not interpreted as executable instructions or an automatic text rewrite.
+  New entries leave details empty when no `Details` field is supplied. Detail
+  pages omit empty descriptions and descriptions that repeat the summary after
+  whitespace normalization. The Features section appears only when at least one
+  nonblank feature is present.
 
 All three submission forms omit Listing ID and ignore older manual values.
 Apps and extensions automatically import a custom GitHub social preview URL as

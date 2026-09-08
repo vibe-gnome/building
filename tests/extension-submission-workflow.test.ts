@@ -139,6 +139,8 @@ test.each([
       expect(resolutions).toBe(2);
       const saved = await data.catalog.get("extensions", "submission-42");
       expect(saved?.metadata).toEqual(identity.metadata);
+      expect(saved?.summary).toBe(identity.metadata.description);
+      expect(saved?.details).toBe("");
       expect(saved?.category).toBe("Workflow");
       expect(saved?.tags).toEqual(["workspaces"]);
       expect(saved?.icon).toBe(icon ?? "/icons/showcase/extensions.svg");

@@ -41,6 +41,10 @@ export default function Extension({ loaderData: entry }: Route.ComponentProps) {
     [],
   );
   if (!entry) return <NotFound />;
+  const details = entry.details.trim().replace(/\s+/g, " ");
+  const showDetails =
+    details.length > 0 && details !== entry.summary.trim().replace(/\s+/g, " ");
+  const features = entry.features.filter((feature) => feature.trim());
   const copyUuid = async () => {
     try {
       await navigator.clipboard.writeText(entry.metadata.uuid);
@@ -82,16 +86,20 @@ export default function Extension({ loaderData: entry }: Route.ComponentProps) {
             src={entry.screenshot}
             name={entry.metadata.name}
           />
-          <p>{entry.details}</p>
-          <h2>Features</h2>
-          <ul className="feature-list">
-            {entry.features.map((feature) => (
-              <li key={feature}>
-                <Check size={16} aria-hidden="true" />
-                {feature}
-              </li>
-            ))}
-          </ul>
+          {showDetails && <p>{entry.details}</p>}
+          {features.length > 0 && (
+            <>
+              <h2>Features</h2>
+              <ul className="feature-list">
+                {features.map((feature) => (
+                  <li key={feature}>
+                    <Check size={16} aria-hidden="true" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
           <h2>Requirements</h2>
           <p>{entry.requirements}</p>
           <div className="tag-list">
