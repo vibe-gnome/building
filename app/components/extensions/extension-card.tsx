@@ -1,6 +1,12 @@
 import { ArrowUpRight, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router";
-import { type ExtensionListing, formatDate } from "../../lib/extension-catalog";
+import {
+  defaultExtensionIcon,
+  type ExtensionListing,
+  extensionIconSource,
+  formatDate,
+} from "../../lib/extension-catalog";
 import { listingPath } from "../../lib/listing-links";
 
 export function ExtensionIcon({
@@ -10,13 +16,21 @@ export function ExtensionIcon({
   entry: ExtensionListing;
   large?: boolean;
 }) {
+  const source = extensionIconSource(entry.icon);
+  const [failedSource, setFailedSource] = useState<string>();
+  const icon = source === failedSource ? defaultExtensionIcon : source;
   return (
     <span
       className={`extension-icon ${large ? "large" : ""}`}
-      data-color={entry.color}
+      data-color={icon === defaultExtensionIcon ? "default" : entry.color}
     >
       <img
-        src={entry.icon}
+        key={icon}
+        src={icon}
+        onError={() => {
+          if (icon !== defaultExtensionIcon) setFailedSource(source);
+        }}
+        referrerPolicy="no-referrer"
         width={large ? 40 : 30}
         height={large ? 40 : 30}
         alt=""

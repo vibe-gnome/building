@@ -5,4 +5,5 @@ export interface ExtensionIdentity {
   repository: string;
   commit: string;
   path: string;
+  icon?: string;
 }

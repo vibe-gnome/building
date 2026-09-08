@@ -136,6 +136,11 @@ metadata is requested. Both resolvers share bounded public repository reads in
 `repository-metadata.ts`. Ambiguous/missing files or nonliteral IDs block review.
 Extension metadata and its source revision are bound to approval and read again
 before publication. Listing ID fields are absent from all submission forms.
+The same tree supplies an optional extension icon at that commit. The selected
+raw image URL is linked in the review, bound to approval, and stored in the
+catalog. Missing or broken icons use the existing green Extensions showcase
+asset; legacy site-logo placeholders also render this fallback. Image colors
+are preserved in both the catalog and detail view.
 
 Review can be rerun manually from Actions to refresh a repository revision.
 Eligible review and publication jobs share a per-issue concurrency lock. Both

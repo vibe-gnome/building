@@ -400,6 +400,19 @@ describe("human-approved database publication", () => {
         undefined,
         async () => ({
           ...extensionIdentity,
+          icon: `https://raw.githubusercontent.com/example/extension/${extensionIdentity.commit}/icon.svg`,
+        }),
+      ),
+    ).rejects.toThrow("revision changed");
+    await expect(
+      publishListing(
+        data.event,
+        data.github,
+        data.query,
+        undefined,
+        undefined,
+        async () => ({
+          ...extensionIdentity,
           metadata: { ...extensionIdentity.metadata, "shell-version": [] },
         }),
       ),

@@ -1,6 +1,9 @@
 import { appendFile } from "node:fs/promises";
 import { type AppIdentity, appIdentitySlug } from "../app/lib/app-identity";
-import type { ExtensionListing } from "../app/lib/extension-catalog";
+import {
+  type ExtensionListing,
+  extensionIconSource,
+} from "../app/lib/extension-catalog";
 import type { ExtensionIdentity } from "../app/lib/extension-identity";
 import { listingPath } from "../app/lib/listing-links";
 import { parseIssueFields, reviewListing } from "../app/lib/listing-review";
@@ -203,7 +206,7 @@ export function publicationData(
         : existing?.gnomeUrl,
       category: parts[0] ?? existing?.category ?? "Community",
       tags: parts.length ? parts.slice(1) : (existing?.tags ?? []),
-      icon: existing?.icon ?? "/logo.svg",
+      icon: extensionIconSource(extensionIdentity?.icon ?? existing?.icon),
       color: existing?.color ?? "blue",
       added: existing?.added ?? now.slice(0, 10),
       updated: now.slice(0, 10),

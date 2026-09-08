@@ -1,3 +1,9 @@
+export const defaultExtensionIcon = "/icons/showcase/extensions.svg";
+
+export function extensionIconSource(icon?: string) {
+  return !icon || icon === "/logo.svg" ? defaultExtensionIcon : icon;
+}
+
 export interface ExtensionListing {
   dbId?: number;
   slug: string;

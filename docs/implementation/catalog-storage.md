@@ -133,7 +133,10 @@ the accepted version stays visible while an edit is under review.
   and optional category/tags. Optional `Screenshots` content is retained verbatim in
   review evidence, including attachment links and attribution. New submissions
   ignore removed manual ID, UUID, GNOME listing URL, metadata, and relationship fields.
-  New entries use `/logo.svg` until a reviewed asset is supplied. Existing update
+  New entries import a repository icon URL pinned to the reviewed commit when one
+  is detected. Otherwise they use `/icons/showcase/extensions.svg`, the green
+  Extensions puzzle icon from the homepage. Missing, broken, and legacy
+  `/logo.svg` icons also use this fallback in cards and detail pages. Existing update
   issues can still supply a GNOME listing URL, match UUID in D1, and preserve slug, added date, icon, features,
   and view counts. Optional `Summary`, `Details`, and `Requirements` fields can
   make specific copy changes; freeform `Requested changes` is review context and

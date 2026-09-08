@@ -11,7 +11,12 @@ const metadata = {
 };
 function github(
   files: Record<string, string>,
-  options: { truncated?: boolean; mode?: string; size?: number } = {},
+  options: {
+    truncated?: boolean;
+    mode?: string;
+    size?: number;
+    entries?: Record<string, { mode?: string; size?: number }>;
+  } = {},
 ) {
   const requests: { url: string; init?: RequestInit }[] = [];
   const fetcher = async (url: string, init?: RequestInit) => {
@@ -27,10 +32,15 @@ function github(
           type: "blob",
           mode: options.mode ?? "100644",
           size: options.size,
+          ...options.entries?.[path],
         })),
       });
     for (const [path, text] of Object.entries(files))
-      if (url.endsWith(`/contents/${path}?ref=${commit}`))
+      if (
+        url.endsWith(
+          `/contents/${path.split("/").map(encodeURIComponent).join("/")}?ref=${commit}`,
+        )
+      )
         return new Response(text);
     throw new Error(`Unexpected repository request ${url}`);
   };
@@ -55,6 +65,96 @@ test("extracts extension UUID from a pinned repository metadata.json, ignoring f
     expect(new Headers(init?.headers).has("Authorization")).toBe(false);
   }
 });
+
+test.each([
+  [["icon.svg", "icon.png", "icons/helper.svg"], "icon.svg"],
+  [["assets/logo.png", "icons/helper.svg"], "assets/logo.png"],
+  [["icons/codex-symbolic.svg"], "icons/codex-symbolic.svg"],
+  [["icons/example.svg", "icons/example-symbolic.svg"], "icons/example.svg"],
+  [["icons/brand mark.svg"], "icons/brand mark.svg"],
+  [["screenshot.png", "docs/preview.svg"], undefined],
+  [["icons/first.svg", "icons/second.svg"], undefined],
+  [["assets/icon.svg", "icons/icon.svg"], undefined],
+  [["tests/icon.svg", "vendor/logo.png", "../icon.svg"], undefined],
+] as [string[], string | undefined][])(
+  "discovers a pinned icon without fetching arbitrary image contents: %j",
+  async (paths, selected) => {
+    const data = github({
+      "metadata.json": JSON.stringify(metadata),
+      ...Object.fromEntries(paths.map((path) => [path, "image bytes"])),
+    });
+    const identity = await resolveExtensionIdentity(repository, data.fetcher);
+    expect(identity.icon).toBe(
+      selected
+        ? `https://raw.githubusercontent.com/example/extension/${commit}/${selected.split("/").map(encodeURIComponent).join("/")}`
+        : undefined,
+    );
+    expect(data.requests).toHaveLength(4);
+  },
+);
+
+test("prefers icons beside nested metadata and excludes symlinks and oversized images", async () => {
+  const files = {
+    "src/metadata.json": JSON.stringify(metadata),
+    "src/icon.svg": "image",
+    "src/logo.png": "image",
+    "src/icons/example.svg": "image",
+    "icon.svg": "image",
+  };
+  expect(
+    (await resolveExtensionIdentity(repository, github(files).fetcher)).icon,
+  ).toBe(
+    `https://raw.githubusercontent.com/example/extension/${commit}/src/icon.svg`,
+  );
+  const data = github(files, {
+    entries: {
+      "src/icon.svg": { mode: "120000" },
+      "src/logo.png": { size: 2 * 1024 * 1024 },
+    },
+  });
+  expect((await resolveExtensionIdentity(repository, data.fetcher)).icon).toBe(
+    `https://raw.githubusercontent.com/example/extension/${commit}/src/icons/example.svg`,
+  );
+});
+
+test("many unrelated icons do not exhaust the metadata candidate limit", async () => {
+  const data = github({
+    "metadata.json": JSON.stringify(metadata),
+    "icon.png": "image",
+    ...Object.fromEntries(
+      Array.from({ length: 30 }, (_, i) => [`icons/helper-${i}.svg`, "image"]),
+    ),
+  });
+  expect((await resolveExtensionIdentity(repository, data.fetcher)).icon).toBe(
+    `https://raw.githubusercontent.com/example/extension/${commit}/icon.png`,
+  );
+});
+
+test.each(["gitlab.com", "gitlab.gnome.org"])(
+  "pins GitLab image URLs on %s",
+  async (host) => {
+    const repo = `https://${host}/group/extension`;
+    const api = `https://${host}/api/v4/projects/group%2Fextension`;
+    const fetcher = async (url: string) => {
+      if (url === api) return Response.json({ default_branch: "main" });
+      if (url.endsWith("/commits/main")) return Response.json({ id: commit });
+      if (url.endsWith("&page=1"))
+        return Response.json(
+          ["metadata.json", "icons/brand mark.svg"].map((path) => ({
+            path,
+            type: "blob",
+            mode: "100644",
+          })),
+        );
+      if (url.endsWith(`/repository/files/metadata.json/raw?ref=${commit}`))
+        return Response.json(metadata);
+      throw new Error(`Unexpected repository request ${url}`);
+    };
+    expect((await resolveExtensionIdentity(repo, fetcher)).icon).toBe(
+      `${repo}/-/raw/${commit}/icons/brand%20mark.svg`,
+    );
+  },
+);
 
 test("blocks missing, ambiguous, templated, malformed, symlinked, incomplete and oversized metadata", async () => {
   for (const [files, options] of [

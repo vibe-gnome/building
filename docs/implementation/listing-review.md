@@ -56,6 +56,16 @@ must exist outside excluded test/example/vendor directories; missing, ambiguous,
 templated UUIDs and fetch errors block approval. Repository roots use the same
 hosts as apps. Review and publication bind the UUID, repository, commit and path
 to the fingerprint and retain the detected metadata in the review evidence.
+Icon discovery uses the same repository tree and commit. It prefers `icon`,
+`logo`, UUID, repository-name, or `extension` images next to metadata or in the
+repository root, including `assets`, `data`, `resources`, `icons`, and `images`
+directories. A lone image in an icon directory is also accepted; ambiguous
+choices use the default green Extensions puzzle icon. SVG, PNG, WebP, and JPEG
+are supported; symlinks, excluded directories, and files reported over 1 MiB
+are ignored. The report links the selected image, and its immutable raw URL is
+included in the approval fingerprint and saved with the listing. Browsers load
+it as an image, falling back to the puzzle icon on load failure. No image bytes
+are copied into D1 or the site repository.
 Validation covers:
 
 - Valid JSON object, UUID format, matching name, and non-empty description.

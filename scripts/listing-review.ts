@@ -79,6 +79,9 @@ export function listingFingerprint(
                 identity.repository,
                 identity.commit,
                 identity.path,
+                ...("metadata" in identity && identity.icon
+                  ? [identity.icon]
+                  : []),
               ],
             ]
           : []),
@@ -138,6 +141,9 @@ export function renderReview(
       ? [
           "",
           `Extension UUID: \`${review.extensionIdentity.metadata.uuid}\`. [Repository metadata](<${appIdentitySource(review.extensionIdentity)}>), commit \`${review.extensionIdentity.commit}\`.`,
+          review.extensionIdentity.icon
+            ? `Repository icon: [view image](<${review.extensionIdentity.icon}>).`
+            : "No repository icon detected; the Extensions puzzle icon will be used.",
         ]
       : []),
     "These checks validate submitted fields and URL syntax. New app and extension reviews read public repository metadata to detect their identities. A maintainer must verify ownership, license, installation instructions, and suitability. Repository code is never executed. Nothing is published automatically.",

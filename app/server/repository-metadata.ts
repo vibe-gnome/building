@@ -95,18 +95,21 @@ export async function repositoryMetadata(
       if (result.length < 100) break;
     }
   }
-  const candidates = tree
+  const files = tree
     .filter(
       (entry) =>
         entry.type === "blob" &&
         ["100644", "100755"].includes(entry.mode) &&
         typeof entry.path === "string" &&
-        pattern.test(entry.path) &&
+        !entry.path
+          .split("/")
+          .some((part) => !part || part === "." || part === "..") &&
         !/(?:^|\/)(?:tests?|examples?|fixtures?|vendor|subprojects|node_modules)(?:\/|$)/i.test(
           entry.path,
         ),
     )
     .sort((a, b) => a.path.localeCompare(b.path));
+  const candidates = files.filter((entry) => pattern.test(entry.path));
   if (candidates.length > 20)
     throw new Error(
       "Too many metadata files; repository identity is ambiguous.",
@@ -115,6 +118,14 @@ export async function repositoryMetadata(
     repository: repo.url,
     commit,
     candidates,
+    files,
+    rawFileUrl(entry: TreeEntry) {
+      if (!files.includes(entry)) throw new Error("Unknown repository file.");
+      const path = entry.path.split("/").map(encodeURIComponent).join("/");
+      return github
+        ? `https://raw.githubusercontent.com/${repo.project}/${commit}/${path}`
+        : `${repo.url}/-/raw/${commit}/${path}`;
+    },
     async readFile(entry: TreeEntry) {
       if (entry.size !== undefined && entry.size > maxFileBytes)
         throw new Error("Metadata file exceeds the size limit.");

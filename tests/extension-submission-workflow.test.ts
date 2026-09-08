@@ -9,13 +9,20 @@ import {
 import { publishListing } from "../scripts/publish-listing";
 import { catalogDatabase } from "./helpers/catalog-db";
 
-test.each(["_No response_", "![Desktop](https://example.org/screenshot.png)"])(
-  "current extension form passes review and publication with Screenshots: %s",
-  async (screenshots) => {
+test.each([
+  { screenshots: "_No response_", icon: undefined },
+  {
+    screenshots: "![Desktop](https://example.org/screenshot.png)",
+    icon: `https://raw.githubusercontent.com/example/extension/${"a".repeat(40)}/icon.svg`,
+  },
+])(
+  "current extension form passes review and publication: %j",
+  async ({ screenshots, icon }) => {
     const identity = {
       repository: "https://github.com/example/extension",
       commit: "a".repeat(40),
       path: "metadata.json",
+      ...(icon ? { icon } : {}),
       metadata: {
         uuid: "example@example.org",
         name: "Example Extension",
@@ -105,6 +112,7 @@ test.each(["_No response_", "![Desktop](https://example.org/screenshot.png)"])(
       );
       expect(issue.labels).toContainEqual({ name: "review:needs-human" });
       expect(comments).toHaveLength(1);
+      expect(report).toContain(icon ?? "Extensions puzzle icon");
       expect(await data.catalog.get("extensions", "submission-42")).toBeNull();
       const command = report.match(/\/publish-listing [a-f0-9]{64}/)?.[0];
       if (!command)
@@ -131,7 +139,7 @@ test.each(["_No response_", "![Desktop](https://example.org/screenshot.png)"])(
       expect(saved?.metadata).toEqual(identity.metadata);
       expect(saved?.category).toBe("Workflow");
       expect(saved?.tags).toEqual(["workspaces"]);
-      expect(saved?.icon).toBe("/logo.svg");
+      expect(saved?.icon).toBe(icon ?? "/icons/showcase/extensions.svg");
       expect(saved?.gnomeUrl).toBeUndefined();
       expect(result).toContain(`/extensions/${saved?.dbId}/example`);
       const row = (

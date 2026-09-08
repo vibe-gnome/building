@@ -410,8 +410,8 @@
   .extension-icon img {
     object-fit: contain;
   }
-  .extension-icon[data-color="blue"] img {
-    filter: brightness(0) invert(1);
+  .extension-icon[data-color="default"] {
+    background: transparent;
   }
   .extension-icon.large {
     width: 72px;

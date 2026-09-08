@@ -5,10 +5,24 @@ import type { ExtensionListing } from "../app/lib/extension-catalog";
 const extensions: ExtensionListing[] = seed;
 
 import { existsSync, readFileSync } from "node:fs";
-import { filterExtensions, formatDate } from "../app/lib/extension-catalog";
+import {
+  defaultExtensionIcon,
+  extensionIconSource,
+  filterExtensions,
+  formatDate,
+} from "../app/lib/extension-catalog";
 import { issueUrl, site } from "../app/lib/extension-submissions";
 
 describe("catalog browsing", () => {
+  test("missing and legacy placeholder icons use the green Extensions asset", () => {
+    for (const icon of [undefined, "", "/logo.svg"])
+      expect(extensionIconSource(icon)).toBe(defaultExtensionIcon);
+    expect(existsSync(`public${defaultExtensionIcon}`)).toBe(true);
+    expect(extensionIconSource("https://example.org/icon.png")).toBe(
+      "https://example.org/icon.png",
+    );
+    expect(extensionIconSource("/icons/custom.svg")).toBe("/icons/custom.svg");
+  });
   test("matches all search terms across author, name, and tags", () => {
     expect(
       filterExtensions(
