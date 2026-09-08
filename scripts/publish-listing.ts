@@ -187,10 +187,11 @@ export function publicationData(
   if (updating && !existing)
     throw new Error("The extension to update was not found in D1.");
   const source = field("Source repository");
-  const parts = field("Category and tags")
+  const legacyCategoryTags = field("Category and tags")
     .split(",")
     .map((part) => part.trim())
     .filter(Boolean);
+  const tags = field("Tags");
   const id = existing?.slug ?? slug;
   return {
     category: "extensions",
@@ -207,8 +208,15 @@ export function publicationData(
       gnomeUrl: updating
         ? field("GNOME Extensions listing", existing?.gnomeUrl) || undefined
         : existing?.gnomeUrl,
-      category: parts[0] ?? existing?.category ?? "Community",
-      tags: parts.length ? parts.slice(1) : (existing?.tags ?? []),
+      category: legacyCategoryTags[0] ?? existing?.category ?? "Community",
+      tags: tags
+        ? tags
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+        : legacyCategoryTags.length
+          ? legacyCategoryTags.slice(1)
+          : (existing?.tags ?? []),
       icon: extensionIconSource(extensionIdentity?.icon ?? existing?.icon),
       ...((extensionIdentity?.screenshot ?? existing?.screenshot)
         ? { screenshot: extensionIdentity?.screenshot ?? existing?.screenshot }

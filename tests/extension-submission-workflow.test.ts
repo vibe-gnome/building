@@ -36,17 +36,29 @@ test.each([
       "Extension name": identity.metadata.name,
       "Source repository": identity.repository,
       Summary: identity.metadata.description,
-      "Category and tags": "Workflow, workspaces",
+      Tags: "Workflow, , workspaces ",
     };
     const form = Bun.YAML.parse(
       readFileSync(".github/ISSUE_TEMPLATE/submit-extension.yml", "utf8"),
     ) as {
       title: string;
       body: {
+        id?: string;
+        type: string;
         attributes: { label?: string };
         validations?: { required?: boolean };
       }[];
     };
+    const labels = form.body.flatMap((field) => field.attributes.label ?? []);
+    expect(labels).toEqual([
+      "Extension name",
+      "Source repository",
+      "Tags",
+      "Summary",
+    ]);
+    const tagsField = form.body.find((field) => field.id === "tags");
+    expect(tagsField?.type).toBe("input");
+    expect(tagsField?.validations?.required).not.toBe(true);
     const issue = {
       number: 42,
       title: `${form.title}${identity.metadata.name}`,
@@ -141,8 +153,8 @@ test.each([
       expect(saved?.metadata).toEqual(identity.metadata);
       expect(saved?.summary).toBe(identity.metadata.description);
       expect(saved?.details).toBe("");
-      expect(saved?.category).toBe("Workflow");
-      expect(saved?.tags).toEqual(["workspaces"]);
+      expect(saved?.category).toBe("Community");
+      expect(saved?.tags).toEqual(["Workflow", "workspaces"]);
       expect(saved?.icon).toBe(icon ?? "/icons/showcase/extensions.svg");
       expect(saved?.screenshot).toBe(screenshot);
       expect(saved?.gnomeUrl).toBeUndefined();

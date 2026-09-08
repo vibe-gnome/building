@@ -22,6 +22,12 @@ body:
       placeholder: https://github.com/username/extension
     validations:
       required: true
+  - type: input
+    id: tags
+    attributes:
+      label: Tags
+      description: Separate tags with commas.
+      placeholder: workflow, workspaces, terminal
   - type: textarea
     id: summary
     attributes:
@@ -29,8 +35,3 @@ body:
       description: What does the extension do? Mention any additional requirements.
     validations:
       required: true
-  - type: input
-    id: category
-    attributes:
-      label: Category and tags
-      placeholder: Workflow, workspaces, terminal

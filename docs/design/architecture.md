@@ -118,7 +118,7 @@ The dedicated publishing workflow verifies current write/admin permissions,
 the passing bot report, the latest issue content, and current validation; skills
 are checked again against skills.sh before writing.
 
-Apps ask only for name, repository URL, and summary. `app/server/app-identity.ts`
+Apps ask for name, repository URL, optional comma-separated tags, and summary. `app/server/app-identity.ts`
 reads public metadata from GitHub, GitLab.com, and GNOME GitLab to resolve a native
 app ID at a single commit. Reports link to that source and bind approval to the
 resolved identity as well as issue content. Publication repeats discovery and

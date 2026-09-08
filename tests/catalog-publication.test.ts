@@ -229,6 +229,55 @@ function setup(
 }
 
 describe("human-approved database publication", () => {
+  test.each(["GTK, , productivity ", "_No response_"])(
+    "publishes optional tags from the current app form: %s",
+    async (tags) => {
+      const form = Bun.YAML.parse(
+        readFileSync(".github/ISSUE_TEMPLATE/submit-app.yml", "utf8"),
+      ) as {
+        title: string;
+        body: {
+          id?: string;
+          type: string;
+          attributes: { label?: string };
+          validations?: { required?: boolean };
+        }[];
+      };
+      const labels = form.body.flatMap((field) => field.attributes.label ?? []);
+      expect(labels).toEqual([
+        "App name",
+        "Repository or project URL",
+        "Tags",
+        "Summary",
+      ]);
+      const tagsField = form.body.find((field) => field.id === "tags");
+      expect(tagsField?.type).toBe("input");
+      expect(tagsField?.validations?.required).not.toBe(true);
+      const values: Record<string, string> = { ...appFields, Tags: tags };
+      const data = setup(
+        `${form.title}${appFields["App name"]}`,
+        Object.fromEntries(
+          labels.map((label) => [label, values[label] ?? "_No response_"]),
+        ),
+      );
+      await publishListing(data.event, data.github, data.query);
+      expect(
+        (await data.catalog.get("apps", "org-example-editor"))?.tags,
+      ).toEqual(tags === "_No response_" ? [] : ["GTK", "productivity"]);
+    },
+  );
+
+  test("preserves category and tags from older extension submission forms", async () => {
+    const data = setup("[Submit] Example", {
+      ...extensionFields,
+      "Category and tags": "Workflow, workspaces, terminal",
+    });
+    await publishListing(data.event, data.github, data.query);
+    const saved = await data.catalog.get("extensions", "submission-42");
+    expect(saved?.category).toBe("Workflow");
+    expect(saved?.tags).toEqual(["workspaces", "terminal"]);
+  });
+
   test.each(["apps", "extensions"] as const)(
     "publishes the reviewed social preview for %s and rejects changed previews",
     async (category) => {
@@ -721,6 +770,8 @@ describe("human-approved database publication", () => {
     expect(saved?.metadata.version).toBe(15);
     expect(saved?.added).toBe(original.added);
     expect(saved?.icon).toBe(original.icon);
+    expect(saved?.category).toBe(original.category);
+    expect(saved?.tags).toEqual(original.tags);
     expect(await data.views.read("extensions", original.slug)).toBe(1);
   });
 

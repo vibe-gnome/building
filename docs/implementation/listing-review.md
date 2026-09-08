@@ -28,7 +28,7 @@ unrelated issue labels:
 | `review:needs-human` | Basic checks passed; a maintainer must review and confirm. |
 | `review:confirmed` | A maintainer explicitly confirmed the checked submission. |
 
-App submissions request only name, repository URL, and summary. The repository
+App submissions request name, repository URL, optional comma-separated tags, and summary. The repository
 must be a public root URL on GitHub, GitLab.com, or GNOME GitLab. Live checks read
 the default branch at a single commit and detect the native app ID from
 AppStream `.metainfo.xml` / `.appdata.xml` files (including `.in` templates),
@@ -45,6 +45,9 @@ checks and approval. Use the manual workflow rerun to obtain the new command.
 Older app issues' `Listing ID` fields are ignored.
 Installation instructions and author/license attribution are verified by
 maintainers in the upstream project during review.
+
+Both app and extension forms place optional `Tags` above `Summary`. Extension
+submissions no longer ask for a category; all comma-separated values are tags.
 
 Extension submission checks cover the source URL, name, summary, and the GNOME
 `metadata.json` read from the default branch at a pinned commit. New submissions

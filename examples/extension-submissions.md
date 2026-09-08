@@ -19,8 +19,8 @@ Copy-ready submission outline (replace the example values with upstream facts):
 ```text
 Extension name: My Extension
 Source repository: https://github.com/your-name/your-extension
+Tags: workflow, workspaces
 Summary: Describe what the extension does and any additional requirements.
-Category and tags: Workflow, workspaces
 ```
 
 For changes to an existing listing, open its detail page and select **Report

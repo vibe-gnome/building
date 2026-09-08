@@ -130,7 +130,10 @@ the accepted version stays visible while an edit is under review.
   source permalink, permissions, author/license, and fresh audit results are
   retained in review evidence.
 - Extensions: GNOME metadata fetched at a pinned repository commit, source, summary,
-  and optional category/tags. The full approved issue body is retained verbatim in
+  and optional comma-separated `Tags`. All values in `Tags` are saved as tags;
+  new entries use the default `Community` category. Older `Category and tags`
+  fields remain supported, and updates preserve an existing category and tags
+  when those fields are omitted. The full approved issue body is retained verbatim in
   review evidence, including content from older forms. New submissions
   ignore removed manual ID, UUID, GNOME listing URL, metadata, and relationship fields.
   New entries import a repository icon URL pinned to the reviewed commit when one
