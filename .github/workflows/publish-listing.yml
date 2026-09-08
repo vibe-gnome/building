@@ -2,20 +2,31 @@ name: Publish reviewed listing to D1
 on:
   issue_comment:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Submission issue number
+        required: true
+        type: string
+      approval_comment_id:
+        description: Numeric ID of an existing, unedited human approval comment
+        required: true
+        type: string
 permissions:
   contents: read
   issues: read
 jobs:
   publish:
     if: >-
-      !github.event.issue.pull_request &&
+      (github.event_name == 'workflow_dispatch' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+      (github.event_name == 'issue_comment' && !github.event.issue.pull_request &&
       github.event.comment.user.type == 'User' &&
-      startsWith(github.event.comment.body, '/publish-listing ')
+      startsWith(github.event.comment.body, '/publish-listing '))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # Only eligible jobs take the lock; skipped review jobs cannot displace publication.
     concurrency:
-      group: listing-${{ github.event.issue.number }}
+      group: listing-${{ github.event.issue.number || inputs.issue_number }}
       cancel-in-progress: false
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4

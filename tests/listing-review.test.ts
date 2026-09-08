@@ -537,7 +537,7 @@ describe("automated checks then human confirmation", () => {
     ]);
     expect(api.comments).toHaveLength(1);
     expect(api.comments[0]?.body).toContain(
-      `/confirm-listing ${listingFingerprint(api.issue, appIdentity)}`,
+      `/publish-listing ${listingFingerprint(api.issue, appIdentity)}`,
     );
     await runListingReview(api.confirmation(), api.request, []);
     expect(api.issue.labels.map((label) => label.name)).toEqual([
@@ -547,6 +547,12 @@ describe("automated checks then human confirmation", () => {
     expect(api.comments).toHaveLength(1);
     expect(api.comments[0]?.body).toContain(
       "Human confirmation recorded from maintainer",
+    );
+    expect(api.comments[0]?.body).toContain(
+      "Publication runs after confirmation",
+    );
+    expect(api.comments[0]?.body).toContain(
+      `/publish-listing ${listingFingerprint(api.issue, appIdentity)}`,
     );
     expect(api.mutations.every((path) => path.includes("/issues/"))).toBe(true);
   });
@@ -709,6 +715,8 @@ test("workflow handles issue edits and confirmations using trusted code and limi
           uses?: string;
           run?: string;
           with?: Record<string, unknown>;
+          if?: string;
+          env?: Record<string, string>;
         }[];
       };
     };
@@ -745,6 +753,15 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   expect(steps.filter((step) => step.run).map((step) => step.run)).toEqual([
     "bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/listing-review.test.ts",
     "bun test tests/extension-submission-workflow.test.ts",
+    "bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts",
     "bun scripts/listing-review.ts --github",
+    "bun scripts/publish-listing.ts",
   ]);
+  const publishing = steps.at(-1);
+  expect(publishing?.if).toContain("github.event_name == 'issue_comment'");
+  expect(publishing?.if).toContain("github.event.comment.user.type == 'User'");
+  expect(publishing?.if).toContain("/confirm-listing ");
+  expect(publishing?.env?.CLOUDFLARE_API_TOKEN).toBeDefined();
+  for (const step of steps.slice(0, -1))
+    expect(step.env?.CLOUDFLARE_API_TOKEN).toBeUndefined();
 });

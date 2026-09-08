@@ -272,10 +272,15 @@ export function reviewListing(
             "Updated metadata must keep the existing listing UUID.",
           );
         } else {
+          const exists = catalog.some(
+            (entry) => entry.metadata.uuid === metadata.uuid,
+          );
           add(
             "New UUID",
-            !catalog.some((entry) => entry.metadata.uuid === metadata.uuid),
-            "This extension is already listed. Use Report listing on its detail page to request a correction.",
+            !exists,
+            exists
+              ? "This extension is already listed. Use Report listing on its detail page to request a correction."
+              : "No existing catalog listing uses this UUID.",
           );
         }
       }

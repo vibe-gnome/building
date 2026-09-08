@@ -84,9 +84,10 @@ The two variables are configured in `vibe-gnome/building`. Add the secret in
 using a token with **Account → D1 → Edit**, restricted to the account above.
 Do not reuse Wrangler's expiring interactive OAuth token as an Actions secret.
 
-The GitHub token needs only contents/issue read access for publication. The review
+The dedicated publication job's GitHub token needs only contents/issue read access. The review
 workflows separately need issues write access for their reports. Database
-credentials are supplied only to the publishing step, never the browser or
+credentials are supplied only to the publishing step (including the final step of
+the confirmation job), never the browser or
 submitted code. No catalog mutation endpoint is exposed on the website.
 Review and publication jobs share a per-issue concurrency group; only eligible
 jobs take the lock. All three jobs use Bun 1.3.14. App/extension review and
@@ -101,7 +102,8 @@ publication run their focused tests before any issue or database writes.
    audited content; badge results alone do not establish revision identity.
 3. Copy the exact `/publish-listing <fingerprint>` command from the passing bot
    report into a **new comment**. This is the human approval action. Repository
-   write/admin access is required. No extra confirmation command is necessary.
+   write/admin access is required. `/confirm-listing <fingerprint>` also publishes
+   after its confirmation checks; neither command requires a second approval.
 4. The **Publish reviewed listing to D1** action verifies current permissions,
    the latest submission fingerprint, and the bot-owned passing report, then revalidates data.
    New app IDs and extension UUIDs are resolved again from the repository; the identity and source revision
@@ -109,6 +111,8 @@ publication run their focused tests before any issue or database writes.
    publication. Check the Actions run summary for success and the listing URL.
 5. Open the published page and close the issue with the run/page link. The
    publisher does not post comments, close issues, or merge code automatically.
+   Existing unedited approvals can be retried with the publishing workflow's
+   manual issue-number and approval-comment-ID inputs.
 
 The SQL write records approval evidence atomically using triggers. A matching
 revision is required to update an existing row, preventing concurrent overwrites.

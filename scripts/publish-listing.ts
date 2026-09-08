@@ -46,9 +46,50 @@ export interface PublishEvent {
   issue: Issue;
   comment: { id: number; body: string; user: { login: string; type: string } };
 }
+interface ManualPublishEvent {
+  inputs: { issue_number?: unknown; approval_comment_id?: unknown };
+}
 interface Comment {
   body: string;
   user: { login: string; type: string };
+}
+
+export async function resolvePublishEvent(
+  event: PublishEvent | ManualPublishEvent,
+  github: GitHubRequest,
+  repository: string,
+): Promise<PublishEvent> {
+  if (!("inputs" in event)) return event;
+  const { issue_number: issueNumber, approval_comment_id: commentId } =
+    event.inputs;
+  for (const value of [issueNumber, commentId]) {
+    if (typeof value !== "string" || !/^[1-9]\d{0,14}$/.test(value))
+      throw new Error(
+        "Enter positive issue and approval comment numbers without leading zeros.",
+      );
+  }
+  const comment = await github<
+    PublishEvent["comment"] & {
+      issue_url: string;
+      created_at: string;
+      updated_at: string;
+    }
+  >(`/issues/comments/${commentId}`);
+  if (
+    comment.id !== Number(commentId) ||
+    comment.issue_url !==
+      `https://api.github.com/repos/${repository}/issues/${issueNumber}` ||
+    !comment.created_at ||
+    comment.created_at !== comment.updated_at
+  )
+    throw new Error(
+      "The approval must be an unedited comment on this submission issue.",
+    );
+  return {
+    action: "created",
+    issue: await github<Issue>(`/issues/${issueNumber}`),
+    comment,
+  };
 }
 
 function fieldsFor(body: string) {
@@ -234,14 +275,16 @@ export async function publishListing(
 ): Promise<string> {
   const command = event.comment?.body
     .trim()
-    .match(/^\/publish-listing ([a-f0-9]{64})$/);
+    .match(/^\/(?:publish|confirm)-listing ([a-f0-9]{64})$/);
   if (
     event.action !== "created" ||
     !command ||
     event.comment.user.type !== "User" ||
     event.issue.pull_request
   )
-    throw new Error("A new human /publish-listing command is required.");
+    throw new Error(
+      "A new human /publish-listing or /confirm-listing command is required.",
+    );
   const actor = event.comment.user.login;
   const permission = await github<{ permission: string }>(
     `/collaborators/${encodeURIComponent(actor)}/permission`,
@@ -430,11 +473,13 @@ if (import.meta.main) {
     } = process.env;
     if (!GITHUB_EVENT_PATH || !GITHUB_REPOSITORY || !GITHUB_TOKEN)
       throw new Error("GitHub workflow environment is required.");
-    const result = await publishListing(
+    const github = githubRequest(GITHUB_REPOSITORY, GITHUB_TOKEN);
+    const event = await resolvePublishEvent(
       await Bun.file(GITHUB_EVENT_PATH).json(),
-      githubRequest(GITHUB_REPOSITORY, GITHUB_TOKEN),
-      d1QueryFromEnv(),
+      github,
+      GITHUB_REPOSITORY,
     );
+    const result = await publishListing(event, github, d1QueryFromEnv());
     console.log(result);
     if (GITHUB_STEP_SUMMARY)
       await appendFile(GITHUB_STEP_SUMMARY, `${result}\n`);

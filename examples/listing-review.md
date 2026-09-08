@@ -51,8 +51,18 @@ Reopening or editing the issue also reruns checks. Database IDs remain stable wh
 to the new path without changing view counts.
 
 Configure [D1 publication](../docs/implementation/catalog-storage.md) first.
-The older `/confirm-listing` command records confirmation only and does not
-publish. No source-code catalog edits or website rebuild are needed to publish.
+The `/confirm-listing` command also approves and publishes using the same
+fingerprint. No source-code catalog edits or website rebuild are needed to publish.
+
+To retry an existing approval after resolving a deployment or credential problem:
+
+```sh
+gh workflow run publish-listing.yml --repo vibe-gnome/building --ref main \
+  -f issue_number=4 -f approval_comment_id=5579245292
+```
+
+Use the issue and comment IDs from the approved submission. The original comment
+must be unedited and its fingerprint must still match the issue and repository.
 
 For extensions, follow the [extension submission example](extension-submissions.md)
 and [maintainer review steps](../docs/implementation/listing-review.md).

@@ -42,7 +42,18 @@ jobs:
         run: bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/listing-review.test.ts
       - name: Verify the current extension form through review and publication
         run: bun test tests/extension-submission-workflow.test.ts
+      - name: Verify publication safeguards before processing confirmation
+        if: github.event_name == 'issue_comment'
+        run: bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts
       - name: Detect repository app ID or extension UUID and record review status
         run: bun scripts/listing-review.ts --github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Publish the confirmed listing to D1
+        if: github.event_name == 'issue_comment' && github.event.comment.user.type == 'User' && startsWith(github.event.comment.body, '/confirm-listing ')
+        run: bun scripts/publish-listing.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ vars.CLOUDFLARE_D1_DATABASE_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

@@ -142,21 +142,23 @@ export function renderReview(
       : []),
     "These checks validate submitted fields and URL syntax. New app and extension reviews read public repository metadata to detect their identities. A maintainer must verify ownership, license, installation instructions, and suitability. Repository code is never executed. Nothing is published automatically.",
     "",
-    ...(passed && !localIdentityCheck && !confirmedBy
+    ...(passed && !localIdentityCheck
       ? [
-          "After reviewing this exact submission, a maintainer with repository write access can post:",
-          "",
-          "```text",
-          `/confirm-listing ${fingerprint}`,
-          "```",
-          "",
-          "Editing the title or body, or changing the reviewed repository revision, requires new checks and confirmation.",
-          "",
-          "To approve and publish this exact submission to D1, post this command instead:",
+          ...(confirmedBy
+            ? [
+                "Publication runs after confirmation. Check the workflow result for the published URL; confirmation alone is not a database receipt.",
+                "",
+              ]
+            : []),
+          "To approve and publish this exact submission to D1, a maintainer with repository write access can post:",
           "",
           "```text",
           `/publish-listing ${fingerprint}`,
           "```",
+          "",
+          "Editing the title or body, or changing the reviewed repository revision, requires new checks and confirmation.",
+          "",
+          "The /confirm-listing command also approves and publishes, using the same fingerprint.",
         ]
       : []),
   ].join("\n");

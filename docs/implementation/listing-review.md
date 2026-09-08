@@ -86,9 +86,11 @@ submitted code. Passing is not a compatibility or safety guarantee.
    `/publish-listing <fingerprint>` from the passing bot report into a **new
    issue comment** to approve and publish the checked submission. The action
    verifies current permissions, the bot report, and the latest title/body.
-   The older `/confirm-listing` command only records confirmation; it does not
-   publish data. Use `/publish-listing` for the complete approval/publication flow.
-4. Wait for the successful **Publish reviewed listing to D1** run. Its summary
+   `/confirm-listing <fingerprint>` also publishes: the listing review job verifies
+   confirmation, then runs the publisher under the same issue lock. Its publishing
+   step receives the same Cloudflare variables and secret as the dedicated job.
+4. Wait for the successful publication step in **Listing review** (confirmation)
+   or **Publish reviewed listing to D1** (publication command). Its summary
    links to the published page. D1 records the listing, issue content, approving
    maintainer, approval comment, and revision together. Bots, read/triage users,
    edited commands, and obsolete fingerprints cannot publish.
@@ -103,6 +105,14 @@ submitted code. Passing is not a compatibility or safety guarantee.
    published version. Submitted fields are plain text; instructions and code
    are never executed. Keep icon/screenshot attribution in the review record;
    adding new local image files still requires an asset deployment.
+
+If an older confirmation only recorded approval, or publication failed after
+approval, run **Publish reviewed listing to D1** manually on the default branch.
+Enter the issue number and the numeric approval comment ID from the comment's
+`#issuecomment-<id>` URL. The workflow reads that original, unedited comment from
+GitHub and rechecks the author's current permissions, current fingerprint, passing
+report, and repository revision. Manual dispatch cannot approve on someone's behalf
+or reuse an edited comment. Retrying an already-published approval does not write twice.
 
 The removal/report form has no Extension UUID or Reason field. Discuss the request and verify the requester before
 unpublishing the D1 row through the procedure in

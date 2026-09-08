@@ -10,6 +10,7 @@ import {
   type PublishEvent,
   publishListing as publishListingWithRepository,
   publishSql,
+  resolvePublishEvent,
 } from "../scripts/publish-listing";
 import { catalogDatabase } from "./helpers/catalog-db";
 
@@ -123,7 +124,7 @@ test("review and publication jobs share issue locks and validate trusted code be
     expect(workflow.concurrency).toBeUndefined();
     expect(
       definition.concurrency.group.replace(" || inputs.issue_number", ""),
-    ).toBe(publish.concurrency.group);
+    ).toBe(publish.concurrency.group.replace(" || inputs.issue_number", ""));
     expect(definition.concurrency["cancel-in-progress"]).toBe(false);
     const checkout = definition.steps.find((step) =>
       step.uses?.startsWith("actions/checkout@"),
@@ -224,6 +225,99 @@ function setup(
 }
 
 describe("human-approved database publication", () => {
+  test("publishes a confirmed extension using the original human approval comment", async () => {
+    const data = setup("[Submit] Example", extensionFields);
+    data.event.comment.body = data.event.comment.body.replace(
+      "/publish-listing",
+      "/confirm-listing",
+    );
+    const github: GitHubRequest = async <T>(
+      path: string,
+      method: Parameters<GitHubRequest>[1],
+      body: unknown,
+    ): Promise<T> => {
+      if (path === "/issues/comments/999")
+        return {
+          ...data.event.comment,
+          issue_url:
+            "https://api.github.com/repos/vibe-gnome/building/issues/42",
+          created_at: "2026-09-08T04:30:16Z",
+          updated_at: "2026-09-08T04:30:16Z",
+        } as T;
+      return data.github<T>(path, method, body);
+    };
+    const event = await resolvePublishEvent(
+      { inputs: { issue_number: "42", approval_comment_id: "999" } },
+      github,
+      "vibe-gnome/building",
+    );
+    await publishListing(event, github, data.query);
+    expect(
+      (await data.catalog.get("extensions", "submission-42"))?.metadata,
+    ).toEqual(extensionIdentity.metadata);
+  });
+
+  test("manual publication rejects missing or malformed IDs before fetching", async () => {
+    const github: GitHubRequest = async () => {
+      throw new Error("Unexpected request");
+    };
+    for (const value of [undefined, "", "0", "01", "-1", "1/2", "1e3", 42]) {
+      for (const inputs of [
+        { issue_number: value, approval_comment_id: "999" },
+        { issue_number: "42", approval_comment_id: value },
+      ])
+        await expect(
+          resolvePublishEvent({ inputs }, github, "vibe-gnome/building"),
+        ).rejects.toThrow("positive issue");
+    }
+  });
+
+  test("manual publication rejects edited approvals and comments from another issue", async () => {
+    const data = setup();
+    for (const change of [
+      { updated_at: "2026-09-08T04:31:00Z" },
+      {
+        issue_url: "https://api.github.com/repos/vibe-gnome/building/issues/41",
+      },
+      { issue_url: "https://api.github.com/repos/other/repo/issues/42" },
+      { id: 1000 },
+    ]) {
+      const github: GitHubRequest = async <T>(): Promise<T> =>
+        ({
+          ...data.event.comment,
+          issue_url:
+            "https://api.github.com/repos/vibe-gnome/building/issues/42",
+          created_at: "2026-09-08T04:30:16Z",
+          updated_at: "2026-09-08T04:30:16Z",
+          ...change,
+        }) as T;
+      await expect(
+        resolvePublishEvent(
+          { inputs: { issue_number: "42", approval_comment_id: "999" } },
+          github,
+          "vibe-gnome/building",
+        ),
+      ).rejects.toThrow("unedited comment");
+    }
+  });
+
+  test("confirmation publication still requires current human permissions and passing checks", async () => {
+    for (const failure of ["read", "bot", "stale", "no report"]) {
+      const data = setup("[Submit] Example", extensionFields);
+      data.event.comment.body = data.event.comment.body.replace(
+        "/publish-listing",
+        "/confirm-listing",
+      );
+      if (failure === "read") data.state.permission = "read";
+      if (failure === "bot") data.event.comment.user.type = "Bot";
+      if (failure === "stale") data.issue.body += "\nEdited";
+      if (failure === "no report") data.state.report = false;
+      await expect(
+        publishListing(data.event, data.github, data.query),
+      ).rejects.toThrow();
+      expect(await data.catalog.get("extensions", "submission-42")).toBeNull();
+    }
+  });
   test("all publication categories require automatic database ID assignment", async () => {
     for (const [title, values] of [
       ["[App] Editor", appFields],

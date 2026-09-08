@@ -113,7 +113,9 @@ default branch. GitHub Actions must be enabled with `contents: read` and
 `issues: write` available to `GITHUB_TOKEN`. The workflow checks submissions on
 opening, editing, or reopening an issue, then waits for a maintainer's explicit
 confirmation comment. Review labels are created automatically. It uses Bun
-directly without installing project dependencies, and cannot publish listings.
+directly without installing project dependencies. A valid human `/confirm-listing`
+comment then runs the publisher in the same job; the Cloudflare publishing secret
+is provided only to that final step.
 
 See [listing review](listing-review.md) for approval and failure handling,
 and [local review examples](../../examples/listing-review.md) to test without
