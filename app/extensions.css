@@ -440,6 +440,13 @@
     font-size: 13px;
     line-height: 1.7;
   }
+  .extension-grid .card-summary {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
   .tag-list {
     display: flex;
     flex-wrap: wrap;
