@@ -26,13 +26,42 @@ export async function readRepositoryText(
       Accept: accept,
     },
   });
-  if (!response.ok)
-    throw new Error(`Repository metadata request failed (${response.status}).`);
+  if (!response.ok) throw await repositoryResponseError(url, response);
   if (
     accept === "text/html" &&
     !response.headers.get("Content-Type")?.toLowerCase().includes("text/html")
   )
     throw new Error("Repository did not return HTML.");
+  return readResponseText(response, limit);
+}
+
+async function repositoryResponseError(url: string, response: Response) {
+  let detail = "";
+  try {
+    const body = JSON.parse(await readResponseText(response, 16 * 1024));
+    if (typeof body.message === "string")
+      detail = body.message.trim().replace(/\s+/g, " ").slice(0, 180);
+  } catch {
+    // Error pages can be empty, non-JSON, or larger than our diagnostic limit.
+  }
+  const rateLimited =
+    response.status === 429 ||
+    (response.status === 403 &&
+      response.headers.get("x-ratelimit-remaining") === "0");
+  if (rateLimited) detail = "API rate limit exceeded.";
+  let retry = "";
+  const retryAfter = response.headers.get("retry-after");
+  const reset = response.headers.get("x-ratelimit-reset");
+  if (retryAfter && /^\d{1,8}$/.test(retryAfter))
+    retry = ` Retry after ${Number(retryAfter)} seconds.`;
+  else if (rateLimited && reset && /^\d{1,12}$/.test(reset))
+    retry = ` Retry after ${new Date(Number(reset) * 1000).toISOString()}.`;
+  return new Error(
+    `Repository metadata request failed (${response.status}) from ${new URL(url).hostname}${detail ? `: ${detail}` : "."}${retry}`,
+  );
+}
+
+async function readResponseText(response: Response, limit: number) {
   if (!response.body) throw new Error("Repository returned an empty response.");
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -71,6 +100,11 @@ export async function repositoryMetadata(
   const json = async (url: string) =>
     JSON.parse(await readRepositoryText(url, fetcher, 8 * 1024 * 1024));
   const project = await json(api);
+  if (
+    project.private === true ||
+    (typeof project.visibility === "string" && project.visibility !== "public")
+  )
+    throw new Error("The submitted repository must be public.");
   if (typeof project.default_branch !== "string" || !project.default_branch)
     throw new Error("The repository has no default branch.");
   const revision = await json(

@@ -39,7 +39,7 @@ jobs:
         with:
           bun-version: "1.3.14"
       - name: Verify review and repository identity detection
-        run: bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/repository-screenshot.test.ts tests/listing-review.test.ts
+        run: bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/repository-fetch.test.ts tests/repository-screenshot.test.ts tests/listing-review.test.ts
       - name: Verify the current extension form through review and publication
         run: bun test tests/extension-submission-workflow.test.ts
       - name: Verify publication safeguards before processing confirmation

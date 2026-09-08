@@ -92,7 +92,14 @@ Validation covers:
   metadata; a maintainer must verify that omission.
 
 These checks follow the [GNOME metadata format](https://gjs.guide/extensions/overview/anatomy.html).
-New extension and app identity discovery reads public metadata through host APIs without credentials, following no redirects.
+New extension and app identity discovery reads public metadata through host APIs,
+following no redirects. In Actions, review and publication use the existing
+`GITHUB_TOKEN` for repository requests to `https://api.github.com` to avoid the
+shared anonymous rate limit. The token is never sent to repository HTML pages,
+image hosts, or GitLab. Authenticated lookups still reject private repositories.
+API failures include the upstream JSON error message when available; rate-limit
+responses include a retry time when supplied. Rerun **Listing review** for the
+issue after the indicated delay. No additional secret is needed for this lookup.
 Reads have time and size limits; at most 20 metadata candidates are inspected.
 These checks do not validate license claims, install software, or execute
 submitted code. Passing is not a compatibility or safety guarantee.

@@ -36,6 +36,7 @@ import {
   githubRequest,
   listingFingerprint,
 } from "./listing-review";
+import { createRepositoryFetcher } from "./repository-fetch";
 
 interface Issue {
   number: number;
@@ -493,7 +494,15 @@ if (import.meta.main) {
       github,
       GITHUB_REPOSITORY,
     );
-    const result = await publishListing(event, github, d1QueryFromEnv());
+    const repositoryFetch = createRepositoryFetcher(GITHUB_TOKEN);
+    const result = await publishListing(
+      event,
+      github,
+      d1QueryFromEnv(),
+      undefined,
+      (repository) => resolveAppIdentity(repository, repositoryFetch),
+      (repository) => resolveExtensionIdentity(repository, repositoryFetch),
+    );
     console.log(result);
     if (GITHUB_STEP_SUMMARY)
       await appendFile(GITHUB_STEP_SUMMARY, `${result}\n`);

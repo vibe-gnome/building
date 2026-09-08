@@ -134,6 +134,12 @@ New extension submissions also discover their UUID and metadata.json at one
 repository commit through `app/server/extension-identity.ts`; no UUID or pasted
 metadata is requested. Both resolvers share bounded public repository reads in
 `repository-metadata.ts`. Ambiguous/missing files or nonliteral IDs block review.
+The review and publication CLIs inject a shared fetcher that authenticates
+repository API calls to `api.github.com` with their existing `GITHUB_TOKEN`.
+Other hosts receive no token, redirects remain disabled, and private repositories
+are rejected. Bounded error diagnostics expose GitHub's reason and rate-limit
+retry time when available.
+
 Extension metadata and its source revision are bound to approval and read again
 before publication. Listing ID fields are absent from all submission forms.
 The same tree supplies an optional extension icon at that commit. The selected

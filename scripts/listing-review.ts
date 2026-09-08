@@ -18,6 +18,7 @@ import {
   type ResolveExtensionIdentity,
   resolveExtensionIdentity,
 } from "../app/server/extension-identity";
+import { createRepositoryFetcher } from "./repository-fetch";
 
 const marker = "<!-- vibe-gnome-listing-review -->";
 export const reviewLabels = {
@@ -425,6 +426,7 @@ if (import.meta.main) {
     } = process.env;
     if (!GITHUB_EVENT_PATH || !GITHUB_REPOSITORY || !GITHUB_TOKEN)
       throw new Error("GitHub workflow environment is required.");
+    const repositoryFetch = createRepositoryFetcher(GITHUB_TOKEN);
     const result = await runListingReview(
       JSON.parse(readFileSync(GITHUB_EVENT_PATH, "utf8")),
       githubRequest(GITHUB_REPOSITORY, GITHUB_TOKEN),
@@ -433,6 +435,8 @@ if (import.meta.main) {
         AbortSignal.timeout(20_000),
         (path, init) => fetch(`https://vibe-gnome.org${path}`, init),
       ),
+      (repository) => resolveAppIdentity(repository, repositoryFetch),
+      (repository) => resolveExtensionIdentity(repository, repositoryFetch),
     );
     if (GITHUB_STEP_SUMMARY) appendFileSync(GITHUB_STEP_SUMMARY, `${result}\n`);
     console.log(result);

@@ -37,7 +37,7 @@ jobs:
         with:
           bun-version: "1.3.14"
       - name: Verify publication and database identity constraints
-        run: bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts tests/extension-identity.test.ts tests/repository-screenshot.test.ts
+        run: bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts tests/app-identity.test.ts tests/extension-identity.test.ts tests/repository-fetch.test.ts tests/repository-screenshot.test.ts
       - name: Verify the current extension form through review and publication
         run: bun test tests/extension-submission-workflow.test.ts
       - name: Verify human approval, repository identity, and database schema, then publish
