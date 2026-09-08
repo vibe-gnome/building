@@ -34,8 +34,3 @@ body:
     attributes:
       label: Category and tags
       placeholder: Workflow, workspaces, terminal
-  - type: textarea
-    id: preview
-    attributes:
-      label: Screenshots
-      description: Optional. Attach screenshots or link to them in your repository and include attribution where needed.

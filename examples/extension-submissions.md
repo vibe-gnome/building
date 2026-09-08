@@ -15,7 +15,6 @@ Extension name: My Extension
 Source repository: https://github.com/your-name/your-extension
 Summary: Describe what the extension does and any additional requirements.
 Category and tags: Workflow, workspaces
-Screenshots: Attach screenshots or link to them and include attribution where needed.
 ```
 
 For changes to an existing listing, open its detail page and select **Report

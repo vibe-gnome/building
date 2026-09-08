@@ -10,14 +10,13 @@ import { publishListing } from "../scripts/publish-listing";
 import { catalogDatabase } from "./helpers/catalog-db";
 
 test.each([
-  { screenshots: "_No response_", icon: undefined },
+  { icon: undefined },
   {
-    screenshots: "![Desktop](https://example.org/screenshot.png)",
     icon: `https://raw.githubusercontent.com/example/extension/${"a".repeat(40)}/icon.svg`,
   },
 ])(
   "current extension form passes review and publication: %j",
-  async ({ screenshots, icon }) => {
+  async ({ icon }) => {
     const identity = {
       repository: "https://github.com/example/extension",
       commit: "a".repeat(40),
@@ -35,7 +34,6 @@ test.each([
       "Source repository": identity.repository,
       Summary: identity.metadata.description,
       "Category and tags": "Workflow, workspaces",
-      Screenshots: screenshots,
     };
     const form = Bun.YAML.parse(
       readFileSync(".github/ISSUE_TEMPLATE/submit-extension.yml", "utf8"),
@@ -150,11 +148,11 @@ test.each([
       const evidence = JSON.parse(String(row?.evidence));
       expect(evidence.extensionIdentity).toEqual(identity);
       expect(evidence.body).toBe(issue.body);
-      expect(parseIssueFields(evidence.body).fields.get("screenshots")).toBe(
-        screenshots,
+      expect(parseIssueFields(evidence.body).fields.has("screenshots")).toBe(
+        false,
       );
 
-      issue.body += "\n\nUpdated screenshot attribution.";
+      issue.body += "\n\nUpdated extension requirements.";
       await expect(
         publishListing(
           event,

@@ -48,9 +48,9 @@ maintainers in the upstream project during review.
 
 Extension submission checks cover the source URL, name, summary, and the GNOME
 `metadata.json` read from the default branch at a pinned commit. New submissions
-have no listing ID, UUID, GNOME listing URL, pasted metadata, or submitter
-relationship field. Removed fields in older submissions are ignored. Screenshots
-are optional and retained verbatim in the approved issue evidence. Existing update issues still require requested changes and submitter
+have no listing ID, UUID, GNOME listing URL, pasted metadata, screenshots, or submitter
+relationship field. Removed fields in older submissions are ignored; the full
+approved issue body is retained in review evidence. Existing update issues still require requested changes and submitter
 relationship. Exactly one metadata.json
 must exist outside excluded test/example/vendor directories; missing, ambiguous,
 templated UUIDs and fetch errors block approval. Repository roots use the same
@@ -146,7 +146,7 @@ share a per-issue lock, use Bun 1.3.14, and check out trusted default-branch cod
 The basic-check job reads current extension identities from the catalog API.
 Both jobs run `tests/extension-submission-workflow.test.ts` before their credentialed
 steps. It builds an issue from the current form and exercises review, approval,
-publication, and screenshot evidence with mocked GitHub/repository reads and a
+publication, and repository icon handling with mocked GitHub/repository reads and a
 local SQLite database, without external services.
 
 Use the [copy-ready examples](../../examples/listing-review.md) for a local dry run:

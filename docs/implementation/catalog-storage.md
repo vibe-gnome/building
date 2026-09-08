@@ -130,8 +130,8 @@ the accepted version stays visible while an edit is under review.
   source permalink, permissions, author/license, and fresh audit results are
   retained in review evidence.
 - Extensions: GNOME metadata fetched at a pinned repository commit, source, summary,
-  and optional category/tags. Optional `Screenshots` content is retained verbatim in
-  review evidence, including attachment links and attribution. New submissions
+  and optional category/tags. The full approved issue body is retained verbatim in
+  review evidence, including content from older forms. New submissions
   ignore removed manual ID, UUID, GNOME listing URL, metadata, and relationship fields.
   New entries import a repository icon URL pinned to the reviewed commit when one
   is detected. Otherwise they use `/icons/showcase/extensions.svg`, the green
