@@ -477,7 +477,8 @@ summary {
   padding-bottom: 88px;
 }
 
-.section-heading h2 {
+.section-heading h2,
+.guides-directory h1 {
   margin: 11px 0 0;
   font-size: clamp(2rem, 3.4vw, 3rem);
   font-weight: 800;
@@ -730,7 +731,8 @@ footer a:hover {
   line-height: 1.5;
 }
 
-.resource-list {
+.resource-list,
+.guide-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   overflow: hidden;
@@ -739,15 +741,19 @@ footer a:hover {
   background: var(--surface);
 }
 
-.resource-list a {
+.resource-list a,
+.guide-link {
   min-height: 92px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  padding: 18px 20px;
+}
+
+.resource-list a {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  padding: 18px 20px;
 }
 
 .resource-list a:nth-child(2n) {
@@ -758,29 +764,201 @@ footer a:hover {
   border-bottom: 0;
 }
 
-.resource-list a:hover {
+.resource-list a:hover,
+.guide-link:hover {
   background: color-mix(in srgb, var(--accent) 5%, var(--surface));
 }
 
 .resource-list strong,
-.resource-list small {
+.resource-list small,
+.guide-link strong,
+.guide-link small {
   display: block;
 }
 
-.resource-list strong {
+.resource-list strong,
+.guide-link strong {
   margin-bottom: 4px;
   font-size: 0.89rem;
 }
 
-.resource-list small {
+.resource-list small,
+.guide-link small {
   color: var(--muted);
   font-size: 0.76rem;
   line-height: 1.45;
 }
 
-.resource-list svg {
+.resource-list svg,
+.guide-link svg {
   flex: none;
   color: var(--muted);
+}
+
+.guide-list {
+  --muted: var(--ink-soft);
+
+  grid-template-columns: minmax(0, 1fr);
+  align-self: start;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guide-list > li + li {
+  border-top: 1px solid var(--line);
+}
+
+.guide-link {
+  height: 100%;
+}
+
+.guide-list .guide-link:focus-visible {
+  outline: 3px solid var(--accent-text, var(--accent));
+  outline-offset: -4px;
+}
+
+.guide-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.guide-meta {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.guide-link:hover strong {
+  color: var(--accent-text, var(--accent));
+}
+
+.guide-see-all {
+  min-height: 64px;
+}
+
+.guide-see-all strong {
+  margin: 0;
+}
+
+.guide-status {
+  padding: 20px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.guide-status p {
+  margin: 0;
+}
+
+.guide-retry {
+  min-height: 44px;
+  margin-top: 12px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.guide-retry:hover {
+  background: var(--surface-muted);
+}
+
+.guides-page {
+  padding-top: 36px;
+  padding-bottom: 88px;
+}
+
+.guides-back {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.guides-back:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.guides-directory {
+  display: grid;
+  gap: 40px;
+  padding-top: 36px;
+}
+
+.guides-directory .section-heading {
+  max-width: none;
+}
+
+.guides-directory .section-heading > p:last-child {
+  max-width: 75ch;
+}
+
+.guides-directory .heading-accent {
+  white-space: nowrap;
+}
+
+.guides-directory .guide-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.guides-directory .guide-list > li {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.guides-directory .guide-link {
+  align-items: flex-start;
+  padding: 24px;
+}
+
+.guides-directory .guide-link > svg {
+  margin-top: 2px;
+}
+
+.guides-directory .guide-meta {
+  margin-bottom: 12px;
+  font-size: 0.76rem;
+}
+
+.guides-directory .guide-link strong {
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  line-height: 1.35;
+}
+
+.guides-directory .guide-link small {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.guides-directory .guide-list > .guide-status {
+  grid-column: 1 / -1;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+@media (max-width: 680px) {
+  .guides-directory .guide-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
 }
 
 footer {

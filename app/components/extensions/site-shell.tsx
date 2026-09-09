@@ -23,6 +23,7 @@ export function ExtensionsHeader() {
           <NavLink to="/apps">Apps</NavLink>
           <NavLink to="/extensions">Extensions</NavLink>
           <NavLink to="/skills">Skills</NavLink>
+          <NavLink to="/guides">Guides</NavLink>
         </nav>
         <AppearanceControl />
       </div>

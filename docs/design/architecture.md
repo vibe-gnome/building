@@ -16,6 +16,17 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
 - `app/routes/home.tsx` owns the guide page and resource data.
   `app/components/appearance-control.tsx` provides the shared appearance
   control used by the guide and extension pages.
+- The Guides section below Community showcase previews one article and three
+  recently added published skills. Its final **See all** row opens `/guides`,
+  which uses the community shell with its title above the collection. Each
+  article and skill has its own card, arranged in two columns on desktop and one
+  on phones. Home retains the single-column Trusted resources list styling.
+  `app/lib/guides.ts` owns article metadata; `app/components/guide-list.tsx`
+  shares the rows across both surfaces. `app/lib/use-guide-skills.ts` reads the
+  existing paginated skills API with request cancellation and an inline retry
+  state. Articles remain readable while skills load or are unavailable.
+  `/guides` prerenders its article content without fetching the database at build
+  time. Published skill changes appear on the next visit without a rebuild.
 - The community directories at `/apps`, `/extensions`, and `/skills`
   share `app/routes/community-layout.tsx` for their shell and
   `app/extensions.css` for their catalog presentation.
@@ -39,8 +50,8 @@ before React loads to avoid a light/dark flash.
 The site borrows GNOME's restraint rather than reproducing desktop widgets
 literally. It uses system-first Adwaita/Cantarell typography, neutral surfaces,
 compact controls, clear focus states, and the official nine-color accent
-family. Guide sections use simple rules and grouped lists instead of decorative
-cards. The opening section fills the available viewport below the header and
+family. Home guide sections use simple rules and grouped lists; the full Guides
+directory uses individual cards. The opening section fills the available viewport below the header and
 centers the particle slogan. Eight small logo paw
 marks are scattered around it in stable, irregular positions, with separate
 phone coordinates that keep the text clear. Each mark reveals an app or extension

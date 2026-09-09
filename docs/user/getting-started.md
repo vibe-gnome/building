@@ -19,6 +19,11 @@ The community showcase links to [Apps](https://vibe-gnome.org/apps) and
 [Extensions](https://vibe-gnome.org/extensions), and reusable
 [Skills](https://vibe-gnome.org/skills).
 
+Below the showcase, **Learn to vibe code for GNOME** brings together articles and
+recently added skills. Choose **See all** to open [Guides](https://vibe-gnome.org/guides)
+and browse the full collection. Docs open the original article; skills open
+their listing with source and installation links.
+
 To suggest a skill, open its directory and select **Submit a skill**. Sign in to
 GitHub and fill out the issue form with the project URL, summary, installation
 details, author, and license. Maintainers review each issue before adding an

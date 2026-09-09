@@ -23,7 +23,8 @@ are intentionally ignored by git.
 `bun run build` writes the production site to `build/client/`. Because
 `react-router.config.ts` sets `ssr: false`, no React application server is required.
 The `/apps`, `/extensions`, and `/skills` directory shells are prerendered;
-records and dynamic details load from the D1 catalog API. Keep `/` out of the prerender list so
+`/guides` also prerenders its article list and loads skills in the browser.
+Records and dynamic details load from the D1 catalog API. Keep `/` out of the prerender list so
 `index.html` remains the SPA fallback expected by the existing static host.
 
 ## Cloudflare deployment
@@ -76,6 +77,10 @@ replacing that record.
 ## Adding content
 
 Edit guide sections and resource metadata in `app/routes/home.tsx`.
+Curated articles for the Guides section and `/guides` live in
+`app/lib/guides.ts`. Both surfaces read published skills from the existing D1
+catalog API; no duplicate skill list or database migration is needed. See the
+[guide content example](../../examples/guide-content.md) when adding an article.
 Homepage idea copy and footprint positions live in
 `app/components/idea-footprints.tsx`. Keep new positions outside the centered
 slogan on both desktop and phone layouts.

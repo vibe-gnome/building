@@ -194,6 +194,7 @@ describe("integrated extension pages", () => {
       "/apps",
       "/extensions",
       "/skills",
+      "/guides",
     ]);
   });
 });

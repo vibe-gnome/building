@@ -1,6 +1,7 @@
 import { ArrowUpRight, MessageCircle } from "lucide-react";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { AppearanceControl } from "../components/appearance-control";
+import { HomeGuides } from "../components/guide-list";
 import { IdeaFootprints } from "../components/idea-footprints";
 import { ParticleTypography } from "../components/particle-typography";
 import { SiteFooter } from "../components/site-footer";
@@ -255,6 +256,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <HomeGuides />
 
         <section className="content-section page-shell" id="resources">
           <div className="section-heading">
