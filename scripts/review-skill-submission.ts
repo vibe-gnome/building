@@ -8,7 +8,15 @@ import {
   type AuditReport,
   checkSkillAudits,
   resolveSkillTarget,
+  SkillAuditHttpError,
 } from "./check-skill-audits";
+import {
+  type InstallSkill,
+  installReviewSkill,
+  SkillInstallError,
+  skillInstallTarget,
+  skillsCliVersion,
+} from "./install-review-skill";
 import { listingFingerprint } from "./listing-review";
 
 const marker = "<!-- vibe-gnome:skill-audits -->";
@@ -55,6 +63,7 @@ function reportBody(
   runUrl: string,
   fingerprint: string,
   identity?: SkillIdentity,
+  installed = false,
 ): string {
   const heading = report?.passed
     ? "Ready for human review"
@@ -77,6 +86,12 @@ function reportBody(
     `## ${heading}`,
     "",
     ...evidence,
+    ...(installed
+      ? [
+          "",
+          `Installation: \`npx skills@${skillsCliVersion} add\` succeeded for the selected commit and folder in a temporary directory. Installation does not guarantee that skills.sh has indexed the skill or finished its audits.`,
+        ]
+      : []),
     ...(identity
       ? [
           "",
@@ -104,12 +119,46 @@ function reportBody(
   ].join("\n");
 }
 
+export async function checkInstalledSkillAudits(
+  url: string,
+  check: (url: string) => Promise<AuditReport> = checkSkillAudits,
+  wait: (ms: number) => Promise<void> = (ms) => Bun.sleep(ms),
+): Promise<AuditReport> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const report = await check(url);
+      const required = report.audits.filter((audit) => audit.required);
+      if (
+        attempt === 2 ||
+        report.passed ||
+        required.some(
+          (audit) => audit.status === "FAIL" || audit.status === "WARN",
+        ) ||
+        !required.some(
+          (audit) => audit.status === "PENDING" || audit.status === "UNKNOWN",
+        )
+      )
+        return report;
+    } catch (error) {
+      if (
+        !(error instanceof SkillAuditHttpError) ||
+        error.status !== 404 ||
+        attempt === 2
+      )
+        throw error;
+    }
+    await wait(15_000);
+  }
+}
+
 export async function reviewSkillSubmission(
   issueNumber: number,
   github: GitHubRequest,
   runUrl: string,
   check: (url: string) => Promise<AuditReport> = checkSkillAudits,
   resolveIdentity?: ResolveSkillIdentity,
+  install: InstallSkill = installReviewSkill,
+  wait?: (ms: number) => Promise<void>,
 ): Promise<{ passed: boolean; summary: string }> {
   const issuePath = `/issues/${issueNumber}`;
   const issue = await github<Issue>(issuePath);
@@ -166,26 +215,31 @@ export async function reviewSkillSubmission(
     }
   };
   await updateComment(
-    `${marker}\n## Checking skills.sh audits\n\nPrevious results are superseded. Human review must wait for this check to finish.\n\n[Workflow run](${runUrl})`,
+    `${marker}\n## Installing skill and checking skills.sh audits\n\nPrevious results are superseded. Human review must wait for the temporary installation and required audit checks to finish.\n\n[Workflow run](${runUrl})`,
   );
 
   let report: AuditReport | undefined;
   let identity: SkillIdentity | undefined;
   let error: string | undefined;
+  let installed = false;
   try {
     const target = await resolveSkillTarget(issue.body ?? "", resolveIdentity);
     identity = target.identity;
-    report = await check(target.url.href);
+    await install(skillInstallTarget(issue.body ?? "", identity));
+    installed = true;
+    report = await checkInstalledSkillAudits(target.url.href, check, wait);
   } catch (reason) {
     // Our validators use fixed messages. Network errors may contain remote text;
     // don't echo arbitrary server content, issue text, or credentials to GitHub.
     error =
-      reason instanceof Error &&
-      /^(Use an HTTPS|Provide exactly one|Provide a repository root|Source repository URL|Skill folder path|SKILL\.md|skills\.sh|Repository |The repository |Metadata file )/.test(
-        reason.message,
-      )
+      reason instanceof SkillInstallError
         ? reason.message
-        : "The repository or audit request failed or timed out. Retry the workflow later.";
+        : reason instanceof Error &&
+            /^(Use an HTTPS|Provide exactly one|Provide a repository root|Source repository URL|Skill folder path|SKILL\.md|skills\.sh|Repository |The repository |Metadata file )/.test(
+              reason.message,
+            )
+          ? reason.message
+          : "The repository or audit request failed or timed out. Retry the workflow later.";
   }
 
   const current = await github<Issue>(issuePath);
@@ -204,6 +258,7 @@ export async function reviewSkillSubmission(
     runUrl,
     listingFingerprint(issue, identity),
     identity,
+    installed,
   );
   await updateComment(summary);
   await github(`${issuePath}/labels`, "POST", {

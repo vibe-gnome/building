@@ -194,6 +194,12 @@ export type AuditRequest = (
   options: RequestInit,
 ) => Promise<Response>;
 
+export class SkillAuditHttpError extends Error {
+  constructor(public readonly status: number) {
+    super(`skills.sh returned HTTP ${status}. Retry the check later.`);
+  }
+}
+
 export async function checkSkillAudits(
   input: string,
   request: AuditRequest = fetch,
@@ -221,10 +227,7 @@ export async function checkSkillAudits(
       url = next.href;
       continue;
     }
-    if (!response.ok)
-      throw new Error(
-        `skills.sh returned HTTP ${response.status}. Retry the check later.`,
-      );
+    if (!response.ok) throw new SkillAuditHttpError(response.status);
     if (
       !response.headers
         .get("content-type")

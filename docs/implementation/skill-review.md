@@ -14,8 +14,9 @@ the default branch at one commit, using the bounded public reads shared with
 app and extension discovery. It parses YAML frontmatter with Bun, derives the
 skills.sh URL from the repository and declared `name`, and uses `description`
 when Summary is blank. The display name need not be the folder name. Missing
-files, invalid metadata, and incomplete trees block review. Only the selected
-SKILL.md is read; no skill instructions are executed. The report links to its
+files, invalid metadata, and incomplete trees block review. Identity discovery
+reads the selected SKILL.md; installation then copies that skill's files into a
+temporary directory without executing its instructions. The report links to its
 immutable source. Approval covers the repository, commit, path, and skill name
 as well as the issue. Publication resolves them again and rejects a changed
 revision until checks and approval are refreshed. Tags are trimmed, empty tags
@@ -30,6 +31,34 @@ The form has no Listing ID. D1 assigns a stable numeric ID, and the final
 segment of the verified skills.sh URL supplies the readable name in
 `/skills/<db-id>/<skill-name>`. Older manual IDs are ignored; previously published
 skills keep their internal key and view counts when republished.
+
+## Installation before audits
+
+Skills may be submitted before they appear on skills.sh. After validating the
+repository and folder, `scripts/install-review-skill.ts` runs `npx --yes
+--ignore-scripts skills@1.5.25 add <repository>/tree/<commit>/<folder> --skill
+<declared-name> --agent codex --copy --yes`. Root skills omit the folder suffix.
+The CLI version and full source commit are pinned. Legacy submissions use their
+validated SKILL.md permalink's commit and folder.
+
+The child process uses a fresh temporary project, home, Git configuration, and
+npm cache; it inherits no GitHub/Cloudflare tokens, npm credentials, SSH agent,
+or workflow output paths. npm lifecycle scripts are disabled. The selected
+skill's files are copied, not executed or loaded into a running agent. A
+two-minute timeout terminates the process group. CLI output is suppressed so
+repository content cannot emit workflow commands; failures report a fixed
+message and exit code. The installed SKILL.md name and lockfile repository,
+commit, and folder must match the reviewed target. Temporary files are always
+removed, including on failure.
+
+The CLI's public installation telemetry remains enabled and identifies this as
+CI. Explicit `DO_NOT_TRACK` or `DISABLE_TELEMETRY` settings are respected. A
+successful install does not prove that telemetry was accepted, the skill was
+indexed, or the reviewed commit was scanned. Review tries the skills.sh page up
+to three times, 15 seconds apart, for HTTP 404 or pending/unknown required
+audits. WARN/FAIL results and other request failures block immediately. If
+indexing or audits are still unavailable, the issue records the successful
+installation but stays blocked until a later review run passes.
 
 ## Required audits
 
@@ -50,9 +79,10 @@ Screenshots never substitute for the automated check.
 
 `.github/workflows/review-skill.yml` runs on skill issues opened, edited, or
 reopened, and supports manual retries with an `issue_number` input. It checks out
-the default branch with persisted credentials disabled, installs Bun 1.3.14, and
-runs `scripts/review-skill-submission.ts`. No project dependencies or submitted
-skill code are installed or executed. The token has repository contents read and
+the default branch with persisted credentials disabled, installs Node.js 22 and
+Bun 1.3.14, and runs `scripts/review-skill-submission.ts`. The pinned skills CLI
+runs only in the temporary installation described above. The workflow has an
+eight-minute limit. The token has repository contents read and
 issues write access; it cannot publish a catalog change.
 
 The action creates missing labels and maintains one bot-owned results comment:
@@ -65,7 +95,7 @@ The action creates missing labels and maintains one bot-owned results comment:
 | `skill:awaiting-review` | Both required audits passed; a human decision is needed |
 
 Every run clears previous ready/blocked labels and replaces the old comment with
-a pending message before fetching audits. A final issue read rejects results if
+a pending message before installation and audit checks. A final issue read rejects results if
 the body, title, or open state changed during the check. Runs are serialized per
 issue; a new run does not cancel an active run halfway through its writes. The
 final comment and Actions summary contain individual verdicts, links, check time,

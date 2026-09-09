@@ -5,9 +5,12 @@ issue with its name, public GitHub repository URL, and the path to the folder
 containing SKILL.md. Use a path such as `skills/gnome-workflow`, or `.` when
 SKILL.md is at the repository root.
 
-On the skill's [skills.sh](https://skills.sh) page, **Gen Agent Trust Hub** and **Socket** must both show **PASS** under
-**Security Audits**. Snyk is informational. If a required audit is missing,
-pending, WARN, or FAIL, wait for passing results before submitting.
+The skill does not need to be listed on [skills.sh](https://skills.sh) yet.
+Review first tries `npx skills add` for the selected skill in a temporary
+directory. The CLI sends public installation data to skills.sh, which may need
+time to index the skill and produce audits. The temporary installation is removed.
+**Gen Agent Trust Hub** and **Socket** must both show **PASS** before human review.
+Snyk is informational; installation alone does not approve the listing.
 
 Summary and tags are optional. Leave Summary blank to use the description from
 SKILL.md. Separate tags with commas, for example `GNOME, GTK, Libadwaita`.
@@ -15,7 +18,9 @@ The workflow reads SKILL.md from the default branch, finds the skills.sh page
 using its declared name, and includes a link to the checked source revision in
 the review report. You do not need to provide audit links or commit permalinks.
 
-GitHub Actions checks skills.sh directly and posts the results on your issue.
+GitHub Actions posts installation and audit results on your issue. It briefly
+retries missing or pending audits; rerun the workflow later if skills.sh is still
+indexing or scanning the skill.
 A passing check moves the request to human review. A maintainer reads the skill,
 checks its relevance and permissions, and approves the catalog change before it
 appears on the site. Passing audits does not automatically publish a listing.

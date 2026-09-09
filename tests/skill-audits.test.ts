@@ -3,9 +3,11 @@ import {
   type AuditRequest,
   checkSkillAudits,
   parseAudits,
+  SkillAuditHttpError,
   skillUrl,
   submissionTarget,
 } from "../scripts/check-skill-audits";
+import { SkillInstallError } from "../scripts/install-review-skill";
 import {
   type GitHubRequest,
   reviewSkillSubmission,
@@ -323,6 +325,8 @@ describe("GitHub human review handoff", () => {
       mock.github,
       "https://github.com/vibe-gnome/building/actions/runs/1",
       async () => parseAudits(fixture, url),
+      undefined,
+      async () => {},
     );
     expect(result.passed).toBe(true);
     expect(result.summary).toContain("Ready for human review");
@@ -349,12 +353,14 @@ describe("GitHub human review handoff", () => {
 
   test.each([
     "missing URL",
+    "installation failure",
     "network error",
     "changed issue",
     "closed issue",
     "failed audit",
   ])("clears stale readiness and blocks %s", async (scenario) => {
     const mock = githubFixture();
+    let auditCalls = 0;
     if (scenario === "missing URL")
       mock.issue.body = "### skills.sh URL\n_No response_";
     const result = await reviewSkillSubmission(
@@ -362,6 +368,7 @@ describe("GitHub human review handoff", () => {
       mock.github,
       "run",
       async () => {
+        auditCalls++;
         if (scenario === "network error") throw new Error("offline");
         if (scenario === "changed issue") mock.issue.body += "\nEdited";
         if (scenario === "closed issue") mock.issue.state = "closed";
@@ -375,9 +382,21 @@ describe("GitHub human review handoff", () => {
           url,
         );
       },
+      undefined,
+      async () => {
+        if (scenario === "installation failure")
+          throw new SkillInstallError(
+            "Skill installation timed out. Retry the workflow.",
+          );
+      },
     );
     expect(result.passed).toBe(false);
     expect(result.summary).toContain("Skill review blocked");
+    if (scenario === "installation failure") {
+      expect(auditCalls).toBe(0);
+      expect(result.summary).toContain("Skill installation timed out");
+      expect(result.summary).not.toContain("/publish-listing");
+    }
     expect(
       mock.calls.some(
         (call) =>
@@ -390,11 +409,45 @@ describe("GitHub human review handoff", () => {
     });
   });
 
+  test("keeps an installed skill blocked while its audit page is missing", async () => {
+    const mock = githubFixture();
+    let installed = false;
+    let auditCalls = 0;
+    const result = await reviewSkillSubmission(
+      7,
+      mock.github,
+      "run",
+      async () => {
+        expect(installed).toBe(true);
+        auditCalls++;
+        throw new SkillAuditHttpError(404);
+      },
+      undefined,
+      async () => {
+        installed = true;
+      },
+      async () => {},
+    );
+    expect(auditCalls).toBe(3);
+    expect(result.passed).toBe(false);
+    expect(result.summary).toContain("Installation:");
+    expect(result.summary).toContain("HTTP 404");
+    expect(result.summary).not.toContain("/publish-listing");
+    expect(mock.calls.at(-2)?.body).toEqual({
+      labels: ["skill:audits-blocked"],
+    });
+  });
+
   test("creates its own results comment instead of editing a submitter's lookalike", async () => {
     const mock = githubFixture();
     if (mock.comments[0]) mock.comments[0].user.login = "submitter";
-    await reviewSkillSubmission(7, mock.github, "run", async () =>
-      parseAudits(fixture, url),
+    await reviewSkillSubmission(
+      7,
+      mock.github,
+      "run",
+      async () => parseAudits(fixture, url),
+      undefined,
+      async () => {},
     );
     expect(
       mock.calls.some(

@@ -1,9 +1,9 @@
 # Submitting and accepting a skill
 
-Use the **Submit a skill** issue form in `vibe-gnome/building`. Before submitting,
-the skill's page on skills.sh must show PASS for both Gen Agent Trust Hub and
-Socket. Snyk is informational. GitHub Actions verifies the live results before
-a human maintainer reviews the request.
+Use the **Submit a skill** issue form in `vibe-gnome/building`, even if the skill
+is not listed on skills.sh yet. GitHub Actions first tries a temporary install
+using `npx skills add`, then verifies PASS for both Gen Agent Trust Hub and
+Socket before human review. Snyk is informational.
 
 This is copy-ready issue content for an older issue that needs the new fields.
 The `owner`, repository, and skill name below are placeholders: replace them
@@ -23,13 +23,13 @@ https://github.com/owner/gnome-workflow
 
 .
 
-### Summary
-
-Agent guidance for building and checking a Libadwaita app.
-
 ### Tags
 
 GNOME, GTK, Libadwaita
+
+### Summary
+
+Agent guidance for building and checking a Libadwaita app.
 ```
 
 The workflow reads the selected SKILL.md at a pinned default-branch commit and
@@ -37,7 +37,14 @@ uses its frontmatter `name` to find the skills.sh page. An omitted Summary uses
 its frontmatter `description`. Installation, license, permissions, and other
 supporting information are reviewed directly in the repository.
 
-Run the audit checker without creating an issue or executing skill instructions:
+Try the same temporary installation locally. This sends the CLI's public
+installation telemetry to skills.sh and removes the installed files afterward:
+
+```bash
+bun scripts/install-review-skill.ts https://github.com/stonega/harness skills/gnome-svg-icons
+```
+
+Run the audit checker without installing or executing skill instructions:
 
 ```bash
 bun scripts/check-skill-audits.ts https://skills.sh/vercel-labs/skills/find-skills

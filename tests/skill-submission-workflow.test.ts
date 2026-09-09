@@ -80,8 +80,8 @@ function formIssue(values: Record<string, string> = {}) {
     "Skill name",
     "Source repository URL",
     "Skill folder path",
-    "Summary",
     "Tags",
+    "Summary",
   ]);
   return {
     number: 42,
@@ -238,7 +238,9 @@ test.each([
       throw new Error(`Unexpected GitHub request: ${method} ${path}`);
     };
     let failAudits = false;
+    let installed = false;
     const check = async (target: string) => {
+      expect(installed).toBe(true);
       expect(target).toBe(url);
       return parseAudits(
         failAudits
@@ -260,8 +262,18 @@ test.each([
         "run",
         check,
         repo.resolve,
+        async (target) => {
+          expect(target).toMatchObject({
+            repository,
+            path: "skills/discovery/SKILL.md",
+            commit: repo.state.commit,
+            skillName: "find-skills",
+          });
+          installed = true;
+        },
       );
       expect(report.passed).toBe(true);
+      expect(report.summary).toContain("Installation:");
       expect(report.summary).toContain(
         `${repository}/blob/${repo.state.commit}/skills/discovery/SKILL.md`,
       );

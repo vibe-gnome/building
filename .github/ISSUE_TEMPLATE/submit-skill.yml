@@ -1,5 +1,5 @@
 name: Submit a skill
-description: Submit a skill with passing skills.sh audits for maintainer review.
+description: Submit a skill for installation checks, skills.sh audits, and maintainer review.
 title: "[Skill] "
 body:
   - type: markdown
@@ -7,7 +7,9 @@ body:
     attributes:
       value: |
         Submit one skill per issue. Provide its repository and the folder containing SKILL.md.
-        We find its skills.sh page and check that Gen Agent Trust Hub and Socket both show PASS.
+        We try installing the skill with npx skills add first, then check its skills.sh audits.
+        The skill does not need to be listed on skills.sh before submission.
+        Gen Agent Trust Hub and Socket must both show PASS before human review.
         A human maintainer reviews and approves the listing after the checks pass.
   - type: input
     id: name
@@ -30,18 +32,18 @@ body:
       placeholder: skills/skill-name
     validations:
       required: true
-  - type: textarea
-    id: summary
-    attributes:
-      label: Summary
-      description: Optional. How does this skill help with GNOME development? Leave blank to use its SKILL.md description.
-    validations:
-      required: false
   - type: input
     id: tags
     attributes:
       label: Tags
       description: Optional. Separate tags with commas.
       placeholder: GNOME, GTK, Libadwaita
+    validations:
+      required: false
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Optional. How does this skill help with GNOME development? Leave blank to use its SKILL.md description.
     validations:
       required: false
