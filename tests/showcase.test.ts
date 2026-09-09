@@ -48,9 +48,7 @@ describe("community showcases", () => {
   });
 
   test("renders empty showcase pages without example submissions", () => {
-    expect(showcasePage).toContain("Community submissions");
-    expect(showcasePage).toContain("entries.map");
-    expect(showcasePage).toContain("No submissions yet.");
+    expect(showcasePage).toContain("No apps found");
     expect(showcases).not.toContain("entries:");
     expect(showcases).not.toContain("Vibe GNOME community");
   });

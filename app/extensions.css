@@ -433,6 +433,17 @@
     font-size: 11px;
     color: var(--muted);
   }
+  .app-card .author,
+  .app-card .card-metadata dd,
+  .app-card .tag-list > *,
+  .app-catalog .category-option span:not(.count) {
+    overflow-wrap: anywhere;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .app-catalog .category-option {
+    max-width: 100%;
+  }
   .card-summary {
     margin: 18px 0;
     min-height: 44px;

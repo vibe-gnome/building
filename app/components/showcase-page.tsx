@@ -1,36 +1,35 @@
-import { Plus } from "lucide-react";
-import { Link } from "react-router";
-import { listingPath } from "../lib/listing-links";
-import {
-  type ShowcaseCategory,
-  type ShowcaseEntry,
-  showcaseCollections,
-  showcaseSubmissionUrl,
-} from "../lib/showcases";
+import { Blocks, Plus, RotateCcw, Search, Tag } from "lucide-react";
+import { appTags, filterApps } from "../lib/app-catalog";
+import { useCatalogQuery } from "../lib/catalog-query";
+import { type ShowcaseEntry, showcaseSubmissionUrl } from "../lib/showcases";
+import { AppCard } from "./app-card";
+import { CatalogControls } from "./catalog-controls";
 
 export function ShowcasePage({
   category,
   entries,
 }: {
-  category: ShowcaseCategory;
+  category: "apps";
   entries: readonly ShowcaseEntry[];
 }) {
-  const collection = showcaseCollections[category];
+  const query = useCatalogQuery(["q", "tag"]);
+  const { params, update, reset, list } = query;
+  const tags = appTags(entries);
+  const selectedTag = (params.get("tag") ?? "").trim().toLocaleLowerCase();
+  const results = filterApps(entries, params);
 
   return (
     <main
       id="main-content"
-      className="page-shell marketplace directory-page"
+      className="page-shell marketplace app-catalog"
       tabIndex={-1}
     >
       <div className="page-intro catalog-intro">
         <div>
-          <p className="eyebrow">Community showcase</p>
+          <p className="eyebrow">Community marketplace</p>
           <h1>
-            Vibe GNOME{" "}
-            <span>{category === "apps" ? "Apps" : "Extensions"}</span>
+            GNOME <span>Apps</span>
           </h1>
-          <p>{collection.description}</p>
         </div>
         <a
           className="button primary submit-button"
@@ -39,41 +38,69 @@ export function ShowcasePage({
           rel="noreferrer"
         >
           <Plus size={17} aria-hidden="true" />
-          Submit {category === "apps" ? "app" : "extension"}
+          Submit app
         </a>
       </div>
-      <section
-        className="directory-section"
-        aria-labelledby="showcase-submissions-title"
-      >
-        <header className="directory-section-heading">
-          <h2 id="showcase-submissions-title">Community submissions</h2>
-          <span>{entries.length} submissions</span>
-        </header>
-        {entries.length === 0 ? (
-          <p className="empty-state directory-empty">No submissions yet.</p>
-        ) : (
-          <div className="community-entry-grid">
-            {entries.map((entry) => (
-              <article
-                className="extension-card community-entry"
-                key={entry.id}
+      <div className="catalog-layout">
+        <section className="catalog-filters" aria-label="Filter apps">
+          <fieldset className="category-filter">
+            <legend className="sr-only">Tags</legend>
+            <button
+              type="button"
+              className="category-option"
+              aria-pressed={!selectedTag}
+              onClick={() => update("tag", "")}
+            >
+              <Blocks size={17} aria-hidden="true" />
+              <span>All apps</span>
+              <span className="count">{entries.length}</span>
+            </button>
+            {tags.map((tag) => (
+              <button
+                type="button"
+                className="category-option"
+                key={tag.name}
+                aria-pressed={selectedTag === tag.name.toLocaleLowerCase()}
+                onClick={() => update("tag", tag.name)}
               >
-                <span className="eyebrow">{entry.submittedBy}</span>
-                <h2>
-                  <Link to={listingPath(category, entry)}>{entry.name}</Link>
-                </h2>
-                <p className="card-summary">{entry.summary}</p>
-                <div className="tag-list">
-                  {entry.tags.map((tag) => (
-                    <span key={tag}>{tag}</span>
-                  ))}
-                </div>
-              </article>
+                <Tag size={17} aria-hidden="true" />
+                <span>{tag.name}</span>
+                <span className="count">{tag.count}</span>
+              </button>
             ))}
-          </div>
-        )}
-      </section>
+          </fieldset>
+        </section>
+        <section className="catalog-results" aria-label="App catalog">
+          <CatalogControls
+            subject="apps"
+            total={entries.length}
+            count={results.length}
+            query={query}
+            sortOptions={[
+              { value: "added", label: "Recently added" },
+              { value: "name", label: "Name: A to Z" },
+            ]}
+          />
+          {results.length > 0 ? (
+            <div className={`extension-grid ${list ? "list-view" : ""}`}>
+              {results.map((entry) => (
+                <AppCard key={entry.id} entry={entry} />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <Search size={30} aria-hidden="true" />
+              <h2>No apps found</h2>
+              {query.filtered && (
+                <button className="button" type="button" onClick={reset}>
+                  <RotateCcw size={16} aria-hidden="true" />
+                  Clear filters
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+      </div>
     </main>
   );
 }

@@ -104,6 +104,16 @@ metadata now require JavaScript, and builds do not fetch D1. New records do not
 need a frontend rebuild. The shared catalog shell, appearance controls, footer,
 keyboard focus, and reduced-motion support remain in place.
 
+Apps and extensions share `CatalogControls` and `useCatalogQuery` for search,
+sorting, result counts, clearing filters, and grid/list views. App tag filters
+come from the published records and combine with case-insensitive search over
+names, summaries, app IDs, authors, and repository URLs. Recently added apps sort
+by descending database ID; alphabetical sorting is also available. Filters,
+sort order, and layout remain in the URL and update without refetching the catalog.
+App cards use the extension card layout, the existing Apps showcase icon, repository
+ownership, up to three tags, and source/detail actions. Both catalogs clamp card
+summaries to three lines while detail pages retain the full summary.
+
 `app/server/migrations/0003_catalog_seed.sql` imports the original two reviewed
 extensions once. `app/data/extensions.json` is retained only as the immutable
 import/test fixture; editing it does not change the live catalog. The app and

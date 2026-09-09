@@ -11,6 +11,10 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
   return loadCatalog("apps", request.signal);
 }
 
+export function shouldRevalidate() {
+  return false;
+}
+
 export function meta() {
   return [
     { title: "App showcase — Vibe GNOME" },
