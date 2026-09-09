@@ -114,6 +114,13 @@ App cards use the extension card layout, the existing Apps showcase icon, reposi
 ownership, up to three tags, and source/detail actions. Both catalogs clamp card
 summaries to three lines while detail pages retain the full summary.
 
+App detail pages use the extension detail layout: icon and repository-owner
+heading, summary and optional screenshot, linked tags, and an information sidebar.
+The sidebar provides installation/source links, views, repository, submitter when
+known, a copyable native app ID when present, and a prefilled listing report.
+Only available app metadata is shown. Shared detail summaries use regular-weight
+text; the layout and controls retain the existing desktop/mobile behavior.
+
 `app/server/migrations/0003_catalog_seed.sql` imports the original two reviewed
 extensions once. `app/data/extensions.json` is retained only as the immutable
 import/test fixture; editing it does not change the live catalog. The app and

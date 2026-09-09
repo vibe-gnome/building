@@ -662,7 +662,19 @@
     font-size: 19px;
     color: var(--ink);
     line-height: 1.55;
-    font-weight: 650;
+    font-weight: 400;
+  }
+  .app-detail-page .detail-heading > div {
+    min-width: 0;
+  }
+  .app-detail-page .detail-heading p,
+  .app-detail-page .detail-content p,
+  .app-detail-page .tag-list a,
+  .app-detail-page .detail-sidebar dd {
+    overflow-wrap: anywhere;
+  }
+  .app-detail-page .tag-list a {
+    max-width: 100%;
   }
   .listing-screenshot {
     display: block;
