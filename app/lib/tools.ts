@@ -7,6 +7,7 @@ export interface ToolEntry {
   description: string;
   href: string;
   bestFor?: string;
+  tags?: readonly string[];
 }
 
 interface ToolCollection {

@@ -33,6 +33,7 @@ test("apps and skills link to details that display views and preserve project li
       description: "Skill description",
       href: "https://example.com/skill",
       bestFor: "GNOME",
+      tags: ["Libadwaita"],
     },
   ];
   for (const category of ["apps", "skills"] as const) {
@@ -49,6 +50,8 @@ test("apps and skills link to details that display views and preserve project li
     expect(index).toContain(
       `href="/${category}/${category === "apps" ? 1 : 2}/${slug}"`,
     );
+    if (category === "skills")
+      expect(index).toContain("<span>Libadwaita</span>");
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <CommunityDetail
@@ -66,7 +69,10 @@ test("apps and skills link to details that display views and preserve project li
     expect(html).not.toContain("Page not found");
     if (category === "apps")
       expect(html).toContain(`src="${apps[0]?.screenshot}"`);
-    else expect(html).not.toContain('class="listing-screenshot"');
+    else {
+      expect(html).not.toContain('class="listing-screenshot"');
+      expect(html).toContain("<span>Libadwaita</span>");
+    }
   }
 });
 

@@ -1,3 +1,11 @@
+import { appRepository } from "../app/lib/app-identity";
+import {
+  type ResolveSkillIdentity,
+  resolveSkillIdentity,
+  type SkillIdentity,
+  skillFilePath,
+} from "../app/server/skill-identity";
+
 export const auditProviders = [
   { slug: "agent-trust-hub", name: "Gen Agent Trust Hub", required: true },
   { slug: "socket", name: "Socket", required: true },
@@ -49,7 +57,25 @@ export function issueField(body: string, label: string): string {
   return value;
 }
 
-export function submissionTarget(body: string): URL {
+export function submissionTarget(body: string, identity?: SkillIdentity): URL {
+  if (/^### Skill folder path\r?$/m.test(body)) {
+    issueField(body, "Skill name");
+    const path = skillFilePath(issueField(body, "Skill folder path"));
+    if (!identity || identity.path !== path)
+      throw new Error("Skill folder path must be resolved before publication.");
+    const source = appRepository(issueField(body, "Source repository URL"));
+    if (
+      source.host !== "github.com" ||
+      source.url.toLowerCase() !== identity.repository.toLowerCase()
+    )
+      throw new Error(
+        "Source repository URL must match the resolved skill repository.",
+      );
+    return skillUrl(
+      `https://skills.sh/${new URL(identity.repository).pathname.slice(1)}/${identity.skillName}`,
+    );
+  }
+  // Existing issues retain their explicit skills.sh URL and immutable source.
   const url = skillUrl(issueField(body, "skills.sh URL"));
   const [owner, repository] = url.pathname.slice(1).split("/");
   const source = `https://github.com/${owner}/${repository}`;
@@ -76,6 +102,20 @@ export function submissionTarget(body: string): URL {
     );
   }
   return url;
+}
+
+export async function resolveSkillTarget(
+  body: string,
+  resolve: ResolveSkillIdentity = resolveSkillIdentity,
+): Promise<{ url: URL; identity?: SkillIdentity }> {
+  if (!/^### Skill folder path\r?$/m.test(body))
+    return { url: submissionTarget(body) };
+  issueField(body, "Skill name");
+  const identity = await resolve(
+    issueField(body, "Source repository URL"),
+    issueField(body, "Skill folder path"),
+  );
+  return { url: submissionTarget(body, identity), identity };
 }
 
 export function parseAudits(html: string, input: string): AuditReport {

@@ -6,12 +6,9 @@ body:
     id: review-process
     attributes:
       value: |
-        Submit one skill per issue, already listed on [skills.sh](https://skills.sh).
-        Under **Security Audits**, **Gen Agent Trust Hub** and **Socket** must both show **PASS**.
-        GitHub Actions verifies these results directly on skills.sh. Missing, pending, WARN, FAIL,
-        or unavailable required audits block review. Snyk is informational and does not block review.
-        After the checks pass, a human maintainer reviews the skill and approves its catalog change.
-        Passing audits alone does not publish a listing.
+        Submit one skill per issue. Provide its repository and the folder containing SKILL.md.
+        We find its skills.sh page and check that Gen Agent Trust Hub and Socket both show PASS.
+        A human maintainer reviews and approves the listing after the checks pass.
   - type: input
     id: name
     attributes:
@@ -26,61 +23,25 @@ body:
     validations:
       required: true
   - type: input
-    id: skills-sh-url
+    id: skill-folder
     attributes:
-      label: skills.sh URL
-      description: The exact skill page, matching the source repository above. Screenshots and repository-only links are not accepted as audit evidence.
-      placeholder: https://skills.sh/owner/repository/skill-name
-    validations:
-      required: true
-  - type: input
-    id: skill-file
-    attributes:
-      label: SKILL.md permalink
-      description: Link to this skill's SKILL.md at a full 40-character commit SHA in the same repository. Reviewers use this to identify the submitted version.
-      placeholder: https://github.com/owner/repository/blob/0123456789abcdef0123456789abcdef01234567/skills/skill-name/SKILL.md
+      label: Skill folder path
+      description: Path from the repository root to the folder containing SKILL.md. Use . for the repository root.
+      placeholder: skills/skill-name
     validations:
       required: true
   - type: textarea
     id: summary
     attributes:
       label: Summary
-      description: What does this skill help an agent do when building GNOME software?
+      description: Optional. How does this skill help with GNOME development? Leave blank to use its SKILL.md description.
     validations:
-      required: true
-  - type: textarea
-    id: setup
-    attributes:
-      label: Installation and usage
-      description: Include supported agents, prerequisites, and an example prompt.
-    validations:
-      required: true
+      required: false
   - type: input
-    id: attribution
+    id: tags
     attributes:
-      label: Author and license
+      label: Tags
+      description: Optional. Separate tags with commas.
+      placeholder: GNOME, GTK, Libadwaita
     validations:
-      required: true
-  - type: input
-    id: relationship
-    attributes:
-      label: Your relationship to the skill
-      placeholder: Author, maintainer, or community member
-    validations:
-      required: true
-  - type: textarea
-    id: permissions
-    attributes:
-      label: Permissions and external services
-      description: Describe commands, downloads, file changes, network access, or credentials the skill needs. Write "None" if none are needed. Do not include secrets.
-    validations:
-      required: true
-  - type: checkboxes
-    id: review-agreement
-    attributes:
-      label: Review requirements
-      options:
-        - label: Gen Agent Trust Hub and Socket both show PASS on the linked skills.sh page.
-          required: true
-        - label: The repository, SKILL.md, and skills.sh links describe the same skill, and I understand a human maintainer must approve the listing.
-          required: true
+      required: false

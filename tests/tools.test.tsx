@@ -32,7 +32,7 @@ describe("Vibe Tools navigation", () => {
     expect(html).toContain(
       'class="page-shell marketplace directory-page tool-page"',
     );
-    expect(html).toContain("Vibe GNOME");
+    expect(html).toContain(`<h1>GNOME <span>${collection.title}</span></h1>`);
     expect(html).toContain("Community submissions");
     expect(html).toContain(`href="${toolSubmissionUrl("skills")}"`);
     expect(html).toContain("No submissions yet.");
@@ -48,24 +48,19 @@ describe("Vibe Tools navigation", () => {
     ) as {
       name: string;
       description: string;
-      body: { id: string; validations: { required: boolean } }[];
+      body: { id: string; validations?: { required: boolean } }[];
     };
     expect(form.name).toBe(collection.submitLabel);
     expect(form.description.length).toBeGreaterThan(0);
-    for (const id of [
-      "name",
-      "url",
-      "skills-sh-url",
-      "skill-file",
-      "summary",
-      "setup",
-      "attribution",
-      "relationship",
-      "permissions",
-    ]) {
+    for (const id of ["name", "url", "skill-folder"]) {
       expect(
-        form.body.find((field) => field.id === id)?.validations.required,
+        form.body.find((field) => field.id === id)?.validations?.required,
       ).toBe(true);
+    }
+    for (const id of ["summary", "tags"]) {
+      expect(
+        form.body.find((field) => field.id === id)?.validations?.required,
+      ).toBe(false);
     }
     expect(new Set(form.body.map((field) => field.id)).size).toBe(
       form.body.length,

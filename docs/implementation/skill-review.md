@@ -1,10 +1,30 @@
 # Skill submission and review
 
 Submit one skill through `.github/ISSUE_TEMPLATE/submit-skill.yml`. The form asks
-for its skills.sh page, matching GitHub source repository, an immutable SKILL.md
-permalink, GNOME use case, installation example, license, submitter relationship,
-and required permissions. Field headings used by the checker are an interface:
-update `submissionTarget` and its tests when renaming them.
+for its name, public GitHub source repository, and skill folder path relative to
+the repository root (`.` for a root-level SKILL.md). Summary and comma-separated
+tags are optional. It does not ask for audit links, commit permalinks, installation
+instructions, attribution, submitter relationship, permissions, or checkboxes.
+Maintainers review those details in the upstream source. Field headings used by
+the checker are an interface: update `resolveSkillTarget`, `submissionTarget`,
+and their tests when renaming them.
+
+`app/server/skill-identity.ts` reads the selected folder's regular SKILL.md from
+the default branch at one commit, using the bounded public reads shared with
+app and extension discovery. It parses YAML frontmatter with Bun, derives the
+skills.sh URL from the repository and declared `name`, and uses `description`
+when Summary is blank. The display name need not be the folder name. Missing
+files, invalid metadata, and incomplete trees block review. Only the selected
+SKILL.md is read; no skill instructions are executed. The report links to its
+immutable source. Approval covers the repository, commit, path, and skill name
+as well as the issue. Publication resolves them again and rejects a changed
+revision until checks and approval are refreshed. Tags are trimmed, empty tags
+removed, and duplicates collapsed before storage; they appear on cards and
+detail pages. Existing listings without tags remain supported.
+
+Older issues with skills.sh URL and SKILL.md permalink fields remain supported.
+Their repository/permalink validation still applies; removed descriptive fields
+are no longer required for publication.
 
 The form has no Listing ID. D1 assigns a stable numeric ID, and the final
 segment of the verified skills.sh URL supplies the readable name in
@@ -23,8 +43,8 @@ The skill's **Security Audits** on skills.sh must contain both:
 
 Only an explicit PASS from each required provider passes. WARN, FAIL, PENDING,
 missing or unknown results, network errors, and unreadable pages block review.
-Results are matched by provider and skill URL, not their display order. Submitter
-checkboxes and screenshots never substitute for the automated check.
+Results are matched by provider and skill URL, not their display order.
+Screenshots never substitute for the automated check.
 
 ## GitHub Actions
 
@@ -77,10 +97,11 @@ check. Tests use local fixtures and mocked network/GitHub responses.
 
 1. Confirm the latest workflow run passed and the issue has
    `skill:awaiting-review`, without a pending/blocked label. If the skill or
-   submission changed, or review resumes later, rerun the workflow first.
-2. Open the linked skills.sh reports and immutable SKILL.md. Confirm the source,
-   skill name/path, and submitted commit refer to the same skill. The sidebar
-   verdicts do **not** prove the submitted commit was scanned. Compare audit
+   submission changed, or review resumes later, rerun the workflow first. A new
+   upstream commit also requires a fresh check and approval command.
+2. Open the report's linked skills.sh reports and immutable SKILL.md. Confirm the source,
+   skill name/path, and resolved commit refer to the same skill. The sidebar
+   verdicts do **not** prove the resolved commit was scanned. Compare audit
    dates and revision information in the provider reports against the source;
    defer approval if the reviewed content changed after the scan or its identity
    cannot be established.
@@ -116,5 +137,6 @@ checked through GitHub's current repository permissions.
 
 For an existing submission or a transient skills.sh outage, open **Actions →
 Review skill submission → Run workflow**, use the default branch, and enter the
-issue number. Re-running reads the latest issue body. If an old form lacks the
-new fields, add them using [the submission example](../../examples/tool-submissions.md).
+issue number. Re-running reads the latest issue body and, for folder submissions,
+the latest repository revision. To switch an old issue to the simpler form, use
+[the submission example](../../examples/tool-submissions.md).

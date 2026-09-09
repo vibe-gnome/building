@@ -123,6 +123,13 @@ GitHub remains the submission and discussion interface. Basic app/extension
 checks read the current published extension identities from the API. Skill
 checks require PASS from Gen Agent Trust Hub and Socket on skills.sh; Snyk is
 informational. Passing reports include a hash of the exact issue title/body.
+Skill submissions request name, repository, folder path, and optional summary
+and tags. `app/server/skill-identity.ts` reads that folder's SKILL.md at a pinned
+default-branch commit, derives the audit URL from its declared name, and fills a
+blank summary from its description. Its repository identity is included in the
+approval fingerprint and rechecked at publication. Reports supply the immutable
+source link; maintainers review installation, attribution, and permissions there.
+Optional tags are saved in the catalog and displayed on skill cards and details.
 A human maintainer reviews the content and posts `/publish-listing <fingerprint>`.
 The dedicated publishing workflow verifies current write/admin permissions,
 the passing bot report, the latest issue content, and current validation; skills

@@ -18,6 +18,13 @@ function ToolList({ entries }: { entries: readonly ToolEntry[] }) {
             <Link to={listingPath("skills", entry)}>{entry.name}</Link>
           </h2>
           <p className="card-summary">{entry.description}</p>
+          {entry.tags?.length ? (
+            <div className="tag-list">
+              {entry.tags.map((tag) => (
+                <span key={tag}>{tag}</span>
+              ))}
+            </div>
+          ) : null}
           {entry.bestFor ? (
             <p className="best-for">Best for: {entry.bestFor}</p>
           ) : null}
@@ -56,7 +63,7 @@ export function ToolPage({
         <div>
           <p className="eyebrow">Vibe Tools</p>
           <h1>
-            Vibe GNOME <span>{collection.title}</span>
+            GNOME <span>{collection.title}</span>
           </h1>
           <p>{collection.description}</p>
         </div>

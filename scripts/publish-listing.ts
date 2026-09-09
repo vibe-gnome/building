@@ -20,9 +20,14 @@ import {
   type ResolveExtensionIdentity,
   resolveExtensionIdentity,
 } from "../app/server/extension-identity";
+import type {
+  ResolveSkillIdentity,
+  SkillIdentity,
+} from "../app/server/skill-identity";
 import {
   type AuditReport,
   checkSkillAudits,
+  resolveSkillTarget,
   submissionTarget,
 } from "./check-skill-audits";
 import {
@@ -121,6 +126,7 @@ export function publicationData(
   appIdentity?: AppIdentity,
   existingSlug?: string,
   extensionIdentity?: ExtensionIdentity,
+  skillIdentity?: SkillIdentity,
 ): { category: ListingCategory; slug: string; payload: CatalogListing } {
   const field = fieldsFor(issue.body ?? "");
   const app = !!field("App name") && !field("Skill name");
@@ -134,25 +140,26 @@ export function publicationData(
   if (!isListingSlug(slug))
     throw new Error("The stored listing key is invalid.");
   if (field("Skill name")) {
-    const url = submissionTarget(issue.body ?? "");
-    for (const label of [
-      "Summary",
-      "Installation and usage",
-      "Author and license",
-      "Your relationship to the skill",
-      "Permissions and external services",
-    ]) {
-      if (!field(label))
-        throw new Error(`Complete ${label} before publishing the skill.`);
-    }
+    const url = submissionTarget(issue.body ?? "", skillIdentity);
     return {
       category: "skills",
       slug,
       payload: {
         id: slug,
         name: field("Skill name"),
-        description: field("Summary"),
+        description: field(
+          "Summary",
+          skillIdentity?.description ?? field("Skill name"),
+        ),
         href: url.href,
+        tags: [
+          ...new Set(
+            field("Tags")
+              .split(",")
+              .map((tag) => tag.trim())
+              .filter(Boolean),
+          ),
+        ],
       },
     };
   }
@@ -287,6 +294,7 @@ export async function publishListing(
   checkAudits = checkSkillAudits,
   resolveIdentity: ResolveAppIdentity = resolveAppIdentity,
   resolveExtension: ResolveExtensionIdentity = resolveExtensionIdentity,
+  resolveSkill?: ResolveSkillIdentity,
 ): Promise<string> {
   const command = event.comment?.body
     .trim()
@@ -316,6 +324,9 @@ export async function publishListing(
   const skill = !!field("Skill name");
   let appIdentity: AppIdentity | undefined;
   let extensionIdentity: ExtensionIdentity | undefined;
+  const skillTarget = skill
+    ? await resolveSkillTarget(issue.body ?? "", resolveSkill)
+    : undefined;
   if (!skill && field("App name")) {
     if (!reviewListing(issue.title, issue.body ?? "", [])?.passed)
       throw new Error(
@@ -335,7 +346,7 @@ export async function publishListing(
   }
   const fingerprint = listingFingerprint(
     issue,
-    appIdentity ?? extensionIdentity,
+    appIdentity ?? extensionIdentity ?? skillTarget?.identity,
   );
   if (command[1] !== fingerprint)
     throw new Error(
@@ -369,7 +380,7 @@ export async function publishListing(
       ) ?? null);
   let audits: AuditReport | undefined;
   if (skill) {
-    audits = await checkAudits(submissionTarget(issue.body ?? "").href);
+    audits = await checkAudits(skillTarget?.url.href ?? "");
     if (!audits.passed)
       throw new Error(
         "Both required skills.sh audits must still PASS at publication.",
@@ -410,6 +421,7 @@ export async function publishListing(
     appIdentity,
     previousSubmission ? String(previousSubmission.slug) : undefined,
     extensionIdentity,
+    skillTarget?.identity,
   );
   if (appIdentity) {
     const duplicate = await query(
@@ -459,6 +471,7 @@ export async function publishListing(
       audits: audits ?? null,
       appIdentity: appIdentity ?? null,
       extensionIdentity: extensionIdentity ?? null,
+      skillIdentity: skillTarget?.identity ?? null,
     }),
     now,
     typeof row?.revision === "string" ? row.revision : null,

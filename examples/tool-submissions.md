@@ -6,8 +6,9 @@ Socket. Snyk is informational. GitHub Actions verifies the live results before
 a human maintainer reviews the request.
 
 This is copy-ready issue content for an older issue that needs the new fields.
-The `owner`, repository, skill name, and commit below are placeholders: replace
-them with the actual skill and immutable commit being submitted.
+The `owner`, repository, and skill name below are placeholders: replace them
+with the actual skill. Set the folder path relative to the repository root;
+use `.` if SKILL.md is in the root. Summary and tags may be omitted.
 
 ```markdown
 ### Skill name
@@ -18,42 +19,23 @@ GNOME Workflow
 
 https://github.com/owner/gnome-workflow
 
-### skills.sh URL
+### Skill folder path
 
-https://skills.sh/owner/gnome-workflow/gnome-workflow
-
-### SKILL.md permalink
-
-https://github.com/owner/gnome-workflow/blob/0123456789abcdef0123456789abcdef01234567/SKILL.md
+.
 
 ### Summary
 
 Agent guidance for building and checking a Libadwaita app.
 
-### Installation and usage
+### Tags
 
-Follow the repository's installation guide for your agent. Requires the GTK and
-Libadwaita development packages. Example prompt: "Review this app's keyboard
-navigation and suggest changes that follow GNOME conventions."
-
-### Author and license
-
-Project author; MIT (verify against the repository license).
-
-### Your relationship to the skill
-
-Author
-
-### Permissions and external services
-
-Reads the app source and suggests local edits. No credentials or external
-services required. Replace this with the skill's actual requirements.
-
-### Review requirements
-
-- [x] Gen Agent Trust Hub and Socket both show PASS on the linked skills.sh page.
-- [x] The links identify the same skill; human approval is required.
+GNOME, GTK, Libadwaita
 ```
+
+The workflow reads the selected SKILL.md at a pinned default-branch commit and
+uses its frontmatter `name` to find the skills.sh page. An omitted Summary uses
+its frontmatter `description`. Installation, license, permissions, and other
+supporting information are reviewed directly in the repository.
 
 Run the audit checker without creating an issue or executing skill instructions:
 
@@ -71,7 +53,7 @@ passing audits, copy `/publish-listing <fingerprint>` from the bot's latest
 report into a new issue comment. Replace `<fingerprint>` with the exact hash
 provided by that report; do not invent one.
 
-The publication action checks your repository permissions and both audits again,
+The publication action checks your repository permissions, source revision, and both audits again,
 then saves the listing and review evidence in D1. Its Actions summary links to
 `/skills/<db-id>/gnome-workflow`. Refresh the page to see it; no source edit, PR, or rebuild
 is required. Configure the publisher first using
@@ -79,3 +61,5 @@ is required. Configure the publisher first using
 
 The database assigns the numeric ID automatically. The readable URL segment comes
 from the verified skills.sh page. Older manual Listing ID fields are ignored.
+If upstream changes after review, rerun the review workflow and use its new
+approval command.

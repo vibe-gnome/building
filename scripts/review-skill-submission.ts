@@ -1,8 +1,13 @@
 import { appendFile } from "node:fs/promises";
+import { appIdentitySource } from "../app/lib/app-identity";
+import type {
+  ResolveSkillIdentity,
+  SkillIdentity,
+} from "../app/server/skill-identity";
 import {
   type AuditReport,
   checkSkillAudits,
-  submissionTarget,
+  resolveSkillTarget,
 } from "./check-skill-audits";
 import { listingFingerprint } from "./listing-review";
 
@@ -39,7 +44,7 @@ function isSkillSubmission(issue: Issue): boolean {
   return (
     !issue.pull_request &&
     (issue.title.startsWith("[Skill]") ||
-      /^### skills\.sh URL\r?$/m.test(issue.body ?? "") ||
+      /^### (?:skills\.sh URL|Skill folder path)\r?$/m.test(issue.body ?? "") ||
       issue.labels.some((label) => label.name === labels.submission))
   );
 }
@@ -49,6 +54,7 @@ function reportBody(
   error: string | undefined,
   runUrl: string,
   fingerprint: string,
+  identity?: SkillIdentity,
 ): string {
   const heading = report?.passed
     ? "Ready for human review"
@@ -71,6 +77,12 @@ function reportBody(
     `## ${heading}`,
     "",
     ...evidence,
+    ...(identity
+      ? [
+          "",
+          `Source: [SKILL.md](<${appIdentitySource(identity)}>), commit \`${identity.commit}\`.`,
+        ]
+      : []),
     "",
     report?.passed
       ? "Gen Agent Trust Hub and Socket both passed. A human maintainer must now review the linked SKILL.md, permissions, license, GNOME relevance, and submitted revision. This check does not approve or publish the skill."
@@ -97,6 +109,7 @@ export async function reviewSkillSubmission(
   github: GitHubRequest,
   runUrl: string,
   check: (url: string) => Promise<AuditReport> = checkSkillAudits,
+  resolveIdentity?: ResolveSkillIdentity,
 ): Promise<{ passed: boolean; summary: string }> {
   const issuePath = `/issues/${issueNumber}`;
   const issue = await github<Issue>(issuePath);
@@ -157,19 +170,22 @@ export async function reviewSkillSubmission(
   );
 
   let report: AuditReport | undefined;
+  let identity: SkillIdentity | undefined;
   let error: string | undefined;
   try {
-    report = await check(submissionTarget(issue.body ?? "").href);
+    const target = await resolveSkillTarget(issue.body ?? "", resolveIdentity);
+    identity = target.identity;
+    report = await check(target.url.href);
   } catch (reason) {
     // Our validators use fixed messages. Network errors may contain remote text;
     // don't echo arbitrary server content, issue text, or credentials to GitHub.
     error =
       reason instanceof Error &&
-      /^(Use an HTTPS|Provide exactly one|Source repository URL|SKILL\.md permalink|skills\.sh)/.test(
+      /^(Use an HTTPS|Provide exactly one|Provide a repository root|Source repository URL|Skill folder path|SKILL\.md|skills\.sh|Repository |The repository |Metadata file )/.test(
         reason.message,
       )
         ? reason.message
-        : "The audit request failed or timed out. Retry the workflow later.";
+        : "The repository or audit request failed or timed out. Retry the workflow later.";
   }
 
   const current = await github<Issue>(issuePath);
@@ -182,7 +198,13 @@ export async function reviewSkillSubmission(
     error =
       "The submission changed or closed during this check. Reopen it or run a fresh check before review.";
   }
-  const summary = reportBody(report, error, runUrl, listingFingerprint(issue));
+  const summary = reportBody(
+    report,
+    error,
+    runUrl,
+    listingFingerprint(issue, identity),
+    identity,
+  );
   await updateComment(summary);
   await github(`${issuePath}/labels`, "POST", {
     labels: [report?.passed ? labels.ready : labels.blocked],

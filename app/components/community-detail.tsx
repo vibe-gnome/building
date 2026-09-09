@@ -11,7 +11,12 @@ function normalizeEntry(entry: ShowcaseEntry | ToolEntry | null) {
   if (!entry) return null;
   return "summary" in entry
     ? { ...entry, description: entry.summary, bestFor: undefined }
-    : { ...entry, submittedBy: undefined, tags: [], screenshot: undefined };
+    : {
+        ...entry,
+        submittedBy: undefined,
+        tags: entry.tags ?? [],
+        screenshot: undefined,
+      };
 }
 
 export function communityDetailMeta(

@@ -18,6 +18,7 @@ import {
   type ResolveExtensionIdentity,
   resolveExtensionIdentity,
 } from "../app/server/extension-identity";
+import type { SkillIdentity } from "../app/server/skill-identity";
 import { createRepositoryFetcher } from "./repository-fetch";
 
 const marker = "<!-- vibe-gnome-listing-review -->";
@@ -66,7 +67,7 @@ class GitHubError extends Error {
 
 export function listingFingerprint(
   issue: Pick<Issue, "title" | "body">,
-  identity?: AppIdentity | ExtensionIdentity,
+  identity?: AppIdentity | ExtensionIdentity | SkillIdentity,
 ) {
   return createHash("sha256")
     .update(
@@ -76,14 +77,18 @@ export function listingFingerprint(
         ...(identity
           ? [
               [
-                "appId" in identity ? identity.appId : identity.metadata.uuid,
+                "appId" in identity
+                  ? identity.appId
+                  : "skillName" in identity
+                    ? identity.skillName
+                    : identity.metadata.uuid,
                 identity.repository,
                 identity.commit,
                 identity.path,
                 ...("metadata" in identity && identity.icon
                   ? [identity.icon]
                   : []),
-                ...(identity.screenshot
+                ...("screenshot" in identity && identity.screenshot
                   ? [{ screenshot: identity.screenshot }]
                   : []),
               ],
