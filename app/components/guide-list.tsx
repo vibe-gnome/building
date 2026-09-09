@@ -114,7 +114,8 @@ export function HomeGuides() {
       <div className="section-heading">
         <p className="kicker">Guides</p>
         <h2 id="guides-heading">
-          Learn to <span className="heading-accent">vibe code</span> for GNOME.
+          Resources for <span className="heading-accent">vibe coding</span> on
+          GNOME.
         </h2>
         <p>Docs and skills for your next app or extension.</p>
       </div>

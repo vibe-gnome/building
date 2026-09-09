@@ -8,7 +8,7 @@ export function meta() {
     {
       name: "description",
       content:
-        "Articles and agent skills for learning to build GNOME apps and extensions with AI.",
+        "Articles and agent skills to help you vibe code GNOME apps and extensions.",
     },
   ];
 }
@@ -23,12 +23,12 @@ export default function GuidesPage() {
         <header className="section-heading">
           <p className="kicker">Guides</p>
           <h1>
-            Learn to <span className="heading-accent">vibe code</span> for
+            Resources for <span className="heading-accent">vibe coding</span> on
             GNOME.
           </h1>
           <p>
-            Explore docs and reusable agent skills for building GNOME apps and
-            extensions with AI.
+            Helpful docs and reusable agent skills for your next GNOME app or
+            extension.
           </p>
         </header>
         <Guides />
