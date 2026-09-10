@@ -6,7 +6,7 @@ import { toolCollections, toolSubmissionUrl } from "../app/lib/tools";
 import Home from "../app/routes/home";
 
 describe("Vibe Tools navigation", () => {
-  test("links to local showcases and the skills directory", () => {
+  test("links the community showcase to apps and extensions", () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <Home />
@@ -14,11 +14,11 @@ describe("Vibe Tools navigation", () => {
     );
     const showcase = html.slice(
       html.indexOf('id="showcases"'),
-      html.indexOf('id="resources"'),
+      html.indexOf('id="guides"'),
     );
     expect(showcase).toContain('href="/apps"');
     expect(showcase).toContain('href="/extensions"');
-    expect(showcase).toContain('href="/skills"');
+    expect(showcase).not.toContain('href="/skills"');
   });
 
   test("skills uses the shared directory layout and a working issue-form target", async () => {

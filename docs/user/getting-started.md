@@ -16,8 +16,7 @@ GNOME, a place to collect community projects, and better tools for vibe coding
 on the desktop.
 
 The community showcase links to [Apps](https://vibe-gnome.org/apps) and
-[Extensions](https://vibe-gnome.org/extensions), and reusable
-[Skills](https://vibe-gnome.org/skills).
+[Extensions](https://vibe-gnome.org/extensions).
 
 Below the showcase, **Resources for vibe coding on GNOME** brings together articles and
 recently added skills. Choose **See all** to open [Guides](https://vibe-gnome.org/guides)

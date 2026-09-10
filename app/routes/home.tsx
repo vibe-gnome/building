@@ -70,12 +70,6 @@ const showcaseLinks = [
     href: "/extensions",
     title: "Extensions",
   },
-  {
-    category: "skills",
-    description: "Reusable agent guidance for reliable GNOME builds.",
-    href: "/skills",
-    title: "Skills",
-  },
 ] as const;
 
 const footprints = Array.from({ length: 22 }, (_, index) => ({

@@ -66,9 +66,10 @@ color and pixel treatment in both themes.
 The layout is responsive at tablet and phone widths and respects
 `prefers-reduced-motion`.
 
-The home showcase uses three equal-width cards in one row above 680px and
-horizontal, stacked cards on phones. Apps, Extensions, and Skills have blue,
-green, and purple surfaces respectively, mixed with the active theme's surface.
+The home showcase uses two equal-width cards in one row above 680px and
+horizontal, stacked cards on phones. Apps and Extensions have blue and green
+surfaces respectively, mixed with the active theme's surface. Skills appear in
+the Guides section below the showcase.
 Their original SVG icons in `public/icons/showcase/` use rounded silhouettes,
 soft highlights, and shallow bottom edges inspired by GNOME app icons. The icons
 are decorative; each card's title and description label its link. Global accent

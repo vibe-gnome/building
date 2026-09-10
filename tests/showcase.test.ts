@@ -14,12 +14,12 @@ const showcasePage = await Bun.file(
 ).text();
 
 describe("community showcases", () => {
-  test("links community apps, extensions, and skills to local pages", () => {
+  test("links community apps and extensions to local pages", () => {
     expect(home).toContain("Community showcase");
     expect(home).toContain('href: "/apps"');
     expect(home).toContain('href: "/extensions"');
-    expect(home).toContain('href: "/skills"');
-    expect(home).toContain('title: "Skills"');
+    expect(home).not.toContain('href: "/skills"');
+    expect(home).not.toContain('title: "Skills"');
     expect(home).not.toContain("Working loop");
     expect(home).not.toContain("Keep every step runnable.");
     expect(home).not.toContain(
