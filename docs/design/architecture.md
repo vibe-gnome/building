@@ -30,6 +30,11 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
 - The community directories at `/apps`, `/extensions`, and `/skills`
   share `app/routes/community-layout.tsx` for their shell and
   `app/extensions.css` for their catalog presentation.
+  The Apps and Extensions routes, including listing details, show only Apps and
+  Extensions in the header navigation. `/guides` hides this navigation while
+  retaining the home logo and appearance control.
+  The community shell fills at least the viewport height, keeping the footer at
+  the bottom on short pages and after the content on longer pages.
 - `app/lib/tools.ts` owns Skills directory copy and GitHub issue submission links.
   Catalog entries for all three directories are stored in D1 and read through
   `app/lib/catalog-client.ts`.

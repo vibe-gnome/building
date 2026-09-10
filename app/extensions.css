@@ -1,4 +1,12 @@
+.community-layout {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
 .community-site {
+  flex: 1;
+
   --accent-text: color-mix(in srgb, var(--accent) 80%, black);
   --accent-action: color-mix(in srgb, var(--accent) 80%, black);
   --muted: #656870;

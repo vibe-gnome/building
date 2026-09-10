@@ -5,7 +5,7 @@ import "../extensions.css";
 
 export default function CommunityLayout() {
   return (
-    <>
+    <div className="community-layout">
       <div className="community-site">
         <a className="skip-link" href="#main-content">
           Skip to content
@@ -14,6 +14,6 @@ export default function CommunityLayout() {
         <Outlet />
       </div>
       <SiteFooter />
-    </>
+    </div>
   );
 }

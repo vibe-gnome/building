@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router";
+import { Link, NavLink, useMatch } from "react-router";
 import { AppearanceControl } from "../appearance-control";
 
 function Brand() {
@@ -13,18 +13,28 @@ function Brand() {
 }
 
 export function ExtensionsHeader() {
+  const appsMatch = useMatch("/apps/*");
+  const extensionsMatch = useMatch("/extensions/*");
+  const guidesMatch = useMatch("/guides/*");
+
   return (
     <header className="site-header">
       <div className="header-inner">
         <Link to="/" aria-label="Vibe GNOME home">
           <Brand />
         </Link>
-        <nav className="project-nav" aria-label="Vibe GNOME">
-          <NavLink to="/apps">Apps</NavLink>
-          <NavLink to="/extensions">Extensions</NavLink>
-          <NavLink to="/skills">Skills</NavLink>
-          <NavLink to="/guides">Guides</NavLink>
-        </nav>
+        {!guidesMatch && (
+          <nav className="project-nav" aria-label="Vibe GNOME">
+            <NavLink to="/apps">Apps</NavLink>
+            <NavLink to="/extensions">Extensions</NavLink>
+            {!appsMatch && !extensionsMatch && (
+              <>
+                <NavLink to="/skills">Skills</NavLink>
+                <NavLink to="/guides">Guides</NavLink>
+              </>
+            )}
+          </nav>
+        )}
         <AppearanceControl />
       </div>
     </header>
