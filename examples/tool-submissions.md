@@ -1,9 +1,10 @@
-# Submitting and accepting a skill
+# Updating and accepting an existing skill issue
 
-Use the **Submit a skill** issue form in `vibe-gnome/building`, even if the skill
-is not listed on skills.sh yet. GitHub Actions first tries a temporary install
-using `npx skills add`, then verifies PASS for both Gen Agent Trust Hub and
-Socket before human review. Snyk is informational.
+The Skills submission template has been removed. Existing skill issues in
+`vibe-gnome/building` can still be reviewed, even if the skill is not listed on
+skills.sh yet. GitHub Actions first tries a temporary install using
+`npx skills add`, then verifies PASS for both Gen Agent Trust Hub and Socket
+before human review. Snyk is informational.
 
 This is copy-ready issue content for an older issue that needs the new fields.
 The `owner`, repository, and skill name below are placeholders: replace them

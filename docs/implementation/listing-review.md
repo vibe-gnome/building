@@ -46,6 +46,22 @@ Older app issues' `Listing ID` fields are ignored.
 Installation instructions and author/license attribution are verified by
 maintainers in the upstream project during review.
 
+App icon discovery uses that same tree and commit, matching the full native app
+ID, its last component, the repository name, or `icon`, `logo`, and `app` image
+names. It checks beside the metadata and in root branding directories (`assets`,
+`data`, `resources`, `res`, `icons`, and `images`), including GNOME
+`icons/hicolor/scalable/apps` and sized icon layouts. Full-color icons take
+precedence over symbolic variants, then more specific names, proximity to
+metadata, SVG/PNG/WebP/JPEG format preference, and larger declared raster sizes.
+Equal-ranked choices are omitted. Symlinks, excluded directories, and files
+reported over 1 MiB are ignored. No additional image fetch is required.
+The report links the selected raw image URL, pinned to the reviewed commit.
+That URL is included in the approval fingerprint and stored in the listing and
+review evidence. App cards and detail pages preserve its colors; missing or
+broken icons use `/icons/showcase/apps.svg`. Image bytes stay in the upstream
+repository. Existing app listings receive icons on their next reviewed
+publication.
+
 Both app and extension forms place optional `Tags` above `Summary`. Extension
 submissions no longer ask for a category; all comma-separated values are tags.
 
@@ -70,15 +86,48 @@ included in the approval fingerprint and saved with the listing. Browsers load
 it as an image, falling back to the puzzle icon on load failure. No image bytes
 are copied into D1 or the site repository.
 
-For both apps and extensions, an optional screenshot comes from the repository's
-custom GitHub social preview (`og:image` in the page head). Only uploaded images
-on `repository-images.githubusercontent.com` are accepted. GitHub's generated
-cards, avatars, non-GitHub repositories, missing previews, and fetch failures
-produce no screenshot. The page fetch follows no redirects, sends no credentials,
-and has a 15-second timeout and 2 MiB size limit. HTMLRewriter parses metadata
-without executing scripts. The preview URL is linked in the review and bound
-to approval separately from the repository revision. Publication checks it
-again, stores it as `screenshot`, and detail pages hide images that fail to load.
+For both apps and extensions, preview discovery first reads `README.md`,
+`README.markdown`, or `README` from the reviewed repository commit, checking the
+root, `.github/`, then `docs/`. Markdown images (including linked and reference
+images) and HTML `<img src>` elements are supported; code fences and comments do
+not supply images. Relative links resolve beside their README. Same-repository
+raw/blob links on the default branch or reviewed commit are rewritten to the
+reviewed commit and must refer to regular files in the already-filtered tree.
+
+The first qualifying image in document order becomes `screenshot`. Discovery
+skips obvious badge/icon/logo/avatar names and checks **actual image bytes** with
+`image-size`: PNG, JPEG, WebP, and GIF must be at least **480 pixels wide and 270
+pixels high**. README width/height attributes and MIME claims cannot satisfy this
+check. SVG and other formats, unreadable images, and images over 5 MiB are skipped.
+At most eight unique candidates are downloaded, each with a five-second timeout
+within a shared 30-second image-check budget. README reads retain the 256 KiB
+metadata limit. Symlinks and excluded repository directories remain ineligible.
+
+Public uploads on `user-images.githubusercontent.com` and
+`repository-images.githubusercontent.com` are also eligible. Other external
+hosts and redirected images are skipped; image requests send no credentials.
+GitHub token authentication applies only to the repository API reads.
+
+If no README image qualifies, GitHub repositories fall back to the custom social
+preview (`og:image` in the page head), with the same format, byte-size, and minimum
+dimension checks. Only uploaded images on `repository-images.githubusercontent.com`
+are accepted; generated cards and avatars are omitted. The HTML page fetch uses
+a 15-second timeout and 2 MiB limit; the fallback image has a ten-second timeout.
+GitLab repositories can use README images but have no social-preview fallback.
+Missing previews and fetch failures do not block otherwise valid identities.
+
+`marked` parses README Markdown and the existing HTMLRewriter inspects image
+attributes without executing scripts or rendering repository HTML. `image-size`
+reads image dimensions without a browser or native decoder. These two review-time
+dependencies are locked in `bun.lock`; review/publication workflows install them
+with `bun install --frozen-lockfile --ignore-scripts` before running tests.
+
+The preview URL is linked in the report and included in the approval fingerprint.
+Publication repeats discovery and requires the same selected URL, then stores it
+in the listing and review evidence. Repository images are pinned to Git history;
+uploaded/social previews are bound by URL separately from the repository revision.
+Detail pages show the full image and hide it if loading fails. Image bytes are
+only inspected during review/publication; they are not copied into D1 or the site.
 
 Validation covers:
 

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router";
 import { ToolPage } from "../app/components/tool-page";
-import { toolCollections, toolSubmissionUrl } from "../app/lib/tools";
+import { toolCollections } from "../app/lib/tools";
 import Home from "../app/routes/home";
 
 describe("Vibe Tools navigation", () => {
@@ -21,7 +21,7 @@ describe("Vibe Tools navigation", () => {
     expect(showcase).not.toContain('href="/skills"');
   });
 
-  test("skills uses the shared directory layout and a working issue-form target", async () => {
+  test("skills uses the shared catalog layout without a submission action", () => {
     const collection = toolCollections.skills;
     const html = renderToStaticMarkup(
       <MemoryRouter>
@@ -29,41 +29,14 @@ describe("Vibe Tools navigation", () => {
       </MemoryRouter>,
     );
     expect(html).toContain(`<span>${collection.title}</span>`);
-    expect(html).toContain(
-      'class="page-shell marketplace directory-page tool-page"',
-    );
+    expect(html).toContain('class="page-shell marketplace skill-catalog"');
     expect(html).toContain(`<h1>GNOME <span>${collection.title}</span></h1>`);
-    expect(html).toContain("Community submissions");
-    expect(html).toContain(`href="${toolSubmissionUrl("skills")}"`);
-    expect(html).toContain("No submissions yet.");
-
-    const url = new URL(toolSubmissionUrl("skills"));
-    expect(url.origin).toBe("https://github.com");
-    expect(url.pathname).toBe("/vibe-gnome/building/issues/new");
-    const template = url.searchParams.get("template");
-    const form = Bun.YAML.parse(
-      await Bun.file(
-        new URL(`../.github/ISSUE_TEMPLATE/${template}`, import.meta.url),
-      ).text(),
-    ) as {
-      name: string;
-      description: string;
-      body: { id: string; validations?: { required: boolean } }[];
-    };
-    expect(form.name).toBe(collection.submitLabel);
-    expect(form.description.length).toBeGreaterThan(0);
-    for (const id of ["name", "url", "skill-folder"]) {
-      expect(
-        form.body.find((field) => field.id === id)?.validations?.required,
-      ).toBe(true);
-    }
-    for (const id of ["summary", "tags"]) {
-      expect(
-        form.body.find((field) => field.id === id)?.validations?.required,
-      ).toBe(false);
-    }
-    expect(new Set(form.body.map((field) => field.id)).size).toBe(
-      form.body.length,
-    );
+    expect(html).toContain('aria-label="Search skills"');
+    expect(html).toContain('aria-label="Sort skills"');
+    expect(html).toContain('aria-label="Grid view"');
+    expect(html).toContain('aria-label="List view"');
+    expect(html).not.toContain("Submit a skill");
+    expect(html).not.toContain("/issues/new");
+    expect(html).toContain("No skills found");
   });
 });

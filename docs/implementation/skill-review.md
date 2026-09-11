@@ -1,13 +1,13 @@
 # Skill submission and review
 
-Submit one skill through `.github/ISSUE_TEMPLATE/submit-skill.yml`. The form asks
-for its name, public GitHub source repository, and skill folder path relative to
-the repository root (`.` for a root-level SKILL.md). Summary and comma-separated
-tags are optional. It does not ask for audit links, commit permalinks, installation
-instructions, attribution, submitter relationship, permissions, or checkboxes.
-Maintainers review those details in the upstream source. Field headings used by
-the checker are an interface: update `resolveSkillTarget`, `submissionTarget`,
-and their tests when renaming them.
+The Skills submission template and directory submission button have been removed.
+Existing skill issues remain reviewable. Their fields contain the skill name,
+public GitHub source repository, and skill folder path relative to the repository
+root (`.` for a root-level SKILL.md). Summary and comma-separated tags are
+optional. Maintainers review installation instructions, attribution, and
+permissions in the upstream source. Field headings used by the checker remain
+an interface: update `resolveSkillTarget`, `submissionTarget`, and their tests
+when renaming them.
 
 `app/server/skill-identity.ts` reads the selected folder's regular SKILL.md from
 the default branch at one commit, using the bounded public reads shared with
@@ -27,7 +27,7 @@ Older issues with skills.sh URL and SKILL.md permalink fields remain supported.
 Their repository/permalink validation still applies; removed descriptive fields
 are no longer required for publication.
 
-The form has no Listing ID. D1 assigns a stable numeric ID, and the final
+D1 assigns a stable numeric ID, and the final
 segment of the verified skills.sh URL supplies the readable name in
 `/skills/<db-id>/<skill-name>`. Older manual IDs are ignored; previously published
 skills keep their internal key and view counts when republished.
@@ -154,7 +154,7 @@ check. Tests use local fixtures and mocked network/GitHub responses.
 
 ## Activation
 
-Publish the issue form, workflows, and their imported scripts/modules to `vibe-gnome/building`'s
+Publish the workflows and their imported scripts/modules to `vibe-gnome/building`'s
 default branch. Issues and Actions must be enabled, and repository/organization
 policy must allow the job's `issues: write` token permission. No custom token is
 needed. Issue-event workflows only run when the workflow exists on the default
@@ -168,5 +168,5 @@ checked through GitHub's current repository permissions.
 For an existing submission or a transient skills.sh outage, open **Actions →
 Review skill submission → Run workflow**, use the default branch, and enter the
 issue number. Re-running reads the latest issue body and, for folder submissions,
-the latest repository revision. To switch an old issue to the simpler form, use
+the latest repository revision. To update an old issue's fields, use
 [the submission example](../../examples/tool-submissions.md).

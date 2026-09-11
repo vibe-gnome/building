@@ -229,6 +229,34 @@ function setup(
 }
 
 describe("human-approved database publication", () => {
+  test("publishes the approved app icon and rejects changed or removed icons", async () => {
+    const icon = `https://raw.githubusercontent.com/example/editor/${appIdentity.commit}/data/org.example.Editor.svg`;
+    const identity = { ...appIdentity, icon };
+    const data = setup("[App] Editor", appFields, identity);
+    const publish = (icon: string | undefined) =>
+      publishListing(
+        data.event,
+        data.github,
+        data.query,
+        undefined,
+        async () => ({ ...appIdentity, icon }),
+      );
+    await expect(publish(icon.replace(".svg", ".png"))).rejects.toThrow(
+      "revision changed",
+    );
+    await expect(publish(undefined)).rejects.toThrow("revision changed");
+    expect((await data.catalog.list("apps")).entries).toHaveLength(0);
+    await publish(icon);
+    expect((await data.catalog.getById("apps", 3))?.icon).toBe(icon);
+    const row = (
+      await data.query(
+        "SELECT evidence, payload FROM listing_reviews WHERE source_issue = 42",
+      )
+    ).results[0];
+    expect(JSON.parse(String(row?.payload)).icon).toBe(icon);
+    expect(JSON.parse(String(row?.evidence)).appIdentity.icon).toBe(icon);
+  });
+
   test.each(["GTK, , productivity ", "_No response_"])(
     "publishes optional tags from the current app form: %s",
     async (tags) => {
@@ -278,11 +306,26 @@ describe("human-approved database publication", () => {
     expect(saved?.tags).toEqual(["workspaces", "terminal"]);
   });
 
-  test.each(["apps", "extensions"] as const)(
-    "publishes the reviewed social preview for %s and rejects changed previews",
-    async (category) => {
-      const screenshot =
-        "https://repository-images.githubusercontent.com/12345/reviewed-preview.png";
+  test.each([
+    [
+      "apps",
+      "https://repository-images.githubusercontent.com/12345/reviewed-preview.png",
+    ],
+    [
+      "extensions",
+      "https://repository-images.githubusercontent.com/12345/reviewed-preview.png",
+    ],
+    [
+      "apps",
+      `https://raw.githubusercontent.com/example/editor/${"a".repeat(40)}/screen.png`,
+    ],
+    [
+      "extensions",
+      `https://raw.githubusercontent.com/example/extension/${"a".repeat(40)}/screen.png`,
+    ],
+  ] as const)(
+    "publishes the reviewed preview for %s and rejects changed previews: %s",
+    async (category, screenshot) => {
       const identity = {
         ...(category === "apps" ? appIdentity : extensionIdentity),
         screenshot,

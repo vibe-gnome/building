@@ -13,21 +13,11 @@ export interface ToolEntry {
 interface ToolCollection {
   title: string;
   description: string;
-  submitLabel: string;
-  issueTemplate: string;
 }
 
 export const toolCollections: Record<ToolCategory, ToolCollection> = {
   skills: {
     title: "Skills",
     description: "Reusable agent guidance for reliable GNOME builds.",
-    submitLabel: "Submit a skill",
-    issueTemplate: "submit-skill.yml",
   },
 };
-
-export function toolSubmissionUrl(category: ToolCategory): string {
-  const url = new URL("https://github.com/vibe-gnome/building/issues/new");
-  url.searchParams.set("template", toolCollections[category].issueTemplate);
-  return url.href;
-}

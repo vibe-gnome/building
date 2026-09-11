@@ -11,9 +11,13 @@ export function clientLoader({ request }: Route.ClientLoaderArgs) {
   return loadCatalog("skills", request.signal);
 }
 
+export function shouldRevalidate() {
+  return false;
+}
+
 export function meta() {
   return [
-    { title: "Skills | Vibe Tools | Vibe GNOME" },
+    { title: "GNOME Skills | Vibe GNOME" },
     {
       name: "description",
       content:

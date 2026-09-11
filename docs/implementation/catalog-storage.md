@@ -95,7 +95,7 @@ publication run their focused tests before any issue or database writes.
 
 ## Approve and publish
 
-1. The issue form and automated review must pass. Skill submissions require
+1. Issue validation and automated review must pass. Existing skill issues require
    explicit PASS from Gen Agent Trust Hub and Socket; Snyk is informational.
 2. Review the actual source, metadata, relevance, license, permissions, and any
    audit findings. For skills, verify the submitted commit corresponds to the
@@ -126,6 +126,15 @@ the accepted version stays visible while an edit is under review.
   submissions can still supply author/license attribution; it is left empty when
   absent. The full issue content and resolved app identity (repository, commit,
   metadata path, and ID) are retained in the review evidence.
+  A detected repository app icon is saved as `icon`, using a raw URL pinned to
+  the reviewed commit. Its URL is part of the approval fingerprint and immutable
+  evidence. Cards and detail pages use the Apps showcase icon when an icon is
+  missing or fails to load. Republishing through a fresh review imports icons
+  for existing apps; no database migration is needed.
+  For apps published before icon extraction, maintainers can also use the
+  [icon backfill example](../../examples/backfill-app-icons.md) to discover the
+  icon at the original reviewed commit. It records a separate maintenance
+  revision and preserves the original approval evidence and listing IDs.
 - Skills: skill name, summary, and the verified skills.sh page. Full instructions,
   source permalink, permissions, author/license, and fresh audit results are
   retained in review evidence.
@@ -149,12 +158,19 @@ the accepted version stays visible while an edit is under review.
   whitespace normalization. The Features section appears only when at least one
   nonblank feature is present.
 
-All three submission forms omit Listing ID and ignore older manual values.
-Apps and extensions automatically import a custom GitHub social preview URL as
-their optional `screenshot`; no screenshot field is required in either form.
-Generated GitHub repository cards and unavailable previews are omitted. The URL
-is part of the reviewed identity and stored in the published JSON and immutable
-review evidence. Images remain hosted by GitHub and appear on detail pages.
+App and extension submission forms omit Listing ID. The Skills submission
+template has been removed; existing skill issues remain supported. All categories
+ignore older manual Listing ID values.
+Apps and extensions automatically import the first suitable README image as
+`screenshot`, falling back to a custom GitHub social preview. PNG, JPEG, WebP, and
+GIF images must measure at least 480 × 270 pixels from their downloaded bytes;
+small images, obvious branding, unsupported sources, and unavailable previews
+are omitted. No screenshot field is required in either form. Repository image
+URLs are pinned to the reviewed commit. The URL is part of the reviewed identity
+and stored in the published JSON and immutable review evidence. Images remain
+hosted upstream and appear on detail pages. Existing listings receive previews
+through their next fresh review and approved publication; no migration is needed.
+See [preview discovery limits](listing-review.md) for supported links and formats.
 New app internal keys derive from the full native ID; new extension/skill keys
 use `submission-<issue-number>`. Existing app/skill issues preserve their stored
 key on republication. UUID, app ID, and source issue uniqueness prevent duplicates.

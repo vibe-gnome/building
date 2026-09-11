@@ -23,10 +23,9 @@ recently added skills. Choose **See all** to open [Guides](https://vibe-gnome.or
 and browse the full collection. Docs open the original article; skills open
 their listing with source and installation links.
 
-To suggest a skill, open its directory and select **Submit a skill**. Sign in to
-GitHub and fill out the issue form with the project URL, summary, installation
-details, author, and license. Maintainers review each issue before adding an
-entry to the directory.
+The Skills directory supports search, tag filters, and grid/list views. Skill
+submission forms are no longer offered; existing issues can still complete
+[skill review](skills.md).
 
 Browse, search, and filter the extension catalog at `/extensions`. Each listing
 includes upstream installation instructions and source links. Use **Submit

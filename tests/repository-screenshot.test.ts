@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
 import { repositoryScreenshot } from "../app/server/repository-screenshot";
 
+import { previewImage } from "./helpers/preview-image";
+
 const repository = "https://github.com/example/project";
 const screenshot =
   "https://repository-images.githubusercontent.com/12345/preview-123.png";
@@ -17,6 +19,7 @@ test("reads the repository's custom social preview with an HTML parser and no cr
       calls.push(url);
       expect(init?.redirect).toBe("error");
       expect(init?.signal).toBeDefined();
+      if (url === screenshot) return previewImage();
       expect(new Headers(init?.headers).get("Accept")).toBe("text/html");
       expect(new Headers(init?.headers).has("Authorization")).toBe(false);
       return page(
@@ -26,7 +29,7 @@ test("reads the repository's custom social preview with an HTML parser and no cr
     },
   );
   expect(image).toBe(screenshot);
-  expect(calls).toEqual([repository]);
+  expect(calls).toEqual([repository, screenshot]);
 });
 
 test.each([

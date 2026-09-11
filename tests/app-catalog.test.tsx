@@ -146,4 +146,15 @@ describe("app catalog", () => {
     expect(empty).toContain("No apps found");
     expect(empty).not.toContain("Clear filters");
   });
+
+  test("renders a discovered icon using the existing catalog icon layout", () => {
+    const icon = `https://raw.githubusercontent.com/stonega/cusco/${"a".repeat(40)}/data/io.github.stonega.Cusco.svg`;
+    const html = render(
+      "/apps?tag=ai",
+      apps.map((app) => ({ ...app, icon })),
+    );
+    expect(html).toContain(`src="${icon}"`);
+    expect(html).toContain('referrerPolicy="no-referrer"');
+    expect(html).not.toContain('src="/icons/showcase/apps.svg"');
+  });
 });

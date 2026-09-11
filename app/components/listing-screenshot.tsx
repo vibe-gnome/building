@@ -22,7 +22,7 @@ export function ListingScreenshot({
         src={src}
         width={1280}
         height={640}
-        alt={`${name} social preview`}
+        alt={`${name} preview`}
         referrerPolicy="no-referrer"
         onError={() => setFailedSource(src)}
       />

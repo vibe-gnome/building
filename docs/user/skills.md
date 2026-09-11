@@ -1,9 +1,12 @@
-# Submit a skill
+# Skills and existing submissions
 
-Open **Submit a skill** on the Skills directory. Submit one skill per GitHub
-issue with its name, public GitHub repository URL, and the path to the folder
-containing SKILL.md. Use a path such as `skills/gnome-workflow`, or `.` when
-SKILL.md is at the repository root.
+Browse reusable agent guidance in the Skills directory. The Skills submission
+template and directory submission button have been removed.
+
+Existing GitHub skill issues remain supported by the review workflow. They use
+the skill name, public GitHub repository URL, and path to the folder containing
+SKILL.md. Use a path such as `skills/gnome-workflow`, or `.` when SKILL.md is at
+the repository root.
 
 The skill does not need to be listed on [skills.sh](https://skills.sh) yet.
 Review first tries `npx skills add` for the selected skill in a temporary

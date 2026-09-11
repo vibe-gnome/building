@@ -1,6 +1,8 @@
 import { expect, test } from "bun:test";
 import { resolveExtensionIdentity } from "../app/server/extension-identity";
 
+import { previewImage } from "./helpers/preview-image";
+
 const repository = "https://github.com/example/extension";
 const commit = "a".repeat(40);
 const metadata = {
@@ -22,6 +24,7 @@ function github(
   const requests: { url: string; init?: RequestInit }[] = [];
   const fetcher = async (url: string, init?: RequestInit) => {
     requests.push({ url, init });
+    if (options.screenshot && url === options.screenshot) return previewImage();
     if (url === repository)
       return new Response(
         `<head>${options.screenshot ? `<meta property="og:image" content="${options.screenshot}">` : ""}</head>`,

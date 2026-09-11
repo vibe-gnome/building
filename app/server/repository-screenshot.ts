@@ -1,13 +1,21 @@
 import { appRepository } from "../lib/app-identity";
+import { isPreviewImage } from "./preview-image";
+import { readmeScreenshot } from "./readme-screenshot";
 import {
   type RepositoryFetcher,
   readRepositoryText,
+  type repositoryMetadata,
 } from "./repository-metadata";
 
 export async function repositoryScreenshot(
   repository: string,
   fetcher: RepositoryFetcher = fetch,
+  snapshot?: Awaited<ReturnType<typeof repositoryMetadata>>,
 ): Promise<string | undefined> {
+  if (snapshot) {
+    const image = await readmeScreenshot(snapshot, fetcher);
+    if (image) return image;
+  }
   const repo = appRepository(repository);
   if (repo.host !== "github.com") return undefined;
   try {
@@ -40,7 +48,7 @@ export async function repositoryScreenshot(
       !/^\/\d+\/[a-zA-Z0-9._-]+$/.test(image.pathname)
     )
       return undefined;
-    return image.href;
+    return (await isPreviewImage(image.href, fetcher)) ? image.href : undefined;
   } catch {
     // Social previews are optional; their availability must not block identity discovery.
     return undefined;

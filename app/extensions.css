@@ -425,6 +425,17 @@
     width: 72px;
     height: 72px;
   }
+  .app-card .card-heading {
+    align-items: center;
+  }
+  .app-card .extension-icon {
+    width: 64px;
+    height: 64px;
+  }
+  .app-card .extension-icon img {
+    width: 100%;
+    height: 100%;
+  }
   .card-heading h2 {
     margin: 0;
     font-size: 15px;
@@ -444,13 +455,26 @@
   .app-card .author,
   .app-card .card-metadata dd,
   .app-card .tag-list > *,
-  .app-catalog .category-option span:not(.count) {
+  .app-catalog .category-option span:not(.count),
+  .skill-card .tag-list > *,
+  .skill-card .card-metadata dd,
+  .skill-catalog .category-option span:not(.count) {
     overflow-wrap: anywhere;
     min-width: 0;
     max-width: 100%;
   }
-  .app-catalog .category-option {
+  .app-catalog .category-option,
+  .skill-catalog .category-option {
     max-width: 100%;
+  }
+  .skill-card .tag-list {
+    margin-bottom: 20px;
+  }
+  .skill-card .card-metadata {
+    padding-top: 0;
+  }
+  .skill-card .card-actions {
+    margin-top: auto;
   }
   .card-summary {
     margin: 18px 0;

@@ -99,7 +99,11 @@ export async function resolveExtensionIdentity(
       "Repository metadata.json must contain a literal extension UUID (name@namespace).",
     );
   const icon = repositoryIcon(snapshot, file.path, metadata.uuid);
-  const screenshot = await repositoryScreenshot(snapshot.repository, fetcher);
+  const screenshot = await repositoryScreenshot(
+    snapshot.repository,
+    fetcher,
+    snapshot,
+  );
   return {
     metadata,
     repository: snapshot.repository,

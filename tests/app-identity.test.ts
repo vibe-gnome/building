@@ -2,6 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { appIdentitySlug, appRepository } from "../app/lib/app-identity";
 import { metadataAppIds, resolveAppIdentity } from "../app/server/app-identity";
 
+import { previewImage } from "./helpers/preview-image";
+
 const repository = "https://github.com/mhagrelius/planner";
 const commit = "a".repeat(40);
 const path = "data/us.hagreli.Planner.metainfo.xml";
@@ -16,6 +18,7 @@ function github(
     status?: number;
     size?: number;
     screenshot?: string;
+    entries?: Record<string, { mode?: string; size?: number }>;
   } = {},
 ) {
   const requests: { url: string; init?: RequestInit }[] = [];
@@ -23,6 +26,7 @@ function github(
     requests.push({ url, init });
     if (options.status)
       return new Response("Unavailable", { status: options.status });
+    if (options.screenshot && url === options.screenshot) return previewImage();
     if (url === repository)
       return new Response(
         `<head>${options.screenshot ? `<meta property="og:image" content="${options.screenshot}">` : ""}</head>`,
@@ -37,6 +41,7 @@ function github(
         tree: Object.keys(files).map((path) => ({
           ...entry(path),
           size: options.size,
+          ...options.entries?.[path],
         })),
         truncated: options.truncated ?? false,
       });
@@ -50,6 +55,97 @@ function github(
 }
 
 describe("app repository identity", () => {
+  test.each([
+    [
+      ["data/icons/hicolor/scalable/apps/us.hagreli.Planner.svg", "icon.png"],
+      "data/icons/hicolor/scalable/apps/us.hagreli.Planner.svg",
+    ],
+    [
+      [
+        "data/icons/us.hagreli.Planner-symbolic.svg",
+        "data/icons/us.hagreli.Planner.png",
+      ],
+      "data/icons/us.hagreli.Planner.png",
+    ],
+    [
+      [
+        "data/icons/hicolor/32x32/apps/us.hagreli.Planner.png",
+        "data/icons/hicolor/128x128/apps/us.hagreli.Planner.png",
+      ],
+      "data/icons/hicolor/128x128/apps/us.hagreli.Planner.png",
+    ],
+    [["data/icons/planner.svg", "logo.png"], "data/icons/planner.svg"],
+    [["assets/logo.webp"], "assets/logo.webp"],
+    [
+      ["data/icons/symbolic/apps/us.hagreli.Planner-symbolic.svg"],
+      "data/icons/symbolic/apps/us.hagreli.Planner-symbolic.svg",
+    ],
+    [["data/icon.svg", "icon.svg"], "data/icon.svg"],
+    [["data/icons/icon.svg", "data/images/icon.svg"], undefined],
+    [
+      [
+        "screenshots/planner.png",
+        "docs/logo.svg",
+        "data/icons/actions/icon.svg",
+        "data/icons/other-app.svg",
+      ],
+      undefined,
+    ],
+    [["tests/icon.svg", "vendor/logo.png", "../icon.svg"], undefined],
+  ] as [string[], string | undefined][])(
+    "discovers a pinned app icon from repository assets: %j",
+    async (paths, selected) => {
+      const data = github({
+        [path]: metadata,
+        ...Object.fromEntries(paths.map((path) => [path, "image bytes"])),
+      });
+      expect((await resolveAppIdentity(repository, data.fetcher)).icon).toBe(
+        selected
+          ? `https://raw.githubusercontent.com/mhagrelius/planner/${commit}/${selected}`
+          : undefined,
+      );
+      expect(data.requests).toHaveLength(5);
+    },
+  );
+
+  test("ignores symlinks and oversized icons without exhausting metadata limits", async () => {
+    const data = github(
+      {
+        [path]: metadata,
+        "data/us.hagreli.Planner.svg": "symlink",
+        "data/us.hagreli.Planner.png": "oversized",
+        "logo.svg": "image",
+        ...Object.fromEntries(
+          Array.from({ length: 30 }, (_, i) => [
+            `data/icons/ui-${i}.svg`,
+            "image",
+          ]),
+        ),
+      },
+      {
+        entries: {
+          "data/us.hagreli.Planner.svg": { mode: "120000" },
+          "data/us.hagreli.Planner.png": { size: 1024 * 1024 + 1 },
+        },
+      },
+    );
+    expect((await resolveAppIdentity(repository, data.fetcher)).icon).toBe(
+      `https://raw.githubusercontent.com/mhagrelius/planner/${commit}/logo.svg`,
+    );
+    expect(data.requests).toHaveLength(5);
+  });
+
+  test("finds icons when identity comes from a desktop template", async () => {
+    const data = github({
+      "data/us.hagreli.Planner.desktop.in":
+        "[Desktop Entry]\nType=Application\nIcon=@APP_ID@\n",
+      "data/icons/us.hagreli.Planner.svg": "image",
+    });
+    expect((await resolveAppIdentity(repository, data.fetcher)).icon).toBe(
+      `https://raw.githubusercontent.com/mhagrelius/planner/${commit}/data/icons/us.hagreli.Planner.svg`,
+    );
+  });
+
   test("includes a custom repository social preview with the app identity", async () => {
     const screenshot =
       "https://repository-images.githubusercontent.com/12345/app-preview.png";
@@ -192,35 +288,41 @@ describe("app repository identity", () => {
       ).rejects.toThrow(`(${status})`);
   });
 
-  test("pins GitLab metadata and follows bounded tree pagination", async () => {
-    const urls: string[] = [];
-    const repo = "https://gitlab.gnome.org/GNOME/Apps/Planner";
-    const api =
-      "https://gitlab.gnome.org/api/v4/projects/GNOME%2FApps%2FPlanner";
-    const fetcher = async (url: string) => {
-      urls.push(url);
-      if (url === api) return Response.json({ default_branch: "main" });
-      if (url.endsWith("/commits/main")) return Response.json({ id: commit });
-      if (url.endsWith("&page=1"))
-        return Response.json(
-          Array.from({ length: 100 }, (_, i) => entry(`src/file${i}.rs`)),
-        );
-      if (url.endsWith("&page=2")) return Response.json([entry(path)]);
-      if (
-        url ===
-        `${api}/repository/files/${encodeURIComponent(path)}/raw?ref=${commit}`
-      )
-        return new Response(metadata);
-      throw new Error(`Unexpected URL: ${url}`);
-    };
-    expect(await resolveAppIdentity(repo, fetcher)).toEqual({
-      appId: "us.hagreli.Planner",
-      repository: repo,
-      commit,
-      path,
-    });
-    expect(urls).toContain(
-      `${api}/repository/tree?ref=${commit}&recursive=true&per_page=100&page=2`,
-    );
-  });
+  test.each(["gitlab.com", "gitlab.gnome.org"])(
+    "pins GitLab metadata and icons with bounded pagination on %s",
+    async (host) => {
+      const urls: string[] = [];
+      const repo = `https://${host}/GNOME/Apps/Planner`;
+      const api = `https://${host}/api/v4/projects/GNOME%2FApps%2FPlanner`;
+      const iconPath =
+        "data/icons/hicolor/scalable/apps/us.hagreli.Planner.svg";
+      const fetcher = async (url: string) => {
+        urls.push(url);
+        if (url === api) return Response.json({ default_branch: "main" });
+        if (url.endsWith("/commits/main")) return Response.json({ id: commit });
+        if (url.endsWith("&page=1"))
+          return Response.json(
+            Array.from({ length: 100 }, (_, i) => entry(`src/file${i}.rs`)),
+          );
+        if (url.endsWith("&page=2"))
+          return Response.json([entry(path), entry(iconPath)]);
+        if (
+          url ===
+          `${api}/repository/files/${encodeURIComponent(path)}/raw?ref=${commit}`
+        )
+          return new Response(metadata);
+        throw new Error(`Unexpected URL: ${url}`);
+      };
+      expect(await resolveAppIdentity(repo, fetcher)).toEqual({
+        appId: "us.hagreli.Planner",
+        repository: repo,
+        commit,
+        path,
+        icon: `${repo}/-/raw/${commit}/${iconPath}`,
+      });
+      expect(urls).toContain(
+        `${api}/repository/tree?ref=${commit}&recursive=true&per_page=100&page=2`,
+      );
+    },
+  );
 });

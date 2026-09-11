@@ -109,6 +109,7 @@ describe("integrated extension pages", () => {
     for (const screenshot of [
       undefined,
       "https://repository-images.githubusercontent.com/12345/extension-preview.png",
+      `https://raw.githubusercontent.com/example/extension/${"a".repeat(40)}/screen.png`,
     ]) {
       const html = render(
         <Extension

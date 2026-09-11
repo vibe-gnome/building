@@ -1,4 +1,5 @@
 import { type AppIdentity, appIdentitySlug } from "../lib/app-identity";
+import { repositoryAppIcon } from "./app-icon";
 import {
   type RepositoryFetcher,
   repositoryMetadata,
@@ -90,15 +91,18 @@ export async function resolveAppIdentity(
       );
     const identity = identities.entries().next().value;
     if (identity) {
+      const icon = repositoryAppIcon(snapshot, identity[1], identity[0]);
       const screenshot = await repositoryScreenshot(
         snapshot.repository,
         fetcher,
+        snapshot,
       );
       return {
         appId: identity[0],
         repository: snapshot.repository,
         commit,
         path: identity[1],
+        ...(icon ? { icon } : {}),
         ...(screenshot ? { screenshot } : {}),
       };
     }

@@ -528,6 +528,39 @@ describe("automated checks then human confirmation", () => {
     );
   });
 
+  test("reports the app icon and binds confirmation to that exact image", async () => {
+    const api = fakeGitHub();
+    const identity = {
+      ...appIdentity,
+      icon: `https://raw.githubusercontent.com/example/app/${appIdentity.commit}/data/icon.svg`,
+    };
+    const fingerprint = listingFingerprint(api.issue, identity);
+    const report = await runListingReview(
+      api.event(),
+      api.request,
+      [],
+      async () => identity,
+    );
+    expect(report).toContain(
+      `Repository icon: [view image](<${identity.icon}>)`,
+    );
+    expect(report).toContain(`/publish-listing ${fingerprint}`);
+    expect(fingerprint).not.toBe(listingFingerprint(api.issue, appIdentity));
+    for (const icon of [
+      undefined,
+      identity.icon.replace("icon.svg", "logo.svg"),
+    ]) {
+      expect(
+        await runListingReview(
+          api.confirmation(fingerprint),
+          api.request,
+          [],
+          async () => ({ ...identity, icon }),
+        ),
+      ).toContain("Confirmation refused");
+    }
+  });
+
   test("passing checks wait for a human and update one bot report", async () => {
     const api = fakeGitHub();
     await runListingReview(api.event(), api.request, []);
@@ -751,7 +784,9 @@ test("workflow handles issue edits and confirmations using trusted code and limi
   for (const step of steps.filter((step) => step.uses))
     expect(step.uses).toMatch(/@[a-f0-9]{40}$/);
   expect(steps.filter((step) => step.run).map((step) => step.run)).toEqual([
+    "bun install --frozen-lockfile --ignore-scripts",
     "bun test tests/app-identity.test.ts tests/extension-identity.test.ts tests/repository-fetch.test.ts tests/repository-screenshot.test.ts tests/listing-review.test.ts",
+    "bun test tests/readme-screenshot.test.ts",
     "bun test tests/extension-submission-workflow.test.ts",
     "bun test tests/catalog-publication.test.ts tests/app-identity-migration.test.ts tests/listing-ids.test.ts",
     "bun scripts/listing-review.ts --github",

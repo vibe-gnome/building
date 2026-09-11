@@ -35,7 +35,7 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
   retaining the home logo and appearance control.
   The community shell fills at least the viewport height, keeping the footer at
   the bottom on short pages and after the content on longer pages.
-- `app/lib/tools.ts` owns Skills directory copy and GitHub issue submission links.
+- `app/lib/tools.ts` owns Skills directory copy.
   Catalog entries for all three directories are stored in D1 and read through
   `app/lib/catalog-client.ts`.
 - `app/components/idea-footprints.tsx` owns the eight homepage ideas and their
@@ -121,7 +121,7 @@ metadata now require JavaScript, and builds do not fetch D1. New records do not
 need a frontend rebuild. The shared catalog shell, appearance controls, footer,
 keyboard focus, and reduced-motion support remain in place.
 
-Apps and extensions share `CatalogControls` and `useCatalogQuery` for search,
+Apps, extensions, and skills share `CatalogControls` and `useCatalogQuery` for search,
 sorting, result counts, clearing filters, and grid/list views. App tag filters
 come from the published records and combine with case-insensitive search over
 names, summaries, app IDs, authors, and repository URLs. Recently added apps sort
@@ -130,6 +130,14 @@ sort order, and layout remain in the URL and update without refetching the catal
 App cards use the extension card layout, the existing Apps showcase icon, repository
 ownership, up to three tags, and source/detail actions. Both catalogs clamp card
 summaries to three lines while detail pages retain the full summary.
+
+Skills use the same catalog header, tag filters, toolbar, and responsive card
+grid/list layout. `app/lib/skill-catalog.ts` searches names, descriptions, intended
+uses, source URLs, and tags; recently added sorting uses descending database IDs.
+Skill cards preserve submitted tags, optional intended uses, and project links,
+with the Skills showcase icon and a detail action. Query changes stay in the URL
+without refetching the catalog. The Skills submission template and directory
+submission button have been removed; review and publication still support existing issues.
 
 App detail pages use the extension detail layout: icon and repository-owner
 heading, summary and optional screenshot, linked tags, and an information sidebar.
@@ -147,7 +155,7 @@ GitHub remains the submission and discussion interface. Basic app/extension
 checks read the current published extension identities from the API. Skill
 checks require PASS from Gen Agent Trust Hub and Socket on skills.sh; Snyk is
 informational. Passing reports include a hash of the exact issue title/body.
-Skill submissions request name, repository, folder path, and optional summary
+Existing skill issues contain name, repository, folder path, and optional summary
 and tags. `app/server/skill-identity.ts` reads that folder's SKILL.md at a pinned
 default-branch commit, derives the audit URL from its declared name, and fills a
 blank summary from its description. Its repository identity is included in the
@@ -171,6 +179,13 @@ redirects old keys or stale readable suffixes, preserving query parameters.
 Internal keys and view counts are preserved by source issue. No submitted repository
 code runs, and no additional dependency is required.
 
+`app/server/app-icon.ts` selects an optional app icon from the same repository
+tree, recognizing native ID and branding names in standard GNOME icon layouts.
+The raw URL is pinned to the resolved commit, linked in review, bound to approval,
+and stored as `icon` in the catalog and review evidence. `AppIcon` displays it in
+app cards and detail headings using the existing catalog icon styles, preserving
+image colors and falling back to the Apps showcase asset on load failure.
+
 New extension submissions also discover their UUID and metadata.json at one
 repository commit through `app/server/extension-identity.ts`; no UUID or pasted
 metadata is requested. Both resolvers share bounded public repository reads in
@@ -189,17 +204,26 @@ catalog. Missing or broken icons use the existing green Extensions showcase
 asset; legacy site-logo placeholders also render this fallback. Image colors
 are preserved in both the catalog and detail view.
 
-App and extension discovery also reads the GitHub repository page for an optional
-custom social preview image. `repository-screenshot.ts` parses only Open Graph
-image metadata in the document head using the built-in HTMLRewriter. It accepts
-GitHub's uploaded-image CDN and omits generated repository cards. The selected
-URL is recorded as `screenshot` in the identity and catalog payload, linked in
-the review, and bound to approval. Social previews live outside Git history;
-changing the preview URL requires fresh approval even at the same commit.
-Detail pages share `ListingScreenshot`, which preserves the full image and
-opens it at its original URL. Missing or failed images leave no placeholder.
-Optional preview lookup failures do not block metadata discovery. GitLab
-repositories skip this GitHub-specific lookup, and skills do not use it.
+App and extension preview discovery first parses the pinned repository README
+through `readme-screenshot.ts`, using `marked` for Markdown and HTMLRewriter for
+image attributes. Relative and same-repository default-branch links become raw
+URLs at the reviewed commit. The first eligible PNG, JPEG, WebP, or GIF at least
+480 × 270 pixels becomes the optional `screenshot`; obvious branding images,
+small images, unsupported hosts, redirects, and unreadable images are skipped.
+`preview-image.ts` uses `image-size` to read dimensions from bounded image bytes,
+with eight candidates, 5 MiB per image, and a shared image-check timeout.
+These two dependencies run only in trusted review/publication scripts, and do
+not enter the browser or Worker bundles. GitLab README images are supported.
+
+`repository-screenshot.ts` falls back to a custom GitHub social preview from
+Open Graph metadata in the document head, applying the same image-size checks.
+It accepts GitHub's uploaded-image CDN and omits generated repository cards.
+The selected URL is recorded in the identity and catalog payload, linked in the
+review, and bound to approval. Uploaded/social previews live outside Git history;
+changing their URL requires fresh approval even at the same commit. Detail pages
+share `ListingScreenshot`, which preserves the full image and opens its original
+URL. Missing or failed images leave no placeholder. Optional preview lookup
+failures do not block metadata discovery. Skills do not use preview discovery.
 
 Review can be rerun manually from Actions to refresh a repository revision.
 Eligible review and publication jobs share a per-issue concurrency lock. Both

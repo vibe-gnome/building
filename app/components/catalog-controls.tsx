@@ -8,7 +8,7 @@ export function CatalogControls({
   query: { params, update, reset, filtered, list },
   sortOptions,
 }: {
-  subject: "apps" | "extensions";
+  subject: "apps" | "extensions" | "skills";
   total: number;
   count: number;
   query: ReturnType<typeof useCatalogQuery>;
@@ -23,7 +23,11 @@ export function CatalogControls({
           <input
             aria-label={`Search ${subject}`}
             type="search"
-            placeholder={`Search ${subject}, authors, tags...`}
+            placeholder={
+              subject === "skills"
+                ? "Search skills, tags..."
+                : `Search ${subject}, authors, tags...`
+            }
             value={params.get("q") ?? ""}
             onChange={(event) => update("q", event.target.value)}
           />

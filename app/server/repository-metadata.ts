@@ -62,6 +62,12 @@ async function repositoryResponseError(url: string, response: Response) {
 }
 
 async function readResponseText(response: Response, limit: number) {
+  return new TextDecoder("utf-8", { fatal: true }).decode(
+    await readResponseBytes(response, limit),
+  );
+}
+
+export async function readResponseBytes(response: Response, limit: number) {
   if (!response.body) throw new Error("Repository returned an empty response.");
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -84,14 +90,17 @@ async function readResponseText(response: Response, limit: number) {
     bytes.set(chunk, offset);
     offset += chunk.byteLength;
   }
-  return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  return bytes;
 }
 
 export async function repositoryMetadata(
   repository: string,
   pattern: RegExp,
   fetcher: RepositoryFetcher = fetch,
+  pinnedCommit?: string,
 ) {
+  if (pinnedCommit !== undefined && !/^[a-f0-9]{40}$/.test(pinnedCommit))
+    throw new Error("Invalid pinned repository commit.");
   const repo = appRepository(repository);
   const github = repo.host === "github.com";
   const api = github
@@ -108,11 +117,13 @@ export async function repositoryMetadata(
   if (typeof project.default_branch !== "string" || !project.default_branch)
     throw new Error("The repository has no default branch.");
   const revision = await json(
-    `${api}/${github ? "commits" : "repository/commits"}/${encodeURIComponent(project.default_branch)}`,
+    `${api}/${github ? "commits" : "repository/commits"}/${encodeURIComponent(pinnedCommit ?? project.default_branch)}`,
   );
   const commit: string = github ? revision.sha : revision.id;
   if (typeof commit !== "string" || !/^[a-f0-9]{40}$/.test(commit))
     throw new Error("Repository did not return a valid commit.");
+  if (pinnedCommit !== undefined && commit !== pinnedCommit)
+    throw new Error("Repository did not return the reviewed commit.");
   const tree: TreeEntry[] = [];
   if (github) {
     const result = await json(`${api}/git/trees/${commit}?recursive=1`);
@@ -156,6 +167,7 @@ export async function repositoryMetadata(
   return {
     repository: repo.url,
     commit,
+    defaultBranch: project.default_branch as string,
     candidates,
     files,
     rawFileUrl(entry: TreeEntry) {

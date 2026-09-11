@@ -172,6 +172,7 @@ export function publicationData(
         name: field("App name"),
         appId: appIdentity?.appId,
         summary: field("Summary"),
+        ...(appIdentity?.icon ? { icon: appIdentity.icon } : {}),
         ...(appIdentity?.screenshot
           ? { screenshot: appIdentity.screenshot }
           : {}),

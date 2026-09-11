@@ -59,39 +59,20 @@ function upstream(path = "skills/discovery/SKILL.md") {
   };
 }
 
-function formIssue(values: Record<string, string> = {}) {
-  const form = Bun.YAML.parse(
-    readFileSync(".github/ISSUE_TEMPLATE/submit-skill.yml", "utf8"),
-  ) as {
-    title: string;
-    body: {
-      attributes: { label?: string };
-      validations?: { required?: boolean };
-    }[];
-  };
+function existingIssue(values: Record<string, string> = {}) {
   const answers: Record<string, string> = {
     "Skill name": "Find GNOME skills",
     "Source repository URL": repository,
     "Skill folder path": "skills/discovery",
+    Tags: "_No response_",
+    Summary: "_No response_",
     ...values,
   };
-  const fields = form.body.filter((field) => field.attributes.label);
-  expect(fields.map((field) => field.attributes.label)).toEqual([
-    "Skill name",
-    "Source repository URL",
-    "Skill folder path",
-    "Tags",
-    "Summary",
-  ]);
   return {
     number: 42,
-    title: `${form.title}Find GNOME skills`,
-    body: fields
-      .map((field) => {
-        const label = field.attributes.label ?? "";
-        if (field.validations?.required) expect(answers[label]).toBeDefined();
-        return `### ${label}\n\n${answers[label] ?? "_No response_"}`;
-      })
+    title: "[Skill] Find GNOME skills",
+    body: Object.entries(answers)
+      .map(([label, answer]) => `### ${label}\n\n${answer}`)
       .join("\n\n"),
     state: "open",
     labels: [] as { name: string }[],
@@ -104,7 +85,7 @@ describe("skill folder resolution", () => {
     async (folder) => {
       const path = folder === "." ? "SKILL.md" : "skills/discovery/SKILL.md";
       const repo = upstream(path);
-      const issue = formIssue({ "Skill folder path": folder });
+      const issue = existingIssue({ "Skill folder path": folder });
       const target = await resolveSkillTarget(
         issue.body.replaceAll("\n", "\r\n"),
         repo.resolve,
@@ -170,8 +151,8 @@ describe("skill folder resolution", () => {
       repo.resolve("https://gitlab.com/owner/repo", "."),
     ).rejects.toThrow("GitHub");
     for (const body of [
-      `${formIssue().body}\n\n### Skill folder path\n\nskills/other`,
-      formIssue({ "Skill folder path": "_No response_" }).body,
+      `${existingIssue().body}\n\n### Skill folder path\n\nskills/other`,
+      existingIssue({ "Skill folder path": "_No response_" }).body,
     ])
       await expect(resolveSkillTarget(body, repo.resolve)).rejects.toThrow(
         "exactly one",
@@ -184,9 +165,9 @@ test.each([
   { summary: undefined, tags: undefined },
   { summary: "Custom GNOME summary", tags: "GNOME, GTK, GNOME, , Libadwaita" },
 ])(
-  "current skill form completes review and publication: %j",
+  "existing skill issue completes review and publication: %j",
   async ({ summary, tags }) => {
-    const issue = formIssue({
+    const issue = existingIssue({
       ...(summary ? { Summary: summary } : {}),
       ...(tags ? { Tags: tags } : {}),
     });

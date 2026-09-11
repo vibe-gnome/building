@@ -3,15 +3,14 @@ import { Link } from "react-router";
 import { appRepositoryInfo } from "../lib/app-catalog";
 import { listingPath } from "../lib/listing-links";
 import type { ShowcaseEntry } from "../lib/showcases";
+import { AppIcon } from "./app-icon";
 
 export function AppCard({ entry }: { entry: ShowcaseEntry }) {
   const repository = appRepositoryInfo(entry.href);
   return (
     <article className="extension-card app-card">
       <div className="card-heading">
-        <span className="extension-icon" data-color="default">
-          <img src="/icons/showcase/apps.svg" width={40} height={40} alt="" />
-        </span>
+        <AppIcon src={entry.icon} />
         <div>
           <Link className="extension-title" to={listingPath("apps", entry)}>
             <h2>{entry.name}</h2>

@@ -10,8 +10,8 @@ bun scripts/listing-review.ts examples/listing-review/extension.json
 Each JSON file has `title` and `body` keys. Copy one and replace its values with
 the issue's title and Markdown body. The body uses the `### Field label` headings
 GitHub generates from our issue forms. New extension metadata is discovered from the repository in Actions. A failed check exits with status 1 and explains the missing or
-invalid field; a passing report exits with status 0. No dependencies need to be
-installed to run these scripts with Bun.
+invalid field; a passing report exits with status 0. Install the locked review dependencies first with
+`bun install --frozen-lockfile --ignore-scripts`.
 
 New app and extension field checks are offline; repository ID discovery runs separately in the
 GitHub workflow. The app form needs only its name, repository root URL, and
@@ -21,12 +21,33 @@ summary. To preview ID discovery against a public repository:
 bun examples/resolve-app-id.ts https://github.com/mhagrelius/planner
 ```
 
-This prints the native ID, repository, pinned commit, and metadata path. Planner's
+This prints the native ID, repository, pinned commit, metadata path, and optional
+`icon` and `screenshot` URLs. For icon discovery, a conventional repository layout
+is `data/icons/hicolor/scalable/apps/us.hagreli.Planner.svg` alongside
+`data/us.hagreli.Planner.metainfo.xml`. The icon URL points to the same commit;
+icon discovery does not download image bytes. Preview discovery downloads bounded
+image bytes to check their dimensions, without copying them into this repository. Planner's
 ID is `us.hagreli.Planner`, producing `/apps/<db-id>/planner` after publication. GitHub,
 GitLab.com, and GNOME GitLab repository roots are supported. If no concrete
 AppStream or desktop ID is found, or more than one app ID is found at the selected
 metadata priority, the lookup fails with a reason. The script does not write to
 GitHub, publish a listing, or execute repository code.
+
+To make an app or extension README image eligible as its detail-page preview,
+commit a PNG, JPEG, WebP, or GIF screenshot at least 480 × 270 pixels (up to 5 MiB)
+and reference it from the README:
+
+```markdown
+![Application screenshot](docs/screenshots/main-window.png)
+```
+
+Use the same syntax for an extension screenshot. Relative paths resolve from the
+README's directory. The review chooses the first suitable image, skips small
+images and obvious badges/logos/icons, and saves a raw URL pinned to the reviewed
+commit. Linked images, reference-style Markdown, and HTML `<img src>` also work.
+A qualifying custom GitHub social preview is the fallback when README discovery
+finds no usable image. Review the report's **view preview image** link before
+approving. Re-run the discovery command above to inspect the selected URL locally.
 
 On GitHub, submit an app with `submit-app.yml` or an extension with
 `submit-extension.yml`. Once the action's report passes, a maintainer reviews the

@@ -19,8 +19,7 @@ test("apps and skills link to details that display views and preserve project li
       name: "Example App",
       summary: "App description",
       icon: `https://raw.githubusercontent.com/example/app/${"a".repeat(40)}/icon.svg`,
-      screenshot:
-        "https://repository-images.githubusercontent.com/12345/app-preview.png",
+      screenshot: `https://raw.githubusercontent.com/example/app/${"a".repeat(40)}/screen.png`,
       href: "https://example.com/app",
       submittedBy: "Maintainer",
       tags: ["GTK"],
@@ -70,6 +69,7 @@ test("apps and skills link to details that display views and preserve project li
     expect(html).not.toContain("Page not found");
     if (category === "apps") {
       expect(html).toContain(`src="${apps[0]?.screenshot}"`);
+      expect(html).toContain('alt="Example App preview"');
       expect(html).toContain(`src="${apps[0]?.icon}"`);
     } else {
       expect(html).not.toContain('class="extension-icon');
