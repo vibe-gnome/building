@@ -4,6 +4,7 @@ import { type GuideEntry, guideArticles, skillGuides } from "../lib/guides";
 import { type GuideSkillsState, useGuideSkills } from "../lib/use-guide-skills";
 
 function GuideRow({ entry }: { entry: GuideEntry }) {
+  const external = !entry.href.startsWith("/");
   const content = (
     <>
       <span className="guide-copy">
@@ -14,7 +15,7 @@ function GuideRow({ entry }: { entry: GuideEntry }) {
         <strong>{entry.title}</strong>
         <small>{entry.description}</small>
       </span>
-      {entry.kind === "Doc" ? (
+      {external ? (
         <ArrowUpRight aria-hidden="true" size={17} />
       ) : (
         <ArrowRight aria-hidden="true" size={17} />
@@ -24,7 +25,7 @@ function GuideRow({ entry }: { entry: GuideEntry }) {
 
   return (
     <li>
-      {entry.kind === "Doc" ? (
+      {external ? (
         <a
           className="guide-link"
           href={entry.href}
@@ -79,7 +80,7 @@ export function GuideList({
       {state.status === "ready" && skills.length === 0 && (
         <li className="guide-status">
           <p>
-            No skills published yet. Explore the article above to get started.
+            No skills published yet. Explore the guides above to get started.
           </p>
         </li>
       )}

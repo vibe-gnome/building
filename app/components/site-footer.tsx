@@ -24,19 +24,13 @@ export function SiteFooter() {
         </div>
         <nav aria-label="Community links" className="footer-links">
           <NavLink to="/about">About</NavLink>
+          <NavLink to="/guides/badge">Add a badge</NavLink>
           <a
             href="https://github.com/orgs/vibe-gnome"
             rel="noreferrer"
             target="_blank"
           >
             GitHub <ArrowUpRight aria-hidden="true" size={15} />
-          </a>
-          <a
-            href="https://www.reddit.com/r/vibe_gnome/"
-            rel="noreferrer"
-            target="_blank"
-          >
-            r/vibe_gnome <ArrowUpRight aria-hidden="true" size={15} />
           </a>
         </nav>
       </div>

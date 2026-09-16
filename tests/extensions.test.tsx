@@ -196,6 +196,7 @@ describe("integrated extension pages", () => {
       "/extensions",
       "/skills",
       "/guides",
+      "/guides/badge",
     ]);
   });
 });

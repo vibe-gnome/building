@@ -27,6 +27,14 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
   state. Articles remain readable while skills load or are unavailable.
   `/guides` prerenders its article content without fetching the database at build
   time. Published skill changes appear on the next visit without a rebuild.
+- `/guides/badge` is a prerendered guide for the “Listed on Vibe GNOME” badge,
+  discoverable from the guide directory and shared footer. It reuses the guide
+  shell and theme tokens, with a responsive preview/code layout. Light and dark
+  self-contained SVGs in `public/badges/` use the supplied paw and its original
+  blue. `app/lib/badge.ts` owns asset URLs and HTML/Markdown embeds; the preview,
+  download, and snippet follow the selected variant. Copy failure selects the
+  readable code for manual copying. Internal guide entries use router links;
+  external articles continue to open in a new tab.
 - The community directories at `/apps`, `/extensions`, and `/skills`
   share `app/routes/community-layout.tsx` for their shell and
   `app/extensions.css` for their catalog presentation.

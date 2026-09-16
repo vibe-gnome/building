@@ -1,0 +1,266 @@
+.badge-page {
+  padding-top: 36px;
+  padding-bottom: 80px;
+}
+
+.badge-heading {
+  max-width: 760px;
+  margin: 32px 0 48px;
+}
+
+.badge-heading h1 {
+  margin: 0 0 20px;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 750;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.badge-heading p {
+  max-width: 65ch;
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+.badge-workspace,
+.badge-instruction-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 48px;
+}
+
+.badge-workspace > section {
+  min-width: 0;
+}
+
+.badge-page h2 {
+  margin: 0 0 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.badge-step-description {
+  margin: 0 0 24px;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.badge-preview {
+  position: relative;
+  display: grid;
+  min-height: 228px;
+  place-items: center;
+  border: 1px solid #dfe2e7;
+  border-radius: 14px;
+  background: #eff0f2;
+  color: #5b6068;
+  color-scheme: light;
+}
+
+.badge-preview[data-variant="dark"] {
+  border-color: #3d4046;
+  background: #1e1f21;
+  color: #bfc3cb;
+  color-scheme: dark;
+}
+
+.badge-preview img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.badge-preview > span {
+  position: absolute;
+  bottom: 20px;
+  font-size: 0.75rem;
+}
+
+.badge-variants {
+  display: flex;
+  gap: 24px;
+  margin: 12px 0 4px;
+  padding: 0;
+  border: 0;
+}
+
+.badge-variant {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.badge-variant input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.community-site .badge-download {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.badge-download:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.badge-formats {
+  display: inline-flex;
+  gap: 4px;
+  margin: 0;
+  padding: 4px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--surface-muted);
+}
+
+.badge-formats button {
+  min-height: 40px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.badge-formats button:hover {
+  background: var(--surface-hover);
+}
+
+.badge-formats button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.badge-format-help {
+  margin: 12px 0;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.badge-code {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  padding: 20px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  resize: vertical;
+  scrollbar-color: var(--line-strong) var(--surface);
+}
+
+.badge-copy-row {
+  display: flex;
+  min-height: 64px;
+  align-items: flex-start;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.badge-copy-row .button {
+  min-height: 44px;
+  flex: none;
+}
+
+.badge-copy-status {
+  margin: 0;
+  padding-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.badge-instructions {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+
+.badge-instruction-columns {
+  margin-top: 24px;
+}
+
+.badge-instruction-columns h3 {
+  margin: 0 0 8px;
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.badge-instruction-columns p,
+.badge-listing-tip,
+.badge-note p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+
+.badge-listing-tip {
+  max-width: 75ch;
+  margin-top: 24px;
+}
+
+.badge-note {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.badge-note p {
+  max-width: 75ch;
+  font-size: 0.875rem;
+}
+
+.badge-note p + p {
+  margin-top: 12px;
+}
+
+.community-site .badge-note a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .badge-heading {
+    margin: 24px 0 36px;
+  }
+
+  .badge-workspace,
+  .badge-instruction-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .badge-instruction-columns {
+    gap: 24px;
+  }
+
+  .badge-instructions {
+    margin-top: 32px;
+  }
+}

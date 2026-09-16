@@ -48,11 +48,10 @@ describe("footer", () => {
     expect(stylesheet).toContain(".footer-disclaimer");
   });
 
-  test("links to About and both community spaces", () => {
+  test("links to About and GitHub", () => {
     expect(home).toContain("<SiteFooter />");
     expect(footer).toContain('to="/about"');
     expect(footer).toContain('aria-label="Community links"');
     expect(footer).toContain('href="https://github.com/orgs/vibe-gnome"');
-    expect(footer).toContain('href="https://www.reddit.com/r/vibe_gnome/"');
   });
 });

@@ -2,5 +2,12 @@ import type { Config } from "@react-router/dev/config";
 
 export default {
   ssr: false,
-  prerender: ["/about", "/apps", "/extensions", "/skills", "/guides"],
+  prerender: [
+    "/about",
+    "/apps",
+    "/extensions",
+    "/skills",
+    "/guides",
+    "/guides/badge",
+  ],
 } satisfies Config;

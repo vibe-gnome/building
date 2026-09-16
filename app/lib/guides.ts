@@ -20,6 +20,15 @@ export const guideArticles: readonly GuideEntry[] = [
     href: "https://kaveh.page/blog/vibe-learning",
     source: "kaveh.page",
   },
+  {
+    id: "listing-badge",
+    kind: "Doc",
+    title: "Add a Vibe GNOME badge to your project",
+    description:
+      "Choose a light or dark badge and copy an embed for your README, website, or docs.",
+    href: "/guides/badge",
+    source: "Vibe GNOME",
+  },
 ];
 
 export function skillGuides(skills: readonly ToolEntry[]): GuideEntry[] {

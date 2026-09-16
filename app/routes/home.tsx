@@ -1,4 +1,4 @@
-import { ArrowUpRight, MessageCircle } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { type CSSProperties, useEffect, useRef } from "react";
 import { AppearanceControl } from "../components/appearance-control";
 import { HomeGuides } from "../components/guide-list";
@@ -176,15 +176,6 @@ export default function Home() {
             <LogoMark />
           </a>
           <div className="header-actions">
-            <a
-              className="header-button"
-              href="https://www.reddit.com/r/vibe_gnome/"
-              rel="noreferrer"
-              target="_blank"
-            >
-              <MessageCircle aria-hidden="true" size={17} />
-              <span>r/vibe_gnome</span>
-            </a>
             <AppearanceControl />
             <a
               aria-label="Vibe GNOME on GitHub"

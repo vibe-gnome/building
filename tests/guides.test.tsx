@@ -81,6 +81,17 @@ describe("Guides", () => {
     expect(html).not.toContain("See all");
   });
 
+  test("opens the badge guide internally and external articles in a new tab", () => {
+    const html = renderList({ status: "ready", entries: [] });
+    expect(html).toMatch(/<a[^>]*href="\/guides\/badge"[^>]*>/);
+    expect(html).not.toMatch(
+      /<a[^>]*href="\/guides\/badge"[^>]*target="_blank"/,
+    );
+    expect(html).toContain(
+      `href="${guideArticles[0]?.href}" target="_blank" rel="noreferrer"`,
+    );
+  });
+
   test("keeps articles available in loading, error, and empty states", () => {
     for (const state of [
       { status: "loading" },

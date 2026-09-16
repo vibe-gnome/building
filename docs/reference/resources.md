@@ -12,4 +12,3 @@
 - [Workbench](https://apps.gnome.org/Workbench/) — interactive GTK and
   Libadwaita prototyping
 - [Flatpak documentation](https://docs.flatpak.org/) — packaging and distribution
-- [r/vibe_gnome](https://www.reddit.com/r/vibe_gnome/) — community discussion

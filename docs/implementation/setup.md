@@ -24,6 +24,8 @@ are intentionally ignored by git.
 `react-router.config.ts` sets `ssr: false`, no React application server is required.
 The `/apps`, `/extensions`, and `/skills` directory shells are prerendered;
 `/guides` also prerenders its article list and loads skills in the browser.
+`/guides/badge` prerenders the badge instructions and default embed code, and
+`public/badges/` is copied into the build as stable, externally embeddable SVGs.
 Records and dynamic details load from the D1 catalog API. Keep `/` out of the prerender list so
 `index.html` remains the SPA fallback expected by the existing static host.
 
