@@ -8,10 +8,14 @@ export function badgePath(variant: BadgeVariant) {
   return `/badges/listed-on-vibe-gnome-${variant}.svg`;
 }
 
-export function badgeSnippet(variant: BadgeVariant, format: BadgeFormat) {
+export function badgeSnippet(
+  variant: BadgeVariant,
+  format: BadgeFormat,
+  destination = badgeSiteUrl,
+) {
   const source = `${badgeSiteUrl}${badgePath(variant)}`;
   if (format === "markdown") {
-    return `[![${badgeLabel}](${source})](${badgeSiteUrl})`;
+    return `[![${badgeLabel}](${source})](${destination})`;
   }
-  return `<a href="${badgeSiteUrl}">\n  <img\n    src="${source}"\n    alt="${badgeLabel}"\n    width="228" height="64"\n  />\n</a>`;
+  return `<a href="${destination}">\n  <img\n    src="${source}"\n    alt="${badgeLabel}"\n    width="228" height="64"\n  />\n</a>`;
 }

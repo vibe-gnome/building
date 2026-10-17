@@ -49,6 +49,97 @@
   line-height: 1.6;
 }
 
+.badge-project {
+  max-width: 680px;
+  margin-bottom: 40px;
+}
+
+.badge-project .badge-step-description {
+  margin-bottom: 20px;
+}
+
+.badge-project-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+
+.badge-project-search {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  caret-color: var(--accent-text);
+  font: inherit;
+}
+
+.badge-project-search::placeholder,
+.badge-code::placeholder {
+  color: var(--ink-soft);
+  opacity: 1;
+}
+
+.badge-project-status {
+  margin: 10px 0 0;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.community-site .badge-project-status a {
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.badge-project-results {
+  max-height: 240px;
+  overflow-y: auto;
+  margin: 12px 0 0;
+  padding: 4px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  list-style: none;
+  scrollbar-color: var(--line-strong) var(--surface);
+}
+
+.badge-project-results button {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.badge-project-results button:hover {
+  background: var(--surface-hover);
+}
+
+.badge-project-results strong,
+.badge-project-results span {
+  display: block;
+}
+
+.badge-project-results strong {
+  font-size: 0.9375rem;
+}
+
+.badge-project-results span {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
 .badge-preview {
   position: relative;
   display: grid;
@@ -184,6 +275,12 @@
 .badge-copy-row .button {
   min-height: 44px;
   flex: none;
+}
+
+.badge-copy-row .button:disabled {
+  background: var(--surface-muted);
+  color: var(--ink-soft);
+  cursor: not-allowed;
 }
 
 .badge-copy-status {

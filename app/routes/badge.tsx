@@ -1,6 +1,7 @@
 import { ArrowDownToLine, ArrowLeft, Check, Copy } from "lucide-react";
 import { useRef, useState } from "react";
 import { Link } from "react-router";
+import { BadgeProjectPicker } from "../components/badge-project-picker";
 import {
   type BadgeFormat,
   type BadgeVariant,
@@ -18,7 +19,7 @@ export function meta() {
     {
       name: "description",
       content:
-        "Add a Listed on Vibe GNOME badge to your README, website, or docs. Choose a light or dark SVG and copy the Markdown or HTML embed.",
+        "Add a Listed on Vibe GNOME badge to your README, website, or docs. Find your app or extension, choose a badge, and copy an embed that links to your listing.",
     },
   ];
 }
@@ -47,9 +48,15 @@ function EmbedCode({ code, format }: { code: string; format: BadgeFormat }) {
         readOnly
         spellCheck={false}
         value={code}
+        placeholder="Select a matching project above to generate your embed code."
       />
       <div className="badge-copy-row">
-        <button className="button primary" type="button" onClick={copyCode}>
+        <button
+          className="button primary"
+          type="button"
+          onClick={copyCode}
+          disabled={!code}
+        >
           {status === "copied" ? (
             <Check size={16} aria-hidden="true" />
           ) : (
@@ -70,6 +77,7 @@ function EmbedCode({ code, format }: { code: string; format: BadgeFormat }) {
 export default function BadgeGuide() {
   const [variant, setVariant] = useState<BadgeVariant>("light");
   const [format, setFormat] = useState<BadgeFormat>("markdown");
+  const [destination, setDestination] = useState<string | null>(badgeSiteUrl);
 
   return (
     <main id="main-content" className="page-shell badge-page" tabIndex={-1}>
@@ -85,14 +93,19 @@ export default function BadgeGuide() {
         </p>
       </header>
 
+      <BadgeProjectPicker destination={destination} onChange={setDestination} />
+
       <div className="badge-workspace">
         <section aria-labelledby="badge-style-heading">
-          <h2 id="badge-style-heading">1. Choose your badge</h2>
+          <h2 id="badge-style-heading">2. Choose your badge</h2>
           <p className="badge-step-description">
             A small paw print, with a place for your project.
           </p>
           <div className="badge-preview" data-variant={variant}>
-            <a href={badgeSiteUrl} aria-label={`${badgeLabel} — preview link`}>
+            <a
+              href={destination ?? undefined}
+              aria-label={`${badgeLabel} — preview link`}
+            >
               <img
                 src={badgePath(variant)}
                 alt={badgeLabel}
@@ -123,7 +136,7 @@ export default function BadgeGuide() {
         </section>
 
         <section aria-labelledby="badge-code-heading">
-          <h2 id="badge-code-heading">2. Copy the embed code</h2>
+          <h2 id="badge-code-heading">3. Copy the embed code</h2>
           <p className="badge-step-description">
             Choose the format that fits your project.
           </p>
@@ -150,8 +163,8 @@ export default function BadgeGuide() {
               : "For websites and HTML pages."}
           </p>
           <EmbedCode
-            key={`${variant}-${format}`}
-            code={badgeSnippet(variant, format)}
+            key={`${variant}-${format}-${destination}`}
+            code={destination ? badgeSnippet(variant, format, destination) : ""}
             format={format}
           />
         </section>
@@ -161,7 +174,7 @@ export default function BadgeGuide() {
         className="badge-instructions"
         aria-labelledby="badge-add-heading"
       >
-        <h2 id="badge-add-heading">3. Give it a home</h2>
+        <h2 id="badge-add-heading">4. Give it a home</h2>
         <div className="badge-instruction-columns">
           <div>
             <h3>In your README</h3>
@@ -179,9 +192,9 @@ export default function BadgeGuide() {
           </div>
         </div>
         <p className="badge-listing-tip">
-          Want to link directly to your listing? Copy its URL from Vibe GNOME
-          and replace the link destination in the code. Keep the image URL as it
-          is.
+          The preview and embed link to the project you selected above. You can
+          switch between light and dark or Markdown and HTML without changing
+          the destination.
         </p>
       </section>
 

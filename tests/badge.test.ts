@@ -30,5 +30,21 @@ describe("portable listing badge", () => {
         expect(html).toContain(`alt="${badgeLabel}"`);
       }
     });
+
+    test(`${variant} embeds link directly to app and extension listings`, async () => {
+      for (const path of ["/apps/31/notebook", "/extensions/42/quick-notes"]) {
+        const destination = `${badgeSiteUrl}${path}`;
+        for (const format of ["markdown", "html"] as const) {
+          const snippet = badgeSnippet(variant, format, destination);
+          const html =
+            format === "markdown"
+              ? await marked.parse(snippet, { async: false })
+              : snippet;
+          expect(html).toContain(`href="${destination}"`);
+          expect(html).toContain(`src="${badgeSiteUrl}${badgePath(variant)}"`);
+          expect(html).toContain(`alt="${badgeLabel}"`);
+        }
+      }
+    });
   }
 });

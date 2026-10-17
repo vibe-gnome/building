@@ -32,7 +32,13 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
   shell and theme tokens, with a responsive preview/code layout. Light and dark
   self-contained SVGs in `public/badges/` use the supplied paw and its original
   blue. `app/lib/badge.ts` owns asset URLs and HTML/Markdown embeds; the preview,
-  download, and snippet follow the selected variant. Copy failure selects the
+  download, and snippet follow the selected variant. The project picker loads
+  published apps and extensions through the paginated catalog API with request
+  cancellation and retry. Name search preserves duplicate results with their
+  category and canonical listing path. Selecting a project updates the preview
+  and embed destination using `listingPath`; an empty name keeps the homepage
+  default. Editing the name clears the previous target and disables copying
+  until a new result is selected or the name is cleared. Copy failure selects the
   readable code for manual copying. Internal guide entries use router links;
   external articles continue to open in a new tab.
 - The community directories at `/apps`, `/extensions`, and `/skills`
