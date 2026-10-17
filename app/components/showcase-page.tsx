@@ -1,9 +1,10 @@
-import { Blocks, Plus, RotateCcw, Search, Tag } from "lucide-react";
+import { Blocks, RotateCcw, Search, Tag } from "lucide-react";
 import { appTags, filterApps } from "../lib/app-catalog";
 import { useCatalogQuery } from "../lib/catalog-query";
-import { type ShowcaseEntry, showcaseSubmissionUrl } from "../lib/showcases";
+import type { ShowcaseEntry } from "../lib/showcases";
 import { AppCard } from "./app-card";
 import { CatalogControls } from "./catalog-controls";
+import { SubmitListingButton } from "./submit-listing-button";
 
 export function ShowcasePage({
   category,
@@ -31,15 +32,7 @@ export function ShowcasePage({
             GNOME <span>Apps</span>
           </h1>
         </div>
-        <a
-          className="button primary submit-button"
-          href={showcaseSubmissionUrl(category)}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Plus size={17} aria-hidden="true" />
-          Submit app
-        </a>
+        <SubmitListingButton category={category} />
       </div>
       <div className="catalog-layout">
         <section className="catalog-filters" aria-label="Filter apps">

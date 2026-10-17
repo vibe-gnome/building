@@ -3,6 +3,8 @@
   "files": {
     "includes": [
       "**",
+      "!!.agents",
+      "!!.impeccable",
       "!!node_modules",
       "!!build",
       "!!.react-router",

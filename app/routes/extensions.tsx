@@ -1,10 +1,10 @@
-import { Blocks, Code2, Plus, RotateCcw, Search, Workflow } from "lucide-react";
+import { Blocks, Code2, RotateCcw, Search, Workflow } from "lucide-react";
 import { CatalogControls } from "../components/catalog-controls";
 import { ExtensionCard } from "../components/extensions/extension-card";
+import { SubmitListingButton } from "../components/submit-listing-button";
 import { loadCatalog } from "../lib/catalog-client";
 import { useCatalogQuery } from "../lib/catalog-query";
 import { extensionFilters, filterExtensions } from "../lib/extension-catalog";
-import { issueUrl } from "../lib/extension-submissions";
 import type { Route } from "./+types/extensions";
 
 export {
@@ -49,15 +49,7 @@ export default function Catalog({
             GNOME <span>Extensions</span>
           </h1>
         </div>
-        <a
-          className="button primary submit-button"
-          href={issueUrl("submit")}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <Plus size={17} aria-hidden="true" />
-          Submit extension
-        </a>
+        <SubmitListingButton category="extensions" />
       </div>
       <div className="catalog-layout">
         <section className="catalog-filters" aria-label="Filter extensions">

@@ -28,6 +28,10 @@ submission forms are no longer offered; existing issues can still complete
 [skill review](skills.md).
 
 Browse, search, and filter the extension catalog at `/extensions`. Each listing
-includes upstream installation instructions and source links. Use **Submit
-extension** to open the GitHub submission form. Each detail page has a **Report
+includes upstream installation instructions and source links. **Submit app**
+and **Submit extension** open a dialog where you can choose the GitHub issue
+form or copy a prompt for your coding agent to create the submission issue.
+Paste the prompt into your agent in the project you want to submit; the agent
+needs GitHub access. Both options require maintainer review before publication.
+Each detail page has a **Report
 listing** link for corrections and reports. See [Extensions](extensions.md) for details.

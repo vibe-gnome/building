@@ -1,7 +1,9 @@
 # Extension submissions
 
-Use the "Submit extension" action at `/extensions`. It opens the
-`submit-extension.yml` GitHub issue form in `vibe-gnome/building`.
+Use the "Submit extension" action at `/extensions`. In the dialog, choose
+**Open GitHub form** for the `submit-extension.yml` issue form in
+`vibe-gnome/building`, or **Copy prompt** to submit through your coding agent.
+See the [agent submission example](listing-submissions.md) for that workflow.
 The existing GNOME `metadata.json` is the source for UUID, version,
 description, and Shell compatibility. The workflow reads this file from a pinned
 commit in the public repository; no UUID or pasted metadata is requested. The

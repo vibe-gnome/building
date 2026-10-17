@@ -43,6 +43,13 @@ Assets, with `vibe-gnome.org` attached as a Worker Custom Domain.
   retaining the home logo and appearance control.
   The community shell fills at least the viewport height, keeping the footer at
   the bottom on short pages and after the content on longer pages.
+- App and extension submission buttons share `SubmitListingButton`, a native
+  modal dialog with the matching GitHub issue form and a copyable agent prompt.
+  `app/lib/listing-submissions.ts` owns the prompt text and exact issue field
+  headings; `app/submissions.css` inherits the community theme and accent tokens.
+  The browser manages modal focus, Escape dismissal, and return focus. Copy
+  failure selects the read-only prompt for manual copying. The website only
+  provides submission options; GitHub tools or the contributor create the issue.
 - `app/lib/tools.ts` owns Skills directory copy.
   Catalog entries for all three directories are stored in D1 and read through
   `app/lib/catalog-client.ts`.
